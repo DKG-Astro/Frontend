@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import TableComponent from "../../../components/DKG_Table";
+import { PlayCircleOutlined, FileTextOutlined, FileDoneOutlined, FileSearchOutlined } from '@ant-design/icons';
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -7,13 +8,24 @@ const MainDashboard = () => {
   const [tableData, setTableData] = useState([]);
   const [tileData, setTileData] = useState([]);
 
+  const tileColorList = [
+    "#004B4D", // Deep Teal
+    "#2E1A47", // Midnight Purple
+    "#2B3A70", // Slate Blue
+    "#3B3C36", // Dark Olive Green
+    "#4A0C0C", // Crimson Red
+    "#1E1A78", // Indigo Night
+    "#003B5C", // Deep Sea Blue
+    "#4A5A3D"  // Moss Green
+  ];
+
   // Define your tile data locally
   const dashboardTiles = [
     {
       id: 1,
       title: "Report 1",
-      icon: "", // You can use an emoji, icon component, or image.
-      color: "#3498db",
+      icon: <FileTextOutlined />, // You can use an emoji, icon component, or image.
+      color: tileColorList[0],
       // Define table columns for tile 1 (without filters)
       tableColumns: [
         { title: "Order Id", dataIndex: "col1", key: "col1" },
@@ -85,8 +97,8 @@ const MainDashboard = () => {
     {
       id: 2,
       title: "Report 2",
-      icon: "",
-      color: "#e67e22",
+      icon: <FileDoneOutlined />,
+      color: tileColorList[1],
       tableColumns: [
         { title: "Order Id", dataIndex: "col1", key: "col1" },
         { title: "Mode of Procurement", dataIndex: "col2", key: "col2" },
@@ -156,8 +168,8 @@ const MainDashboard = () => {
     {
       id: 3,
       title: "Report 3",
-      icon: "",
-      color: "#2ecc71",
+      icon: <FileSearchOutlined />,
+      color: tileColorList[2],
       tableColumns: [
         { title: "Order Id", dataIndex: "col1", key: "col1" },
         { title: "Mode of Procurement", dataIndex: "col2", key: "col2" },
@@ -281,7 +293,7 @@ const MainDashboard = () => {
         <span className="dashboard-tab-icon text-white">{item.icon}</span>
         <div className="flex flex-col items-center justify-center gap-1 col-span-2">
           {/* You can replace this hard-coded number with a dynamic value if needed */}
-          <h3 className="font-semibold text-2xl text-white text-left w-full">
+          <h3 className="font-semibold !text-2xl text-white text-left w-full">
             54
           </h3>
           <div className="w-full text-white text-left">{item.title}</div>
@@ -290,8 +302,8 @@ const MainDashboard = () => {
     ));
 
   return (
-    <div className=" border mx-auto p-4 flex flex-col gap-6">
-      <h1 className="font-semibold text-3xl text-center">Dashboard</h1>
+    <div className="px-4 flex flex-col gap-6">
+      <h1 className="font-semibold !text-3xl text-center">Dashboard</h1>
       <section className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {renderTiles()}
       </section>
