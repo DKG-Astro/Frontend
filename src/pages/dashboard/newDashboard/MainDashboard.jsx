@@ -290,7 +290,7 @@ const MainDashboard = () => {
     ));
 
   return (
-    <div className="w-4/6 border mx-auto p-4 flex flex-col gap-6">
+    <div className=" border mx-auto p-4 flex flex-col gap-6">
       <h1 className="font-semibold text-3xl text-center">Dashboard</h1>
       <section className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {renderTiles()}

@@ -1,20 +1,50 @@
 import React, { useEffect, useState } from "react";
-import { Form, Input, Select, Button, Upload, DatePicker, Checkbox, Space, Row, Col, message } from "antd";
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Option } from "antd/es/mentions";
+import {Form,Input,Select,Button,Upload,DatePicker,Checkbox,Space,Row,Col,message,} from "antd";
+import {MinusCircleOutlined,PlusOutlined,UploadOutlined,SearchOutlined,} from "@ant-design/icons";
+// import { Option } from "antd/es/mentions";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
 
+const { Option } = Select;
+
 const Form1 = () => {
   const auth = useSelector((state) => state.auth);
-  const actionPerformer = auth.userId;  
+  const actionPerformer = auth.userId;
   const [form] = Form.useForm();
   const [preBidRequired, setPreBidRequired] = useState(false);
   const [rateContractIndent, setRateContractIndent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/project-master"
+        );
+        const data = await response.json();
+
+        if (
+          data.responseStatus.statusCode === 0 &&
+          Array.isArray(data.responseData)
+        ) {
+          setProjects(data.responseData);
+        } else {
+          message.error("Failed to project data");
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        message.error("Failed to fetch project data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const handleSearch = async () => {
     const indentorId = form.getFieldValue("indentId");
@@ -22,28 +52,29 @@ const Form1 = () => {
       message.error("Please enter an Indent ID");
       return;
     }
-  
+
     try {
       const response = await fetch(
         `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
       );
-  
-      if (!response.ok) throw new Error(`Failed to fetch data: ${response.statusText}`);
-  
+
+      if (!response.ok)
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
+
       const data = await response.json();
-  
+
       console.log("API Response:", data); // Debugging log
-  
+
       if (!data.responseData) {
         throw new Error("Invalid API response: responseData is missing");
       }
-  
+
       const responseData = data.responseData;
-  
+
       // Ensure file upload fields are always an array
       const getFileList = (fileName) =>
         fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
-  
+
       const formData = {
         indentId: responseData.indentId || "",
         indentorName: responseData.indentorName || "",
@@ -60,13 +91,19 @@ const Form1 = () => {
         estimatedRate: parseFloat(responseData.estimatedRate) || 0,
         periodOfRateContract: parseFloat(responseData.periodOfContract) || 0,
         singleOrMultipleJob: responseData.singleAndMultipleJob || "",
-  
+
         // ✅ Fix file uploads - Ensure they are arrays
-        uploadingPriorApprovals: getFileList(responseData.uploadingPriorApprovalsFileName),
-        uploadTenderDocuments: getFileList(responseData.uploadTenderDocumentsFileName),
+        uploadingPriorApprovals: getFileList(
+          responseData.uploadingPriorApprovalsFileName
+        ),
+        uploadTenderDocuments: getFileList(
+          responseData.uploadTenderDocumentsFileName
+        ),
         uploadGOIOrRFP: getFileList(responseData.uploadGOIOrRFPFileName),
-        uploadPACOrBrandPAC: getFileList(responseData.uploadPACOrBrandPACFileName),
-  
+        uploadPACOrBrandPAC: getFileList(
+          responseData.uploadPACOrBrandPACFileName
+        ),
+
         // ✅ Ensure material details is an array
         lineItems: Array.isArray(responseData.materialDetails)
           ? responseData.materialDetails.map((item) => ({
@@ -83,21 +120,19 @@ const Form1 = () => {
             }))
           : [],
       };
-  
+
       console.log("Final Form Data:", formData); // Debugging log
-  
+
       // ✅ Update form fields safely
       form.setFieldsValue(formData);
       setPreBidRequired(formData.preBidMeetingRequired);
       setRateContractIndent(formData.rateContractIndent);
       message.success("Form data fetched successfully");
-  
     } catch (error) {
       message.error(`Failed to fetch form data: ${error.message}`);
       console.error("Error fetching data:", error);
     }
   };
-  
 
   const normFile = (e) => {
     // When uploading, an array of file objects is expected.
@@ -107,82 +142,89 @@ const Form1 = () => {
     }
     return e && e.fileList;
   };
-  
+
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
       // Ensure line items have valid data
       const materialDetails = (values.lineItems || [])
-        .filter(item => item.materialCode) // Remove empty line items
-        .map(item => ({
+        .filter((item) => item.materialCode) // Remove empty line items
+        .map((item) => ({
           materialCode: item.materialCode,
-          materialDescription: item.materialDescription || '',
+          materialDescription: item.materialDescription || "",
           quantity: parseFloat(item.quantity) || 0,
           unitPrice: parseFloat(item.unitPrice) || 0,
-          uom: item.uom || '',
+          uom: item.uom || "",
           totalPrize: parseFloat(item.totalPrice) || 0,
-          budgetCode: item.budgetCode || '',
-          materialCategory: item.materialCategory || '',
-          materialSubCategory: item.materialSubcategory || '',
-          materialAndJob: item.materialOrJobCodeUsedByDept || ''
+          budgetCode: item.budgetCode || "",
+          materialCategory: item.materialCategory || "",
+          materialSubCategory: item.materialSubcategory || "",
+          materialAndJob: item.materialOrJobCodeUsedByDept || "",
         }));
-  
+
       if (materialDetails.length === 0) {
         message.error("At least one valid line item is required");
         setLoading(false);
         return;
       }
-  
+
       const payload = {
         indentorName: values.indentorName,
         indentId: values.indentId,
         indentorMobileNo: values.indentorMobileNo,
         indentorEmailAddress: values.indentorEmail,
-        consignesLocation: values.consigneeLocation || 'Banglore' || null,
-        
-        uploadingPriorApprovalsFileName: values.uploadingPriorApprovals?.[0]?.name || '',
-        uploadTenderDocumentsFileName: values.uploadTenderDocuments?.[0]?.name || '',
-        uploadGOIOrRFPFileName: values.uploadGOIOrRFP?.[0]?.name || '',
-        uploadPACOrBrandPACFileName: values.uploadPACOrBrandPAC?.[0]?.name || '',
-        
+        consignesLocation: values.consigneeLocation || "Banglore" || null,
+
+        uploadingPriorApprovalsFileName:
+          values.uploadingPriorApprovals?.[0]?.name || "",
+        uploadTenderDocumentsFileName:
+          values.uploadTenderDocuments?.[0]?.name || "",
+        uploadGOIOrRFPFileName: values.uploadGOIOrRFP?.[0]?.name || "",
+        uploadPACOrBrandPACFileName:
+          values.uploadPACOrBrandPAC?.[0]?.name || "",
+
         projectName: values.projectName || null,
         isPreBidMeetingRequired: !!values.preBidMeetingRequired,
-        preBidMeetingDate: values.preBidMeetingRequired && values.preBidMeetingDetails
-        ? dayjs(values.preBidMeetingDetails[0]).format('DD/MM/YYYY')
-        : null,  
+        preBidMeetingDetails:
+          values.preBidMeetingRequired && values.preBidMeetingDetails?.[0]
+            ? dayjs(values.preBidMeetingDetails[0]).format("DD/MM/YYYY")
+            : null,
 
-        preBidMeetingVenue: values.preBidMeetingLocation || '',
-        
+        preBidMeetingVenue: values.preBidMeetingLocation || "",
+
         isItARateContractIndent: !!values.rateContractIndent,
         estimatedRate: parseFloat(values.estimatedRate) || 0,
         periodOfContract: parseFloat(values.periodOfRateContract) || 0,
-        singleAndMultipleJob: values.singleOrMultipleJob || '',
-        
+        singleAndMultipleJob: values.singleOrMultipleJob || "",
+
         materialCategory: materialDetails[0].materialCategory,
-        totalPriceOfAllMaterials: materialDetails.reduce((sum, item) => sum + item.totalPrize, 0),
-        
+        totalPriceOfAllMaterials: materialDetails.reduce(
+          (sum, item) => sum + item.totalPrize,
+          0
+        ),
+
         materialDetails: materialDetails,
-        
+
         createdBy: actionPerformer,
         updatedBy: null,
       };
-  
+
       // Ensure payload is a proper JSON object
       const payloadJson = JSON.stringify(payload);
-      console.log('Payload JSON:', payloadJson);
-  
+      console.log("Payload JSON:", payloadJson);
+
       const formData = new FormData();
-      formData.append('indentRequestDto', payloadJson);
-  
+      formData.append("indentRequestDto", payloadJson);
+
       // Limit file sizes and types
       const fileFields = [
-        'uploadingPriorApprovals',
-        'uploadTenderDocuments', 
-        'uploadGOIOrRFP', 
-        'uploadPACOrBrandPAC'
+        "uploadingPriorApprovals",
+        "uploadTenderDocuments",
+        "uploadGOIOrRFP",
+        "uploadPACOrBrandPAC",
       ];
-      
-      fileFields.forEach(field => {
+
+      fileFields.forEach((field) => {
         const files = values[field];
         if (files && files.length > 0) {
           const file = files[0].originFileObj;
@@ -194,30 +236,31 @@ const Form1 = () => {
           formData.append(field, file);
         }
       });
-  
-      const response = await fetch("http://103.181.158.220:8081/astro-service/api/indents", {
-        method: "POST",
-        body: formData,
-      });
-      
-  
+
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/indents",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Full Error Response:', errorText);
+        console.error("Full Error Response:", errorText);
         throw new Error(`Submission failed: ${response.status}`);
       }
-  
+
       message.success("Indent submitted successfully!");
       form.resetFields();
     } catch (error) {
       message.error(`Submission Error: ${error.message}`);
-      console.error('Detailed Error:', error);
+      console.error("Detailed Error:", error);
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   const calculateTotalPrice = (record) => {
     const quantity = parseFloat(record.quantity) || 0;
     const unitPrice = parseFloat(record.unitPrice) || 0;
@@ -225,19 +268,19 @@ const Form1 = () => {
   };
 
   const handlePriceCalculation = (index, field, value) => {
-    const lineItems = form.getFieldValue('lineItems');
+    const lineItems = form.getFieldValue("lineItems");
     if (lineItems[index]) {
       const totalPrice = calculateTotalPrice({
         ...lineItems[index],
-        [field]: value
+        [field]: value,
       });
-      
+
       const updatedItems = [...lineItems];
       updatedItems[index] = {
         ...updatedItems[index],
-        totalPrice: totalPrice
+        totalPrice: totalPrice,
       };
-      
+
       form.setFieldsValue({ lineItems: updatedItems });
     }
   };
@@ -253,11 +296,14 @@ const Form1 = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/material-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/material-master"
+        );
         if (!response.ok) throw new Error("Failed to fetch materials");
 
         const data = await response.json();
-        if (!data.responseData) throw new Error("Invalid material master response");
+        if (!data.responseData)
+          throw new Error("Invalid material master response");
 
         // ✅ Extract material codes and details
         const materials = data.responseData;
@@ -302,20 +348,20 @@ const Form1 = () => {
       <h2>Indent Creation</h2>
       <Row justify="end">
         <Col>
-            <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
-          <Form.Item
-            label="Indent ID"
-            name="indentId"
-            rules={[{ required: true, message: "Indentor ID is required" }]}
-          >
-            <Space>
-              <Input placeholder="Enter Indent ID" />
-              <Button type="primary" onClick={handleSearch}>
-              <SearchOutlined />
-              </Button>
-            </Space>
-          </Form.Item>
-            </Form>
+          <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
+            <Form.Item
+              label="Indent ID"
+              name="indentId"
+              rules={[{ required: true, message: "Indentor ID is required" }]}
+            >
+              <Space>
+                <Input placeholder="Enter Indent ID" />
+                <Button type="primary" onClick={handleSearch}>
+                  <SearchOutlined />
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
         </Col>
       </Row>
       <Form
@@ -323,14 +369,14 @@ const Form1 = () => {
         layout="vertical"
         onFinish={handleSubmit}
         onFinishFailed={(errorInfo) => {
-          console.error('Validation Failed:', errorInfo);
-          message.error('Please fill all required fields');
+          console.error("Validation Failed:", errorInfo);
+          message.error("Please fill all required fields");
         }}
-        initialValues={{ 
+        initialValues={{
           // Provide default values to prevent undefined issues
           lineItems: [{}],
           preBidMeetingRequired: false,
-          rateContractIndent: false
+          rateContractIndent: false,
         }}
       >
         <div className="form-section">
@@ -342,11 +388,12 @@ const Form1 = () => {
             <Input value="Auto-populated" />
           </Form.Item>
 
-
           <Form.Item
             label="Indentor Mobile No."
             name="indentorMobileNo"
-            rules={[{ required: true, message: "Indentor mobile number is required" }]}
+            rules={[
+              { required: true, message: "Indentor mobile number is required" },
+            ]}
           >
             <Input value="Auto-populated" />
           </Form.Item>
@@ -358,7 +405,7 @@ const Form1 = () => {
             name="indentorEmail"
             rules={[{ required: true, message: "Indentor name is required" }]}
           >
-            <Input value="Auto-populated"  />
+            <Input value="Auto-populated" />
           </Form.Item>
 
           <Form.Item
@@ -374,26 +421,28 @@ const Form1 = () => {
             name="uploadingPriorApprovals"
             valuePropName="fileList"
             getValueFromEvent={normFile} // <--- added
-            rules={[{ required: true, message: "Prior approvals are required" }]}
-            >
+            rules={[
+              { required: true, message: "Prior approvals are required" },
+            ]}
+          >
             <Upload beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
+              <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
             </Upload>
-            </Form.Item>
+          </Form.Item>
         </div>
 
         <div>
           <Form.List name="lineItems" initialValue={[{}]}>
             {(fields, { add, remove }) => (
               <>
-                {fields.map(({ key, name, ...restField },index) => (
+                {fields.map(({ key, name, ...restField }, index) => (
                   <div
                     key={key}
                     style={{
-                        border: "1px solid #ccc",
-                        padding: "20px",
-                        marginBottom: "20px",
-                      }}
+                      border: "1px solid #ccc",
+                      padding: "20px",
+                      marginBottom: "20px",
+                    }}
                   >
                     <Space
                       style={{
@@ -405,25 +454,35 @@ const Form1 = () => {
                     >
                       <Row gutter={16}>
                         <Col span={8}>
-                        <Form.Item
-                        name={[name, "materialCode"]}
-                        label="Material Code"
-                        rules={[{ required: true, message: "Please select a material code!" }]}
-                      >
-                        <Select placeholder="Select Material Code" onChange={(value) => handleMaterialSelect(index, value)}>
-                          {materialList.map((code) => (
-                            <Option key={code} value={code}>
-                              {code}
-                            </Option>
-                          ))}
-                        </Select>
-                      </Form.Item>
+                          <Form.Item
+                            name={[name, "materialCode"]}
+                            label="Material Code"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select a material code!",
+                              },
+                            ]}
+                          >
+                            <Select
+                              placeholder="Select Material Code"
+                              onChange={(value) =>
+                                handleMaterialSelect(index, value)
+                              }
+                            >
+                              {materialList.map((code) => (
+                                <Option key={code} value={code}>
+                                  {code}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"materialDescription"]}
+                            {...restField}
+                            name={[name, "materialDescription"]}
                             label="Material Description"
                             rules={[
                               {
@@ -433,7 +492,7 @@ const Form1 = () => {
                               },
                             ]}
                           >
-                            <Select placeholder="Select Material Description" >
+                            <Select placeholder="Select Material Description">
                               <Option value="Description 1">
                                 Description 1
                               </Option>
@@ -449,8 +508,8 @@ const Form1 = () => {
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"quantity"]}
+                            {...restField}
+                            name={[name, "quantity"]}
                             label="Quantity"
                             rules={[
                               {
@@ -459,14 +518,24 @@ const Form1 = () => {
                               },
                             ]}
                           >
-                            <Input type="number" placeholder="Enter Quantity"  onChange={(e)=>handlePriceCalculation(index,'quantity',e.target.value)} />
+                            <Input
+                              type="number"
+                              placeholder="Enter Quantity"
+                              onChange={(e) =>
+                                handlePriceCalculation(
+                                  index,
+                                  "quantity",
+                                  e.target.value
+                                )
+                              }
+                            />
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"unitPrice"]}
+                            {...restField}
+                            name={[name, "unitPrice"]}
                             label="Unit Price"
                             rules={[
                               {
@@ -478,22 +547,27 @@ const Form1 = () => {
                             <Input
                               type="number"
                               placeholder="Enter Unit Price"
-                              
-                              onChange={(e)=>handlePriceCalculation(index,'unitPrice',e.target.value)}
+                              onChange={(e) =>
+                                handlePriceCalculation(
+                                  index,
+                                  "unitPrice",
+                                  e.target.value
+                                )
+                              }
                             />
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"uom"]}
+                            {...restField}
+                            name={[name, "uom"]}
                             label="UOM"
                             rules={[
                               { required: true, message: "Please select UOM!" },
                             ]}
                           >
-                            <Select  placeholder="Select UOM">
+                            <Select placeholder="Select UOM">
                               <Option value="Kg">Kg</Option>
                               <Option value="Litre">Litre</Option>
                               <Option value="Unit">Unit</Option>
@@ -503,8 +577,8 @@ const Form1 = () => {
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"budgetCode"]}
+                            {...restField}
+                            name={[name, "budgetCode"]}
                             label="Budget Code"
                             rules={[
                               {
@@ -513,18 +587,20 @@ const Form1 = () => {
                               },
                             ]}
                           >
-                            <Select  placeholder="Select Budget Code">
-                              <Option value="BUD001">BUD001</Option>
-                              <Option value="BUD002">BUD002</Option>
-                              <Option value="BUD003">BUD003</Option>
+                            <Select placeholder="Select Budget Code">
+                            {projects.map((project) => (
+                            <Option key={project.projectCode} value={project.projectCode}>
+                                {project.budgetType}
+                            </Option>
+                            ))}
                             </Select>
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"materialCategory"]}
+                            {...restField}
+                            name={[name, "materialCategory"]}
                             label="Material Category"
                             rules={[
                               {
@@ -533,14 +609,14 @@ const Form1 = () => {
                               },
                             ]}
                           >
-                            <Input  placeholder="Enter Material Category" />
+                            <Input placeholder="Enter Material Category" />
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"materialSubcategory"]}
+                            {...restField}
+                            name={[name, "materialSubcategory"]}
                             label="Material Subcategory"
                             rules={[
                               {
@@ -549,29 +625,29 @@ const Form1 = () => {
                               },
                             ]}
                           >
-                            <Input  placeholder="Enter Material Subcategory" />
+                            <Input placeholder="Enter Material Subcategory" />
                           </Form.Item>
                         </Col>
 
                         <Col span={8}>
                           <Form.Item
-                          {...restField}
-                            name={[name,"totalPrice"]}
+                            {...restField}
+                            name={[name, "totalPrice"]}
                             label="Total Price"
                             shouldUpdate
                           >
-                            <Input placeholder="Auto-calculated"  />
+                            <Input placeholder="Auto-calculated" />
                           </Form.Item>
                         </Col>
                         <Col span={8}>
-                        <Form.Item
-                        {...restField}
-                        name={[name,"materialOrJobCodeUsedByDept"]}
-                        label="Material/Job Code Used By Dept"
-                        style={{ width: "100%" }}
-                      >
-                        <Input  />
-                      </Form.Item>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "materialOrJobCodeUsedByDept"]}
+                            label="Material/Job Code Used By Dept"
+                            style={{ width: "100%" }}
+                          >
+                            <Input />
+                          </Form.Item>
                         </Col>
                       </Row>
                       <MinusCircleOutlined onClick={() => remove(name)} />
@@ -594,9 +670,12 @@ const Form1 = () => {
         </div>
         <div className="form-section">
           <Form.Item name="projectName" label="Project Name">
-            <Select  placeholder="Select project">
-              <Option value="project1">Project 1</Option>
-              <Option value="project2">Project 2</Option>
+            <Select placeholder="Select project" loading={loading} allowClear>
+                {projects.map((project) => (
+                  <Option key={project.projectCode} value={project.projectCode}>
+                    {project.projectNameDescription}
+                  </Option>
+                ))}
             </Select>
           </Form.Item>
           <Form.Item
@@ -604,12 +683,14 @@ const Form1 = () => {
             name="uploadTenderDocuments"
             valuePropName="fileList"
             getValueFromEvent={normFile} // <--- added
-            rules={[{ required: true, message: "Tender documents are required" }]}
-            >
+            rules={[
+              { required: true, message: "Tender documents are required" },
+            ]}
+          >
             <Upload beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
+              <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
             </Upload>
-        </Form.Item>
+          </Form.Item>
         </div>
 
         <Form.Item name="preBidMeetingRequired" valuePropName="checked">
@@ -665,7 +746,7 @@ const Form1 = () => {
                     },
                   ]}
                 >
-                  <Input  type="number" placeholder="Enter Estimated Rate" />
+                  <Input type="number" placeholder="Enter Estimated Rate" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -679,7 +760,7 @@ const Form1 = () => {
                     },
                   ]}
                 >
-                  <Input  type="number" />
+                  <Input type="number" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -692,7 +773,7 @@ const Form1 = () => {
                     },
                   ]}
                 >
-                  <Select  placeholder="Select Material Code">
+                  <Select placeholder="Select Material Code">
                     <Option value="Single">Single</Option>
                     <Option value="Multiple">Multiple</Option>
                   </Select>
@@ -702,29 +783,31 @@ const Form1 = () => {
           )}
         </div>
         <div className="form-section">
-        <Form.Item
+          <Form.Item
             label="Upload GOI or RFP"
             name="uploadGOIOrRFP"
             valuePropName="fileList"
             getValueFromEvent={normFile} // <--- added
             rules={[{ required: true, message: "GOI or RFP is required" }]}
-            >
+          >
             <Upload beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Upload GOI/RFP</Button>
+              <Button icon={<UploadOutlined />}>Upload GOI/RFP</Button>
             </Upload>
-            </Form.Item>
+          </Form.Item>
 
-            <Form.Item
+          <Form.Item
             label="Upload PAC or Brand PAC"
             name="uploadPACOrBrandPAC"
             valuePropName="fileList"
             getValueFromEvent={normFile} // <--- added
-            rules={[{ required: true, message: "PAC or Brand PAC is required" }]}
-            >
+            rules={[
+              { required: true, message: "PAC or Brand PAC is required" },
+            ]}
+          >
             <Upload beforeUpload={() => false}>
-                <Button icon={<UploadOutlined />}>Upload PAC/Brand PAC</Button>
+              <Button icon={<UploadOutlined />}>Upload PAC/Brand PAC</Button>
             </Upload>
-            </Form.Item>
+          </Form.Item>
         </div>
 
         <Form.Item>
@@ -732,7 +815,7 @@ const Form1 = () => {
             <Button type="default" htmlType="reset">
               Reset
             </Button>
-            <Button type="primary" htmlType="submit" loading = {loading}>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Submit
             </Button>
             <Button type="dashed" htmlType="button">

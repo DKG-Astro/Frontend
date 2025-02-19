@@ -100,54 +100,54 @@ const Dashboard = () => {
 
     const renderTab = () => {
       switch (activeTab){
-        case 1:
-          return <Form1 />
         case 2:
-          return <Form2 />
-        case 3:
-          return <Form3 />
-        case 4:
-          return <Form4 />
-        case 5:
-          return <Form5 />
-        case 6:
-          return <Form6 />
-        case 7:
-          return <Form7 />
-        case 8:
-            return <Form8/>
-        case 9:
-            return <Form9 />
-        case 10:
-            return <Form10 />
-        case 11:
-            return <Form11 />
-        case 12:
-            return <Form12 />
-        case 13:
-            return <Form13 />
-        case 14:
-            return <Form14 />
-        case 15:
-            return <Form15 />
-        case 16:
-            return <Form16 />
-        case 17:
-            return <Form17 />
-        case 18:
-            return <Form18 />
-        case 19:
-            return <Form19 />
-        case 20:
-            return <Form20 />
-        case 21:
-            return <Form7a />
-        case 22:
-            return <Form7b />
-        case 23:
             return <Queue />
-        case 24:
+        case 1:
             return <MainDashboard />
+        case 3:
+          return <Form1 />
+        // case 4:
+        //   return <Form2 />
+        case 5:
+          return <Form3 />
+        case 6:
+          return <Form4 />
+        case 7:
+          return <Form5 />
+        case 8:
+          return <Form6 />
+        case 9:
+          return <Form7 />
+        // case 10:
+        //     return <Form8/>
+        case 11:
+            return <Form9 />
+        case 12:
+            return <Form10 />
+        case 13:
+            return <Form11 />
+        case 14:
+            return <Form12 />
+        case 15:
+            return <Form13 />
+        case 16:
+            return <Form14 />
+        case 17:
+            return <Form15 />
+        case 18:
+            return <Form16 />
+        case 19:
+            return <Form17 />
+        case 20:
+            return <Form18 />
+        case 21:
+            return <Form19 />
+        case 22:
+            return <Form20 />
+        case 23:
+            return <Form7a />
+        case 24:
+            return <Form7b />
         default:
           break
       }
