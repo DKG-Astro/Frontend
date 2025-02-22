@@ -10,13 +10,13 @@ import { Input } from 'antd';
 // import Admin from './admin/Admin';
 import { ActiveTabContext } from '../../context/dashboardActiveTabContext';
 import Form1 from './indentCreation/Form1';
-import Form2 from './indentApproval/Form2';
+// import Form2 from './indentApproval/Form2';
 import Form3 from './indentModification/Form3';
 import Form4 from './tenderRequest/Form4';
 import Form5 from './tenderEvaluation/Form5';
 import Form6 from './communityNomination/Form6';
 import Form7 from './purchaseOrder/Form7';
-import Form8 from './approvalWorkflow/Form8';
+// import Form8 from './approvalWorkflow/Form8';
 import Form9 from './performanceWarranty/Form9';
 import Form10 from './deliveryTracking/Form10';
 import Form11 from './goodsProvisionalRecieptNote/Form11';
@@ -35,7 +35,7 @@ import Queue from './queue/Queue';
 import MainDashboard from './newDashboard/MainDashboard';
 // import Form21 from './lineItems/Form21';
 
-const { Search } = Input;
+// const { Search } = Input;
 
 
 const dashboardTabItems = [

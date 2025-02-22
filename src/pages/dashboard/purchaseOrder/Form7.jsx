@@ -185,56 +185,59 @@ const Form7 = () => {
       const updatedLineItems = values.lineItems.map((item) => ({
         materialCode: item.materialCode,
         materialDescription: item.materialDescription,
-        quantity: parseFloat(item.quantity),
-        rate: parseFloat(item.unitRate),
-        currency: item.currency,
-        exchangeRate: parseFloat(item.exchangeRate),
-        gst: parseFloat(item.gst),
-        duties: parseFloat(item.duties),
-        freightCharge: parseFloat(item.freightCharges),
+        quantity: parseFloat(item.quantity) || 0,
+        rate: parseFloat(item.unitRate) || 0,
+        currency: item.currency || "INR",
+        exchangeRate: parseFloat(item.exchangeRate) || 1,
+        gst: parseFloat(item.gst) || 0,
+        duties: parseFloat(item.duties) || 0,
+        freightCharge: parseFloat(item.freightCharges) || 0,
       }));
-
-      const formattedValues = {
-          poId: form.getFieldValue("poId"),
-          tenderId: values.tenderID,
-          indentId: values.indentID,
-          consignesAddress: values.consigneeAddress,
-          billingAddress: values.billingAddress,
-          deliveryPeriod: parseFloat(values.deliveryPeriod),
-          warranty: parseFloat(values.warranty),
-          ifLdClauseApplicable: values.ifLDClauseApplicable,
-          incoterms: values.incoTerms,
-          paymentterms: values.paymentTerms,
-          vendorName: values.vendorName,
-          vendorAddress: values.vendorAddress,
-          applicablePbgToBeSubmitted: values.applicablePBG,
-          transposterAndFreightForWarderDetails: values.transporterDetails,
-          vendorAccountNumber: values.vendorAccountNo,
-          vendorsIfscCode: values.vendorIFSCCode,
-          vendorAccountName: values.vendorAccountName,
-          purchaseOrderAttributes: updatedLineItems,
-          createdBy: "adminu",
-          updatedBy: "admin",
+  
+      const payload = {
+        poId: values.poId,
+        tenderId: values.tenderID,
+        indentId: selectedIndentId,
+        consignesAddress: values.consigneeAddress,
+        billingAddress: values.billingAddress,
+        deliveryPeriod: parseFloat(values.deliveryPeriod) || 0,
+        warranty: parseFloat(values.warranty) || 0,
+        ifLdClauseApplicable: !!values.ifLDClauseApplicable, // Ensure boolean
+        incoterms: values.incoTerms,
+        paymentterms: values.paymentTerms,
+        vendorName: values.vendorName,
+        vendorAddress: values.vendorAddress,
+        applicablePbgToBeSubmitted: values.applicablePBG,
+        transposterAndFreightForWarderDetails: values.transporterDetails,
+        vendorAccountNumber: values.vendorAccountNo,
+        vendorsIfscCode: values.vendorIFSCCode,
+        vendorAccountName: values.vendorAccountName,
+        purchaseOrderAttributes: updatedLineItems,
+        createdBy: "adminu",
+        updatedBy: "admin",
       };
-      console.log("Submitting PO:", formattedValues);
-
+  
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/purchase-orders",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json", // Explicit JSON content type
           },
-          body: JSON.stringify(formattedValues),
+          body: JSON.stringify(payload),
         }
       );
-
-      if (!response.ok) throw new Error("Failed to submit form");
-
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.responseStatus?.message || "Submission failed");
+      }
+  
       message.success("PO submitted successfully");
+      form.resetFields();
     } catch (error) {
-      message.error("Failed to submit PO form");
-      console.error("Error submitting PO:", error);
+      message.error(`Failed to submit PO: ${error.message}`);
+      console.error("Submission Error:", error);
     } finally {
       setLoading(false);
     }

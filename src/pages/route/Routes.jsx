@@ -56,6 +56,27 @@ import RollingPrivateRoute from "./RollingPrivateRoute";
 import RollingControlSample from "../dashboard/duty/stage/rollingStage/rollingControl60E1/RollingControlSample";
 import RollingVerification from "../dashboard/duty/stage/rollingVerification/RollingVerification";
 import FinishingVerification from "../dashboard/duty/stage/finishingVerification/FinishingVerification";
+import Form1 from "../dashboard/indentCreation/Form1";
+import Form3 from "../dashboard/indentModification/Form3";
+import Form4 from "../dashboard/tenderRequest/Form4";
+import Form5 from "../dashboard/tenderEvaluation/Form5";
+import Form11 from "../dashboard/goodsProvisionalRecieptNote/Form11";
+import Form12 from "../dashboard/goodsInspection/Form12";
+import Form13 from "../dashboard/goodsReturn/Form13";
+import Form14 from "../dashboard/goodsReceiptInspection/Form14";
+import Form15 from "../dashboard/assterMaster/Form15";
+import Form16 from "../dashboard/goodsIssue/Form16";
+import Form17 from "../dashboard/goodsTransfer/Form17";
+import Form18 from "../dashboard/materialDisposal/Form18";
+import Form19 from "../dashboard/gatePass/Form19";
+import Form20 from "../dashboard/demandAndIssue/Form20";
+import Form7 from "../dashboard/purchaseOrder/Form7";
+import Form7a from "../dashboard/serviceOrder/Form7a";
+import Form7b from "../dashboard/contingencyPurchase/Form7b";
+import Form6 from "../dashboard/communityNomination/Form6";
+import Form9 from "../dashboard/performanceWarranty/Form9";
+import Form10 from "../dashboard/deliveryTracking/Form10";
+import QueueTable from "../dashboard/queue/QueueTable";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -66,6 +87,38 @@ const RoutesComponent = () => {
           <Route path="/" element={<LayoutWithDashboard />}>
             <Route index element={<Dashboard />} />
             {/* <Route path="/record/sms" element={<SmsRecord />} /> */}
+
+            <Route path="/queue" element={<QueueTable/>}/>
+
+            <Route path="/procurement">
+                <Route path="indent">
+                    <Route path="creation" element={<Form1 />} />
+                    <Route path="modification" element={<Form3 />} />
+                </Route>
+                <Route path="tender">
+                    <Route path="request" element={<Form4 />} />
+                    <Route path="evaluation" element={<Form5 />} />
+                </Route>
+                <Route path="purchaseOrder" element={<Form7 />} />
+                <Route path="serviceOrder" element={<Form7a />} />
+                <Route path="contingencyPurchase" element={<Form7b />} />
+                <Route path="committeeFormation" element={<Form6 />} />
+                <Route path="performanceWarranty" element={<Form9 />} />
+                <Route path="deliveryTracking" element={<Form10 />} />
+            </Route>
+
+            <Route path="/inventory">
+                <Route path="gprn" element={<Form11 />} />
+                <Route path="goodsInspection" element={<Form12 />} />
+                <Route path="goodsReturn" element={<Form13 />} />
+                <Route path="goodsReceipt" element={<Form14 />} />
+                <Route path="assetMaster" element={<Form15 />} />
+                <Route path="goodsIssue" element={<Form16/>} />
+                <Route path="goodsTransfer" element={<Form17 />} />
+                <Route path="materialDisposal" element={<Form18 />} />
+                <Route path="gatePass" element={<Form19 />} />
+                <Route path="demandIssue" element={<Form20 />} />
+            </Route>
 
             <Route path="/sms">
               <Route index element={<SmsDutyStartForm />} />

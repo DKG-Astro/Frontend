@@ -68,72 +68,80 @@ const Form7b = () => {
     }
   };
 
+  const normFile = (e) => {
+    // When uploading, an array of file objects is expected.
+    // If e is already an array, return it. Otherwise, return e.fileList.
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e && e.fileList;
+  };
+
   // Submit contingency purchase data
+  // Add this utility function at the top of your file
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
+  
+  // Modified submit function
   const submitContingencyData = async (values) => {
     setLoading(true);
     try {
-      const lineItem = values.lineItems[0]; // Ensure a single line item is being sent
-  
-      // Build the base JSON payload.
-      const formattedValues = {
-        contigencyId: contingencyId || null,
+      const lineItem = values.lineItems[0];
+      
+      // 1. Create FormData instance
+      const formData = new FormData();
+      
+      // 2. Build JSON payload with corrected field names
+      const payload = {
+        contigencyId: contingencyId || null, // Note spelling (missing 'n' in contingency)
         vendorsName: values.vendorName,
         vendorsInvoiceNo: values.vendorInvoiceNo,
         materialCode: lineItem.materialCode,
         materialDescription: lineItem.materialDescription,
-        quantity: parseFloat(lineItem.quantity),
-        unitPrice: parseFloat(lineItem.unitRate),
+        quantity: parseFloat(lineItem.quantity) || 0,
+        unitPrice: parseFloat(lineItem.unitRate) || 0,
         remarksForPurchase: values.remarks,
-        amountToBePaid: parseFloat(values.amountToBePaid),
-        // This field will later be replaced with the file’s Base64 string
-        uploadCopyOfInvoice: "", 
-        predifinedPurchaseStatement: values.predefinedPurchaseStatement,
+        amountToBePaid: parseFloat(values.amountToBePaid) || 0,
+        predifinedPurchaseStatement: values.predefinedPurchaseStatement, // Note spelling
         projectDetail: values.projectDetail,
-        projectName: null,
         date: values.date?.format("DD/MM/YYYY"),
         createdBy: "adminu",
         updatedBy: "admin",
-        createdDate: new Date().toISOString(),
-        updatedDate: new Date().toISOString(),
       };
   
-      // Process the file from the "uploadInvoice" field.
-      const files = form.getFieldValue("uploadInvoice");
-      if (files && files.length > 0) {
-        const file = files[0].originFileObj;
-        // Validate file size (e.g., max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          message.error(`uploadInvoice file is too large. Maximum 5MB allowed.`);
-          throw new Error(`File too large: uploadInvoice`);
-        }
-        // Convert the file to a Base64 string.
-        // const fileBase64 = await toBase64(file);
-        // // Set the Base64 string in the payload using the key the backend expects.
-        // formattedValues.uploadCopyOfInvoice = fileBase64;
+      // 3. Handle file upload
+      const invoiceFile = form.getFieldValue("uploadCopyOfInvoice")?.[0]?.originFileObj;
+      if (invoiceFile) {
+        formData.append("file", invoiceFile);
       }
   
-      // Convert the full payload (including the file data) to a JSON string.
-      const payloadJson = JSON.stringify(formattedValues);
-      console.log("📤 Sending data:", JSON.stringify(formattedValues, null, 2));
-      console.log("Payload JSON:", payloadJson);
+      // 4. Append JSON payload with EXACT name the backend expects
+      formData.append("contigencyPurchaseDto", JSON.stringify(payload));
   
-      // Send the payload as a plain text (or adjust the content type as needed).
-      const response = await fetch("http://103.181.158.220:8081/astro-service/api/contigency-purchase", {
-        method: "POST",
-        body: payloadJson,
-      });
+      // 5. Send request
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/contigency-purchase",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
   
       const responseData = await response.json();
-      console.log("📥 Server response:", responseData);
-  
+      
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+        throw new Error(responseData.responseStatus?.message || "Submission failed");
       }
   
-      message.success("Data submitted successfully!");
+      message.success("Contingency submitted successfully!");
+      form.resetFields();
     } catch (error) {
-      console.error("❌ Error submitting data:", error);
-      message.error(`Error submitting data: ${error.message}`);
+      console.error("Submission Error:", error);
+      message.error(`Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -181,7 +189,7 @@ const Form7b = () => {
             name="vendorName"
             rules={[{ required: true, message: "Please enter vendor name" }]}
           >
-            <Select mode="multiple" placeholder="Select Vendor ID">
+            <Select placeholder="Select Vendor ID">
               <Option value="ABC">ABC</Option>
               <Option value="ABC V">ABC V</Option>
             </Select>
@@ -356,15 +364,30 @@ const Form7b = () => {
         </div>
 
         <div className="form-section">
-          <Form.Item
-            name="uploadInvoice"
-            label="Upload copy of Invoice"
-            rules={[{ required: true, message: "Please upload invoice copy" }]}
-          >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Upload Invoice Copy</Button>
+        <Form.Item
+        name="uploadCopyOfInvoice"
+        label="Upload copy of Invoice"
+        rules={[{ required: true }]}
+        valuePropName="fileList"
+        getValueFromEvent={normFile}
+        >
+            <Upload beforeUpload={() => false} maxCount={1}>
+                <Button icon={<UploadOutlined />}>Upload Invoice Copy</Button>
             </Upload>
-          </Form.Item>
+        </Form.Item>
+          {/* <Form.Item
+                      label="Upload Prior Approvals"
+                      name="uploadingPriorApprovals"
+                      valuePropName="fileList"
+                      getValueFromEvent={normFile} // <--- added
+                      rules={[
+                        { required: true, message: "Prior approvals are required" },
+                      ]}
+                    >
+                      <Upload beforeUpload={() => false}>
+                        <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
+                      </Upload>
+                    </Form.Item> */}
 
           <Form.Item
             label="Predefined purchase statement"

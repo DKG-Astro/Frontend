@@ -8,7 +8,6 @@ import {
     message,
     Row,
     Select,
-    Space,
     Upload,
   } from "antd";
   import { Option } from "antd/es/mentions";
@@ -19,7 +18,7 @@ import {
     UploadOutlined,
   } from "@ant-design/icons";
   import React, { useEffect, useState } from "react";
-  import TextArea from "antd/es/input/TextArea";
+  import dayjs from "dayjs";
   
   const Form4 = () => {
     const [form] = Form.useForm();
@@ -33,110 +32,73 @@ import {
     const [searchTenderId, setSearchTenderId] = useState("");
     const [tenderDetails, setTenderDetails] = useState(null);
   
-    // ----------------------------
-    // XML Parsing & Indent Data Fetch
-    // ----------------------------
-    const parseXML = (xmlText) => {
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(xmlText, "text/xml");
-      console.log("XML Document Root:", xml.documentElement);
+    const getFileList = (fileName) =>
+      fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
   
-      // Try to locate the indent elements. If there's a <responseData> wrapper, use that;
-      // otherwise, try to get all "indent" tags from the document.
-      let indentElements = xml.getElementsByTagName("indent");
-  
-      if (indentElements.length === 0) {
-        // If no indent elements are found, try to locate them under a wrapper element (if it exists)
-        const responseData = xml.getElementsByTagName("responseData")[0];
-        if (responseData) {
-          indentElements = responseData.getElementsByTagName("indent");
-        }
+    // ----------------------------
+    // Helper: normFile - ensures file upload events return an array of file objects
+    // ----------------------------
+    const normFile = (e) => {
+      if (Array.isArray(e)) {
+        return e;
       }
-      console.log("Found indent elements:", indentElements);
-  
-      // Map through indent elements and extract data
-      const parsedIndents = Array.from(indentElements).map((indent) => {
-        const indentorId =
-          indent.getElementsByTagName("indentorId")[0]?.textContent || null;
-        // If indentorId is missing, log a warning:
-        if (!indentorId) {
-          console.warn("Missing indentorId in one of the indent elements", indent);
-        }
-        // Extract materialDetails if available
-        let materialDetails = [];
-        const materialDetailsElement =
-          indent.getElementsByTagName("materialDetails")[0];
-        if (materialDetailsElement) {
-          materialDetails = Array.from(materialDetailsElement.children).map(
-            (material) => ({
-              materialCode:
-                material.getElementsByTagName("materialCode")[0]?.textContent || "",
-              materialDescription:
-                material.getElementsByTagName("materialDescription")[0]
-                  ?.textContent || "",
-              quantity:
-                material.getElementsByTagName("quantity")[0]?.textContent || "",
-              unitPrice:
-                material.getElementsByTagName("unitPrice")[0]?.textContent || "",
-              uom:
-                material.getElementsByTagName("uom")[0]?.textContent || "",
-              budgetCode:
-                material.getElementsByTagName("budgetCode")[0]?.textContent || "",
-              totalPrize:
-                material.getElementsByTagName("totalPrize")[0]?.textContent || "",
-              materialCategory:
-                material.getElementsByTagName("materialCategory")[0]
-                  ?.textContent || "",
-              materialSubCategory:
-                material.getElementsByTagName("materialSubCategory")[0]
-                  ?.textContent || "",
-            })
-          );
-        }
-  
-        return { indentorId, materialDetails };
-      });
-  
-      return parsedIndents.filter((indent) => indent.indentorId !== null);
+      return e && e.fileList;
     };
   
-    // Fetch indent data using AllOrigins to bypass CORS
-    const fetchIndentData = async () => {
-      try {
-        const response = await fetch(
-          `https://api.allorigins.win/get?url=${encodeURIComponent(
-            "http://103.181.158.220:8081/astro-service/api/indents"
-          )}`
-        );
-        if (!response.ok) throw new Error("Failed to fetch indent data");
-        const data = await response.json();
-  
-        // AllOrigins returns a JSON with a "contents" property containing the XML string.
-        const xmlText = data.contents;
-        console.log("Raw XML Text:", xmlText);
-  
-        const parsedData = parseXML(xmlText);
-        console.log("Parsed indent data:", parsedData);
-  
-        setIndentData(parsedData);
-      } catch (error) {
-        console.error("Error fetching indent data:", error);
-        message.error("Failed to fetch indent data");
-      }
-    };
-  
+    // ----------------------------
+    // Fetch Indent Data (Assuming JSON response)
+    // ----------------------------
     useEffect(() => {
-      fetchIndentData();
+      const fetchIndents = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch(
+            "http://103.181.158.220:8081/astro-service/api/indents"
+          );
+          const data = await response.json();
+  
+          if (
+            data.responseStatus.statusCode === 0 &&
+            Array.isArray(data.responseData)
+          ) {
+            setIndentData(data.responseData);
+          } else {
+            message.error("Failed to fetch indent data");
+          }
+        } catch (error) {
+          console.error("Error fetching indents:", error);
+          message.error("Failed to fetch indent data");
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchIndents();
     }, []);
   
     // ----------------------------
-    // Indent selection handler
+    // Format a material object for Form.List
+    // ----------------------------
+    const formatMaterial = (material) => ({
+      materialCode: material.materialCode,
+      materialDescription: material.materialDescription,
+      quantity: material.quantity,
+      unitPrice: material.unitPrice,
+      uom: material.uom,
+      budgetCode: material.budgetCode,
+      totalPrice: material.totalPrice,
+      materialCategory: material.materialCategory,
+      materialSubCategory: material.materialSubCategory,
+    });
+  
+    // ----------------------------
+    // Indent selection handler: fetch and set line items from selected indent(s)
     // ----------------------------
     const handleIndentChange = (selectedIndentIds) => {
       let newMaterials = [];
   
       selectedIndentIds.forEach((indentId) => {
-        const indent = indentData.find((item) => item.indentorId === indentId);
+        const indent = indentData.find((item) => item.indentId === indentId);
         if (indent && indent.materialDetails) {
           newMaterials = [...newMaterials, ...indent.materialDetails];
         }
@@ -153,19 +115,6 @@ import {
         lineItems: uniqueMaterials.map(formatMaterial),
       });
     };
-  
-    // Format a material object for Form.List
-    const formatMaterial = (material) => ({
-      materialCode: material.materialCode,
-      materialDescription: material.materialDescription,
-      quantity: material.quantity,
-      unitPrice: material.unitPrice,
-      uom: material.uom,
-      budgetCode: material.budgetCode,
-      totalPrice: material.totalPrize,
-      materialCategory: material.materialCategory,
-      materialSubCategory: material.materialSubCategory,
-    });
   
     // ----------------------------
     // Price calculation for line items
@@ -192,78 +141,191 @@ import {
     // ----------------------------
     // Tender Search Functionality
     // ----------------------------
-    const handleSearchTender = async () => {
-      if (!searchTenderId) {
+    const tenderSearch = async () => {
+      const tenderId = form.getFieldValue("tenderId");
+      if (!tenderId) {
         message.error("Please enter a Tender ID");
         return;
       }
-      try {
-        const response = await fetch(
-          `http://103.181.158.220:8081/astro-service/api/tender-requests/${searchTenderId}`
-        );
-        if (!response.ok) throw new Error("Tender not found");
-        const data = await response.json();
-        setTenderDetails(data);
-        message.success("Tender details fetched successfully!");
-      } catch (error) {
-        message.error("Failed to fetch tender details: " + error.message);
-        console.error("Error fetching tender details:", error);
-      }
-    };
   
-    // ----------------------------
-    // Form Submission & Save Draft
-    // ----------------------------
-    const onFinish = async (values) => {
-      setLoading(true);
       try {
-        const formattedData = {
-          titleOfTender: values.title,
-          openingDate: values.openingDate?.format("YYYY-MM-DD"),
-          closingDate: values.closingDate?.format("YYYY-MM-DD"),
-          indentIds: values.indentId, // multiple indent IDs
-          bidType: values.bidType,
-          lastDate: values.lastDate?.format("YYYY-MM-DD"),
-          applicableTaxes: values.applicableTaxes,
-          consigneeAndBillingAddress: values.consignesAndBillinngAddress,
-          incoTerms: values.incoTerms,
-          paymentTerms: values.paymentTerms,
-          ldClause: values.ldClause,
-          applicablePerformance: values.applicablePerformance,
-          bidSecurity: values.bidSecurity || false,
-          mllStatusDeclaration: values.mllStatusDeclaration || false,
-          singleOrMultipleVendors: values.singleOrMultipleVendors,
-          preBidDiscussions: values.preBidDiscussions,
-          lineItems: values.lineItems.map((item) => ({
-            materialCode: item.materialCode,
-            materialDescription: item.materialDescription,
-            quantity: parseFloat(item.quantity),
-            unitPrice: parseFloat(item.unitPrice),
-            uom: item.uom,
-            totalPrice: parseFloat(item.totalPrice),
-            budgetCode: item.budgetCode,
-          })),
+        setLoading(true);
+        const response = await fetch(
+          `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tender: ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+  
+        if (!data.responseData) {
+          throw new Error("Invalid API response: responseData is missing");
+        }
+  
+        const responseData = data.responseData;
+  
+        // Updated mapping: keys here match the form field names
+        const formData = {
+          tenderId: responseData.tenderId || "",
+          title: responseData.titleOfTender || "",
+          openingDate: responseData.openingDate
+            ? dayjs(responseData.openingDate, "DD/MM/YYYY")
+            : null,
+          closingDate: responseData.closingDate
+            ? dayjs(responseData.closingDate, "DD/MM/YYYY")
+            : null,
+          tenderUpload: getFileList(responseData.uploadTenderDocuments),
+          "generalTerms&Conditions": getFileList(
+            responseData.uploadGeneralTermsAndConditions
+          ),
+          "specificTerms&Conditions": getFileList(
+            responseData.uploadSpecificTermsAndConditions
+          ),
+          lastDate: responseData.lastDateOfSubmission
+            ? dayjs(responseData.lastDateOfSubmission, "DD/MM/YYYY")
+            : null,
+          applicableTaxes: responseData.applicableTaxes || "",
+          consignesAndBillinngAddress:
+            responseData.consignesAndBillinngAddress || "",
+          incoTerms: responseData.incoTerms || "",
+          paymentTerms: responseData.paymentTerms || "",
+          ldClause: responseData.ldClause || "",
+          applicablePerformance: responseData.applicablePerformance || "",
+          bidType: responseData.bidType || "",
+          bidSecurity: responseData.bidSecurityDeclaration ? true : false,
+          mllStatusDeclaration: responseData.mllStatusDeclaration ? true : false,
         };
   
-        const response = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/tenders",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formattedData),
-          }
-        );
-        if (!response.ok) throw new Error("Failed to submit tender");
+        // If indentResponseDTO exists, populate indentId and merge line items
+        if (
+          responseData.indentResponseDTO &&
+          Array.isArray(responseData.indentResponseDTO)
+        ) {
+          const indentIds = responseData.indentResponseDTO.map(
+            (indent) => indent.indentId
+          );
   
-        message.success("Tender submitted successfully!");
-        form.resetFields();
+          // Merge material details from each indent
+          let allMaterials = [];
+          responseData.indentResponseDTO.forEach((indent) => {
+            if (indent.materialDetails && Array.isArray(indent.materialDetails)) {
+              allMaterials = [...allMaterials, ...indent.materialDetails];
+            }
+          });
+  
+          // Remove duplicate materials based on materialCode
+          const uniqueMaterials = allMaterials.filter(
+            (item, index, self) =>
+              index === self.findIndex(
+                (t) => t.materialCode === item.materialCode
+              )
+          );
+  
+          formData.indentId = indentIds; // Populates the Select field for indent IDs
+          formData.lineItems = uniqueMaterials.map(formatMaterial);
+        }
+  
+        // Set the fetched data into the form
+        form.setFieldsValue(formData);
+        message.success("Tender data fetched successfully");
       } catch (error) {
-        message.error("Failed to submit tender: " + error.message);
-        console.error("Error submitting tender:", error);
+        message.error(`Failed to fetch tender: ${error.message}`);
+        console.error("Error fetching tender data:", error);
       } finally {
         setLoading(false);
       }
     };
+  
+    // ----------------------------
+    // Form Submission & Save Draft - Handling file uploads via FormData
+    // ----------------------------
+    // ... (keep all previous imports and initial code the same)
+
+const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const values = await form.validateFields();
+  
+      // Format Dates as DD/MM/YYYY
+      const formatDate = (date) => (date ? date.format("DD/MM/YYYY") : null);
+  
+      // Prepare the Payload
+      const payload = {
+        tenderId: values.tenderId || null,
+        titleOfTender: values.title?.trim() || null,
+        openingDate: formatDate(values.openingDate),
+        closingDate: formatDate(values.closingDate),
+        modeOfProcurement: values.modeOfProcurement?.trim() || null,
+        bidType: values.bidType || null,
+        lastDateOfSubmission: formatDate(values.lastDate),
+        applicableTaxes: values.applicableTaxes || null,
+        consignesAndBillinngAddress: values.consignesAndBillinngAddress?.trim() || null,
+        incoTerms: values.incoTerms?.trim() || null,
+        paymentTerms: values.paymentTerms?.trim() || null,
+        ldClause: values.ldClause?.trim() || null,
+        applicablePerformance: values.applicablePerformance?.trim() || null,
+        bidSecurityDeclaration: values.bidSecurity || false,
+        mllStatusDeclaration: values.mllStatusDeclaration || false,
+        singleAndMultipleVendors: values.singleAndMultipleVendors?.trim() || null,
+        preBidDisscussions: values.preBidDisscussions?.trim() || null,
+        totalTenderValue: values.totalTenderValue ? parseFloat(values.totalTenderValue) : 0,
+        updatedBy: "uday",
+        createdBy: 16,
+        indentIds: Array.isArray(values.indentId) ? values.indentId : [], // Corrected line
+        materialDetails: values.lineItems?.map(item => ({
+          materialCode: item.materialCode,
+          materialDescription: item.materialDescription,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          uom: item.uom,
+          totalPrize: item.totalPrice,
+          budgetCode: item.budgetCode,
+          materialCategory: item.materialCategory,
+          materialSubCategory: item.materialSubCategory
+        })) || []
+      };
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append("tenderRequestDto", JSON.stringify(payload));
+  
+      // Handle File Uploads
+      const appendFile = (fieldName, fileList) => {
+        if (fileList && fileList.length > 0) {
+          formData.append(fieldName, fileList[0].originFileObj);
+        }
+      };
+  
+      appendFile("uploadTenderDocuments", values.tenderUpload);
+      appendFile("uploadGeneralTermsAndConditions", values["generalTerms&Conditions"]);
+      appendFile("uploadSpecificTermsAndConditions", values["specificTerms&Conditions"]);
+  
+      // API Call
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/tender-requests",
+        {
+          method: "POST",
+          body: formData, // Let browser set Content-Type to multipart/form-data
+        }
+      );
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Submission failed: ${errorText}`);
+      }
+  
+      const result = await response.json();
+      message.success("Tender submitted successfully");
+      console.log("API Response:", result);
+      form.resetFields();
+    } catch (error) {
+      console.error("Submission Error:", error);
+      message.error(`Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
   
     const saveDraft = async () => {
       try {
@@ -277,22 +339,7 @@ import {
   
     return (
       <div className="form-container">
-        {/* Header with Tender Search (top right corner) */}
-        <Row justify="end" style={{ marginBottom: "20px" }}>
-          <Col>
-            <Input
-              placeholder="Enter Tender ID"
-              value={searchTenderId}
-              onChange={(e) => setSearchTenderId(e.target.value)}
-              style={{ width: 200, marginRight: "10px" }}
-            />
-            <Button type="primary" onClick={handleSearchTender}>
-              <SearchOutlined/>
-            </Button>
-          </Col>
-        </Row>
-  
-        {/* Display fetched Tender Details (if available) */}
+        {/* Header with Tender Search */}
         {tenderDetails && (
           <div
             style={{
@@ -307,7 +354,31 @@ import {
         )}
   
         <h2>Tender Request</h2>
-        <Form form={form} onFinish={onFinish} layout="vertical">
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          onFinishFailed={(errorInfo) => {
+            console.log("Validation Failed:", errorInfo);
+            message.error("Please fix the validation errors before submitting.");
+          }}
+          layout="vertical"
+        >
+          <Form.Item label="Search Tender" name="tenderId">
+            <Row justify="end" style={{ marginBottom: "20px" }}>
+              <Col>
+                <Input
+                  placeholder="Enter Tender ID"
+                  value={searchTenderId}
+                  onChange={(e) => setSearchTenderId(e.target.value)}
+                  style={{ width: 200, marginRight: "10px" }}
+                />
+                <Button type="primary" onClick={tenderSearch}>
+                  <SearchOutlined />
+                </Button>
+              </Col>
+            </Row>
+          </Form.Item>
+  
           <div className="form-section">
             <Form.Item
               name="title"
@@ -332,42 +403,39 @@ import {
             </Form.Item>
           </div>
   
-          <Form.Item
-            name="indentId"
-            label="Indent ID"
-            rules={[{ required: true }]}
-          >
-            <Select mode="multiple" onChange={handleIndentChange}>
+          {/* Indent dropdown with onChange to fetch line items */}
+          <Form.Item name="indentId" label="Indent ID">
+            <Select
+              placeholder="Select Indent"
+              loading={loading}
+              mode="multiple"
+              allowClear
+              onChange={handleIndentChange}
+            >
               {indentData.map((indent) => (
-                <Option key={indent.indentorId} value={indent.indentorId}>
-                  {indent.indentorId}
+                <Option key={indent.indentId} value={indent.indentId}>
+                  {indent.indentId}
                 </Option>
               ))}
             </Select>
           </Form.Item>
   
           <div className="form-section">
-            <Form.List name="lineItems">
-              {(fields, { add, remove }) => (
-                <>
-                  {fields.map(({ key, name, ...restField }, index) => (
-                    <div
-                      key={key}
-                      style={{
-                        border: "1px solid #ccc",
-                        padding: "20px",
-                        marginBottom: "20px",
-                      }}
-                    >
-                      <Space
+            {/* Form.List for line items */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <Form.List name="lineItems">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map(({ key, name, ...restField }, index) => (
+                      <div
+                        key={key}
                         style={{
-                          display: "flex",
-                          flexDirection: "column",
+                          border: "1px solid #ccc",
+                          padding: "20px",
                           width: "100%",
                         }}
-                        align="start"
                       >
-                        <Row gutter={16} style={{ width: "100%" }}>
+                        <Row gutter={16}>
                           <Col span={8}>
                             <Form.Item
                               {...restField}
@@ -396,11 +464,7 @@ import {
                                 type="number"
                                 placeholder="Enter Quantity"
                                 onBlur={(e) =>
-                                  handlePriceCalculation(
-                                    index,
-                                    "quantity",
-                                    e.target.value
-                                  )
+                                  handlePriceCalculation(index, "quantity", e.target.value)
                                 }
                               />
                             </Form.Item>
@@ -415,11 +479,7 @@ import {
                                 type="number"
                                 placeholder="Enter Unit Price"
                                 onBlur={(e) =>
-                                  handlePriceCalculation(
-                                    index,
-                                    "unitPrice",
-                                    e.target.value
-                                  )
+                                  handlePriceCalculation(index, "unitPrice", e.target.value)
                                 }
                               />
                             </Form.Item>
@@ -453,24 +513,62 @@ import {
                           </Col>
                         </Row>
                         <MinusCircleOutlined onClick={() => remove(name)} />
-                      </Space>
-                    </div>
-                  ))}
-                  <Form.Item>
-                    <Button
-                      type="dashed"
-                      onClick={() => add()}
-                      icon={<PlusOutlined />}
-                      style={{ width: "32%" }}
-                    >
-                      Add Item
-                    </Button>
-                  </Form.Item>
-                </>
-              )}
-            </Form.List>
+                      </div>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: "32%" }}
+                      >
+                        Add Item
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+            </div>
           </div>
   
+          {/* Upload fields */}
+          <div className="form-section">
+            <Form.Item
+              name="tenderUpload"
+              label="Tender Upload"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Tender documents are required" }]}
+            >
+              <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item
+              name="generalTerms&Conditions"
+              label="General Terms & Conditions"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "General T&C is required" }]}
+            >
+              <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>Upload General T&C</Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item
+              name="specificTerms&Conditions"
+              label="Specific Terms & Conditions"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+              rules={[{ required: true, message: "Specific T&C is required" }]}
+            >
+              <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>Upload Specific T&C</Button>
+              </Upload>
+            </Form.Item>
+          </div>
+  
+          {/* Remaining form fields */}
           <div className="form-section">
             <Form.Item
               name="bidType"
@@ -548,68 +646,20 @@ import {
           </div>
   
           <div className="form-section">
-            <Form.Item
-              name="tenderUpload"
-              label="Tender Upload"
-              rules={[{ required: true }]}
-            >
-              <Upload>
-                <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="singleOrMultipleVendors"
-              label="Single or Multiple Vendors"
-              rules={[{ required: true }]}
-            >
-              <Select>
-                <Option value="Single">Single</Option>
-                <Option value="Multiple">Multiple</Option>
-              </Select>
+            <Form.Item>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <Button type="default" htmlType="reset">
+                  Reset
+                </Button>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                  Submit
+                </Button>
+                <Button type="dashed" htmlType="button" onClick={saveDraft}>
+                  Save Draft
+                </Button>
+              </div>
             </Form.Item>
           </div>
-  
-          <div className="form-section">
-            <Form.Item
-              name="generalTerms&Conditions"
-              label="General Terms & Conditions"
-              rules={[{ required: true }]}
-            >
-              <Upload>
-                <Button icon={<UploadOutlined />}>Upload General T&C</Button>
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="specificTerms&Conditions"
-              label="Specific Terms & Conditions"
-              rules={[{ required: true }]}
-            >
-              <Upload>
-                <Button icon={<UploadOutlined />}>Upload Specific T&C</Button>
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="preBidDiscussions"
-              label="Pre Bid Discussions"
-              rules={[{ required: true }]}
-            >
-              <TextArea rows={1} />
-            </Form.Item>
-          </div>
-  
-          <Form.Item>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <Button type="default" htmlType="reset">
-                Reset
-              </Button>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Submit
-              </Button>
-              <Button type="dashed" htmlType="button" onClick={saveDraft}>
-                Save Draft
-              </Button>
-            </div>
-          </Form.Item>
         </Form>
       </div>
     );

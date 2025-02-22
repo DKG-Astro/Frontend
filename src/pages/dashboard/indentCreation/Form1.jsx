@@ -173,7 +173,7 @@ const Form1 = () => {
         indentId: values.indentId,
         indentorMobileNo: values.indentorMobileNo,
         indentorEmailAddress: values.indentorEmail,
-        consignesLocation: values.consigneeLocation || "Banglore" || null,
+        consignesLocation: values.consigneeLocation || "Banglore",
 
         uploadingPriorApprovalsFileName:
           values.uploadingPriorApprovals?.[0]?.name || "",
@@ -185,10 +185,9 @@ const Form1 = () => {
 
         projectName: values.projectName || null,
         isPreBidMeetingRequired: !!values.preBidMeetingRequired,
-        preBidMeetingDetails:
-          values.preBidMeetingRequired && values.preBidMeetingDetails?.[0]
-            ? dayjs(values.preBidMeetingDetails[0]).format("DD/MM/YYYY")
-            : null,
+        preBidMeetingDate: values.preBidMeetingRequired && values.preBidMeetingDetails
+        ? dayjs(values.preBidMeetingDetails[0]).format('DD/MM/YYYY')
+        : null,  
 
         preBidMeetingVenue: values.preBidMeetingLocation || "",
 

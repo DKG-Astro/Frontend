@@ -336,4 +336,28 @@ label{
     margin-top: -35px;
     margin-bottom: -30px;
   }
+
+  @media print {
+    body {
+      width: 210mm; /* A4 width */
+      height: 297mm; /* A4 height */
+    }
+    
+    /* Hide all buttons in print */
+    button {
+      display: none !important;
+    }
+  
+    /* Adjust margins and ensure form prints neatly */
+    .ant-form {
+      margin: 20px;
+      padding: 20px;
+      border: none;
+    }
+  
+    /* Page Break for multi-page forms */
+    .page-break {
+      page-break-before: always;
+    }
+  }  
   
