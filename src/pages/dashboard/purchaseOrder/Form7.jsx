@@ -16,6 +16,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
+import { useSelector } from "react-redux";
 
 // Option can be destructured from Select for cleaner code
 const { Option } = Select;
@@ -27,6 +28,8 @@ const Form7 = () => {
   const [tenders, setTenders] = useState([]); // Store Tender IDs
   const [selectedIndentId, setSelectedIndentId] = useState(""); // Store Indent ID
   const [materialDetails, setMaterialDetails] = useState([]); // Store Material Details
+  const auth = useSelector((state) => state.auth);
+  const actionPerformer = auth.userId;
 
   // **1. Fetch All Tender IDs**
   useEffect(() => {
@@ -213,8 +216,8 @@ const Form7 = () => {
         vendorsIfscCode: values.vendorIFSCCode,
         vendorAccountName: values.vendorAccountName,
         purchaseOrderAttributes: updatedLineItems,
-        createdBy: "adminu",
-        updatedBy: "admin",
+        createdBy: actionPerformer,
+        updatedBy: null,
       };
   
       const response = await fetch(
