@@ -12,6 +12,7 @@ import {
   Upload,
 } from "antd";
 import {
+    DeleteOutlined,
   MinusCircleOutlined,
   PlusOutlined,
   SearchOutlined,
@@ -19,11 +20,45 @@ import {
 } from "@ant-design/icons";
 import { Option } from "antd/es/mentions";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 const Form7b = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [contingencyId, setContingencyId] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [materialList, setMaterialList] = useState([]);
+  const [materialDetailsMap, setMaterialDetailsMap] = useState({});
+
+  const auth = useSelector((state) => state.auth);
+  const actionPerformer = auth.userId;
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/project-master"
+        );
+        const data = await response.json();
+
+        if (
+          data.responseStatus.statusCode === 0 &&
+          Array.isArray(data.responseData)
+        ) {
+          setProjects(data.responseData);
+        } else {
+          message.error("Failed to project data");
+        }
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        message.error("Failed to fetch project data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
+  }, []);
 
   const fetchContingencyData = async () => {
     if (!contingencyId) {
@@ -79,22 +114,23 @@ const Form7b = () => {
 
   // Submit contingency purchase data
   // Add this utility function at the top of your file
-const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-  
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
   // Modified submit function
   const submitContingencyData = async (values) => {
     setLoading(true);
     try {
       const lineItem = values.lineItems[0];
-      
+
       // 1. Create FormData instance
       const formData = new FormData();
-      
+
       // 2. Build JSON payload with corrected field names
       const payload = {
         contigencyId: contingencyId || null, // Note spelling (missing 'n' in contingency)
@@ -107,21 +143,22 @@ const toBase64 = file => new Promise((resolve, reject) => {
         remarksForPurchase: values.remarks,
         amountToBePaid: parseFloat(values.amountToBePaid) || 0,
         predifinedPurchaseStatement: values.predefinedPurchaseStatement, // Note spelling
-        projectDetail: values.projectDetail,
+        projectName: values.projectName,
         date: values.date?.format("DD/MM/YYYY"),
-        createdBy: "adminu",
-        updatedBy: "admin",
+        createdBy: actionPerformer,
+        updatedBy: null,
       };
-  
+
       // 3. Handle file upload
-      const invoiceFile = form.getFieldValue("uploadCopyOfInvoice")?.[0]?.originFileObj;
-      if (invoiceFile) {
-        formData.append("file", invoiceFile);
+      const uploadCopyOfInvoice = form.getFieldValue("uploadCopyOfInvoice")?.[0]
+        ?.originFileObj;
+      if (uploadCopyOfInvoice) {
+        formData.append("uploadCopyOfInvoice", uploadCopyOfInvoice);
       }
-  
+
       // 4. Append JSON payload with EXACT name the backend expects
       formData.append("contigencyPurchaseDto", JSON.stringify(payload));
-  
+
       // 5. Send request
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/contigency-purchase",
@@ -130,13 +167,15 @@ const toBase64 = file => new Promise((resolve, reject) => {
           body: formData,
         }
       );
-  
+
       const responseData = await response.json();
-      
+
       if (!response.ok) {
-        throw new Error(responseData.responseStatus?.message || "Submission failed");
+        throw new Error(
+          responseData.responseStatus?.message || "Submission failed"
+        );
       }
-  
+
       message.success("Contingency submitted successfully!");
       form.resetFields();
     } catch (error) {
@@ -146,7 +185,56 @@ const toBase64 = file => new Promise((resolve, reject) => {
       setLoading(false);
     }
   };
-  
+
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/material-master"
+        );
+        if (!response.ok) throw new Error("Failed to fetch materials");
+
+        const data = await response.json();
+        if (!data.responseData)
+          throw new Error("Invalid material master response");
+
+        // ✅ Extract material codes and details
+        const materials = data.responseData;
+        setMaterialList(materials.map((mat) => mat.materialCode));
+
+        // ✅ Create a lookup object for quick access
+        const materialMap = {};
+        materials.forEach((mat) => {
+          materialMap[mat.materialCode] = mat;
+        });
+        setMaterialDetailsMap(materialMap);
+      } catch (error) {
+        message.error("Error fetching material master data.");
+        console.error("Material fetch error:", error);
+      }
+    };
+
+    fetchMaterials();
+  }, []);
+
+  const handleMaterialSelect = (index, materialCode) => {
+    const materialData = materialDetailsMap[materialCode] || {};
+    const lineItems = form.getFieldValue("lineItems") || [];
+
+    if (lineItems[index]) {
+      lineItems[index] = {
+        ...lineItems[index],
+        materialCode,
+        materialDescription: materialData.description || "",
+        materialCategory: materialData.category || "",
+        materialSubcategory: materialData.subCategory || "",
+        uom: materialData.uom || "",
+      };
+
+      form.setFieldsValue({ lineItems });
+    }
+  };
+
   // Calculate total price dynamically
   const updateTotalPrice = (name) => {
     const values = form.getFieldValue(["lineItems", name]);
@@ -223,14 +311,25 @@ const toBase64 = file => new Promise((resolve, reject) => {
                   style={{
                     border: "1px solid #ccc",
                     padding: "20px",
-                    marginBottom: "5px",
-                    backgroundColor: "#f9f9f9",
+                    paddingBottom: "5px",
+                    marginBottom: "20px",
+                    position: "relative",
                   }}
                 >
+                  <DeleteOutlined
+                    onClick={() => remove(name)}
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      fontSize: "18px",
+                      cursor: "pointer",
+                    }}
+                  />
                   <Space
                     style={{
                       display: "flex",
-                      marginBottom: 20,
+                      marginBottom: "10px",
                       flexWrap: "wrap",
                     }}
                     align="start"
@@ -238,17 +337,27 @@ const toBase64 = file => new Promise((resolve, reject) => {
                     <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
-                          {...restField}
                           name={[name, "materialCode"]}
                           label="Material Code"
                           rules={[
                             {
                               required: true,
-                              message: "Please enter material code",
+                              message: "Please select a material code!",
                             },
                           ]}
                         >
-                          <Input placeholder="Enter Material Code" />
+                          <Select
+                            placeholder="Select Material Code"
+                            onChange={(value) =>
+                              handleMaterialSelect(name, value)
+                            }
+                          >
+                            {materialList.map((code) => (
+                              <Option key={code} value={code}>
+                                {code}
+                              </Option>
+                            ))}
+                          </Select>
                         </Form.Item>
                       </Col>
 
@@ -364,17 +473,17 @@ const toBase64 = file => new Promise((resolve, reject) => {
         </div>
 
         <div className="form-section">
-        <Form.Item
-        name="uploadCopyOfInvoice"
-        label="Upload copy of Invoice"
-        rules={[{ required: true }]}
-        valuePropName="fileList"
-        getValueFromEvent={normFile}
-        >
+          <Form.Item
+            name="uploadCopyOfInvoice"
+            label="Upload copy of Invoice"
+            rules={[{ required: true }]}
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
             <Upload beforeUpload={() => false} maxCount={1}>
-                <Button icon={<UploadOutlined />}>Upload Invoice Copy</Button>
+              <Button icon={<UploadOutlined />}>Upload Invoice Copy</Button>
             </Upload>
-        </Form.Item>
+          </Form.Item>
           {/* <Form.Item
                       label="Upload Prior Approvals"
                       name="uploadingPriorApprovals"
@@ -398,12 +507,18 @@ const toBase64 = file => new Promise((resolve, reject) => {
         </div>
 
         <Form.Item
-          name="projectDetail"
-          label="Project Detail"
+          name="projectName"
+          label="Project Name"
           style={{ width: "32%" }}
           rules={[{ required: true, message: "Please enter project detail" }]}
         >
-          <Input.TextArea placeholder="Enter Project Detail" />
+          <Select placeholder="Select project" loading={loading} allowClear>
+            {projects.map((project) => (
+              <Option key={project.projectCode} value={project.projectCode}>
+                {project.projectNameDescription}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <div className="form-section">

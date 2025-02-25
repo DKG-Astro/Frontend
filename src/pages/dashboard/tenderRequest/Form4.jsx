@@ -19,6 +19,7 @@ import {
   } from "@ant-design/icons";
   import React, { useEffect, useState } from "react";
   import dayjs from "dayjs";
+import { useSelector } from "react-redux";
   
   const Form4 = () => {
     const [form] = Form.useForm();
@@ -31,6 +32,9 @@ import {
     // For Tender Search (separate functionality)
     const [searchTenderId, setSearchTenderId] = useState("");
     const [tenderDetails, setTenderDetails] = useState(null);
+
+    const auth = useSelector((state) => state.auth);
+    const actionPerformer = auth.userId;
   
     const getFileList = (fileName) =>
       fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
@@ -270,8 +274,8 @@ const handleSubmit = async () => {
         singleAndMultipleVendors: values.singleAndMultipleVendors?.trim() || null,
         preBidDisscussions: values.preBidDisscussions?.trim() || null,
         totalTenderValue: values.totalTenderValue ? parseFloat(values.totalTenderValue) : 0,
-        updatedBy: "uday",
-        createdBy: 16,
+        updatedBy: null,
+        createdBy: actionPerformer,
         indentIds: Array.isArray(values.indentId) ? values.indentId : [], // Corrected line
         materialDetails: values.lineItems?.map(item => ({
           materialCode: item.materialCode,
@@ -576,8 +580,8 @@ const handleSubmit = async () => {
               rules={[{ required: true }]}
             >
               <Select>
-                <Option value="Single Bid">Single Bid</Option>
-                <Option value="Two Bid">Two Bid</Option>
+                <Option value="Single">Single</Option>
+                <Option value="Two">Two</Option>
               </Select>
             </Form.Item>
             <Form.Item
