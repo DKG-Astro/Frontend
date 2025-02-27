@@ -21,9 +21,16 @@ import {
   SendOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-// import DKG_FormContainer from "../../../components/DKG_FormContainer";
+// import DKG_FormContainerzz from "../../../components/DKG_FormContainer";
 // import React from "react";
 import { useReactToPrint } from "react-to-print";
+import FormContainer from "../../../components/DKG_FormContainer";
+import FormBody from "../../../components/DKG_FormBody";
+import FormInputItem from "../../../components/DKG_FormInputItem";
+import InputDatePickerComb from "../../../components/DKG_InputDatepickerComb";
+import CustomDatePicker from "../../../components/DKG_CustomTimePicker";
+import Heading from "../../../components/DKG_Heading";
+import DKG_FormNumberInputItem from "../../../components/DKG_FormInputNumberItem";
 const { Option } = Select;
 
 const Form11 = () => {
@@ -48,37 +55,35 @@ const handlePrint = useReactToPrint({
   
 
   return (
-    <div className="form-container" ref={formRef}>
-        <div id="printable-form">
-            <Form
+    <FormContainer ref={formRef} >
+            <FormBody
                 form={form}
                 layout="vertical"
                 onFinish={onFinish}
                 initialValues={{ UOM: "KG" }}
                 >
-                <h2>Good Provisional Reciept Note</h2>
+                <Heading title="Goods Purchase Reciept Note" /> 
                 <h6>General Details</h6>
                 <div className="form-section">
-                <Form.Item label="GPRN No." name="GPRN" rules={[{ required: true }]}>
-                    <Input readOnly placeholder="Auto-generated" />
-                </Form.Item>
+                <FormInputItem label="GPRN No." name="GPRN" readOnly placeholder="Auto-generated" />
 
-                <Form.Item label="PO No." name="PO" rules={[{ required: true }]}>
-                    <Input placeholder="Enter PO Number" />
-                </Form.Item>
+                <FormInputItem label="PO No." name="PO" placeholder="Enter PO Number" />
+
                 <Form.Item label="Date" name="date" rules={[{ required: true }]}>
                     <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
+                {/* <CustomDatePicker label="Date" name="date" required /> */}
                 </div>
 
                 <div className="form-section">
-                <Form.Item
+                {/* <Form.Item
                     label="Delivery Challan/Invoice No."
                     name="invoiceNo"
                     rules={[{ required: true }]}
                 >
                     <Input placeholder="Enter Invoice/Challan No." />
-                </Form.Item>
+                </Form.Item> */}
+                <FormInputItem label="Delivery Challan/Invoice No." name="invoiceNo" placeholder={"Enter Invoice no."} required />
 
                 <Form.Item
                     label="Delivery Challan/Invoice Date"
@@ -88,38 +93,42 @@ const handlePrint = useReactToPrint({
                     <DatePicker style={{ width: "100%" }} />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                     label="Vendor ID"
                     name="vendorID"
                     rules={[{ required: true }]}
                 >
                     <Input placeholder="Enter Vendor ID" />
-                </Form.Item>
+                </Form.Item> */}
+                <FormInputItem label="Vendor ID" name="vendorID" placeholder="Enter Vendor ID" required />
                 </div>
 
                 <div className="form-section">
-                <Form.Item
+                {/* <Form.Item
                     label="Vendor Name"
                     name="vendorName"
                     rules={[{ required: true }]}
                 >
                     <Input placeholder="Enter Vendor Name" />
-                </Form.Item>
+                </Form.Item> */}
+                <FormInputItem label="Vendor Name" name="vendorName" placeholder="Enter Vendor Name" required />
 
-                <Form.Item
+                {/* <Form.Item
                     label="Vendor Email ID"
                     name="vendorEmail"
                     rules={[{ type: "email" }]}
                 >
                     <Input placeholder="Enter Vendor Email" />
-                </Form.Item>
+                </Form.Item> */}
+                <FormInputItem label="Vendor Email ID" name="vendorEmail" placeholder="Enter Vendor Email" />
 
-                <Form.Item label="Vendor Contact No." name="vendorContact">
+                {/* <Form.Item label="Vendor Contact No." name="vendorContact">
                     <InputNumber
                     style={{ width: "100%" }}
                     placeholder="Enter Contact Number"
                     />
-                </Form.Item>
+                </Form.Item> */}
+                <DKG_FormNumberInputItem label="Vendor Contact No." name="vendorContact" placeholder={"Enter Contact Number"}/>
                 </div>
                 <div className="form-section">
                 <Form.Item
@@ -384,9 +393,8 @@ const handlePrint = useReactToPrint({
                     </Button>
                 </div>
                 </Form.Item>
-            </Form>
-        </div>
-    </div>
+            </FormBody>
+    </FormContainer>
   );
 };
 

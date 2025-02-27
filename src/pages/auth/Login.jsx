@@ -62,7 +62,7 @@ const Login = () => {
               onChange={handleFormValueChange} 
               required 
             />
-            <div className='login-submit-btn'>
+            <div className='custom-btn'>
               <Btn htmlType="submit" text="Submit"/>
             </div>
           </FormBody>
