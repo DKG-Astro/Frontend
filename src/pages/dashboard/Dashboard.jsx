@@ -33,6 +33,8 @@ import Form7a from './serviceOrder/Form7a';
 import Form7b from './contingencyPurchase/Form7b';
 import Queue from './queue/Queue';
 import MainDashboard from './newDashboard/MainDashboard';
+import NewCalibrationForm from './duty/calibration/newCalibration/NewCalibrationForm';
+import Form4a from './tenderRequest/Form4a';
 // import Form21 from './lineItems/Form21';
 
 // const { Search } = Input;
@@ -113,7 +115,7 @@ const Dashboard = () => {
         case 6:
           return <Form4 />
         case 7:
-          return <Form5 />
+          return <Form4a />
         case 8:
           return <Form6 />
         case 9:

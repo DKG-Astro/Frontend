@@ -13,6 +13,7 @@ import {
   message,
   Spin,
   Modal,
+  Select,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -34,6 +35,11 @@ const QueueTable = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [previousRoles, setPreviousRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [loadingPreviousRoles, setLoadingPreviousRoles] = useState(false);
+  const [searchRequestId, setSearchRequestId] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   useEffect(() => {
@@ -55,6 +61,7 @@ const QueueTable = () => {
     };
     fetchCurrentUser();
   }, []);
+
 
   // --- 3. Fetch queue data based on the logged-in user's role ---
   const fetchData = async (roleName) => {
@@ -107,6 +114,21 @@ const QueueTable = () => {
     } catch (error) {
       console.error("Error fetching workflowTransitionId:", error);
       return null;
+    }
+  };
+
+  const fetchPreviousRoles = async (workflowId, requestId) => {
+    setLoadingPreviousRoles(true);
+    try {
+      const response = await axios.get(
+        `http://103.181.158.220:8081/astro-service/allPreviousWorkflowRole?workflowId=${encodeURIComponent(workflowId)}&requestId=${encodeURIComponent(requestId)}`
+      );
+      setPreviousRoles(response.data.responseData || []);
+    } catch (error) {
+      message.error("Failed to fetch previous roles.");
+      console.error("Fetch previous roles error:", error);
+    } finally {
+      setLoadingPreviousRoles(false);
     }
   };
 
@@ -218,15 +240,51 @@ const QueueTable = () => {
     }
   };
 
-  const handleRequestChangeSubmit = (record) => {
-    const updatedData = data.map((item) =>
-      item.key === record.key
-        ? { ...item, remarks: `Request Change: ${requestChangeComment}` }
-        : item
-    );
-    setData(updatedData);
-    setRequestChangeComment("");
-    message.success("Request change comments added.");
+  const handleRequestChangeSubmit = async (record) => {
+    if (!selectedRole) {
+      message.warning("Please select a role.");
+      return;
+    }
+    if (!requestChangeComment.trim()) {
+      message.warning("Please enter request change comments.");
+      return;
+    }
+    if (!currentUserId) {
+      message.error("User details not loaded yet.");
+      return;
+    }
+
+    try {
+      const workflowTransitionId = await fetchWorkflowTransitionId(record.requestId);
+      if (!workflowTransitionId) {
+        message.error("Workflow transition ID not found for this request.");
+        return;
+      }
+
+      const payload = {
+        action: "Request Change",
+        actionBy: actionPerformer,
+        assignmentRole: selectedRole,
+        remarks: requestChangeComment,
+        requestId: record.requestId,
+        workflowTransitionId,
+      };
+
+      await axios.post(
+        "http://103.181.158.220:8081/astro-service/performTransitionAction",
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      message.success("Request change submitted successfully.");
+      setData((prevData) => prevData.filter((item) => item.key !== record.key));
+      setRequestChangeComment("");
+      setSelectedRole(null);
+      setPreviousRoles([]);
+    } catch (error) {
+      message.error("Failed to submit request change.");
+      console.error("Request change error:", error);
+    }
   };
 
   // --- Fetch details based on workflowId ---
@@ -354,17 +412,36 @@ const QueueTable = () => {
             </Popover>
             <Popover
               content={
-                <div style={{ padding: 12 }}>
+                <div style={{ padding: 12, width: 300 }}>
+                  <Select
+                    placeholder={loadingPreviousRoles ? "Loading roles..." : "Select a role"}
+                    value={selectedRole}
+                    onChange={setSelectedRole}
+                    style={{ width: '100%', marginBottom: 8 }}
+                    loading={loadingPreviousRoles}
+                    disabled={loadingPreviousRoles || previousRoles.length === 0}
+                  >
+                    {previousRoles.map((role) => (
+                      <Select.Option key={role} value={role}>
+                        {role}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  {previousRoles.length === 0 && !loadingPreviousRoles && (
+                    <Text type="secondary">No previous roles available.</Text>
+                  )}
                   <Input.TextArea
                     placeholder="Request Change Comments"
                     rows={3}
                     value={requestChangeComment}
                     onChange={(e) => setRequestChangeComment(e.target.value)}
+                    style={{ marginTop: 8 }}
                   />
                   <Button
                     type="primary"
                     onClick={() => handleRequestChangeSubmit(record)}
                     style={{ marginTop: 8 }}
+                    disabled={!selectedRole || !requestChangeComment.trim() || loadingPreviousRoles}
                   >
                     Submit
                   </Button>
@@ -372,6 +449,17 @@ const QueueTable = () => {
               }
               title="Request Change"
               trigger="click"
+              onVisibleChange={(visible) => {
+                if (visible) {
+                  fetchPreviousRoles(record.workflowId, record.requestId);
+                } else {
+                  // Reset when popover closes
+                  setPreviousRoles([]);
+                  setSelectedRole(null);
+                  setRequestChangeComment("");
+                  setLoadingPreviousRoles(false);
+                }
+              }}
             >
               <Button type="link">Request Change</Button>
             </Popover>
@@ -381,47 +469,42 @@ const QueueTable = () => {
     },
   ];
 
+  
   // --- Filter Component remains unchanged ---
-  const FilterComponent = ({ onFilter }) => {
-    const [form] = Form.useForm();
-    const handleReset = () => {
-      form.resetFields();
-      onFilter({});
-    };
-    return (
-      <Form form={form} onFinish={onFilter}>
-        <Row gutter={16} align="middle">
-          <Col span={6}>
-            <Form.Item name="requestId" style={{ marginBottom: 10 }}>
-              <Input placeholder="Request ID" />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item name="workflowId" style={{ marginBottom: 10 }}>
-              <Input placeholder="Workflow ID" />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item name="workflowName" style={{ marginBottom: 10 }}>
-              <Input placeholder="Workflow Name" />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Space style={{ marginBottom: 10 }}>
-              <Button
-                type="primary"
-                icon={<SearchOutlined />}
-                htmlType="submit"
-              >
-                Search
-              </Button>
-              <Button onClick={handleReset}>Reset</Button>
-            </Space>
-          </Col>
-        </Row>
-      </Form>
-    );
-  };
+  const FilterComponent = ({ onSearch }) => (
+      <div style={{ marginBottom: 16 }}>
+      <Space>
+        <Input
+          placeholder="Search by Request ID"
+          prefix={<SearchOutlined />}
+          value={searchRequestId}
+          onChange={(e) => setSearchRequestId(e.target.value)}
+          style={{ width: 300 }}
+          onPressEnter={() => onSearch(searchRequestId)}
+          allowClear
+          />
+        <Button
+          type="primary"
+          icon={<SearchOutlined />}
+          onClick={() => onSearch(searchRequestId)}
+          >
+          Search
+        </Button>
+        <Button
+          onClick={() => {
+              setSearchRequestId("");
+              setSearchTerm("");
+            }}
+            >
+          Reset
+        </Button>
+      </Space>
+    </div>
+  );
+  
+  const filteredData = data.filter(item =>
+    item.requestId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div style={{ padding: 24 }}>
@@ -438,15 +521,30 @@ const QueueTable = () => {
         </Col>
       </Row>
 
-      <FilterComponent onFilter={(filters) => console.log(filters)} />
+      <FilterComponent onSearch={setSearchTerm} />
 
       {loading ? (
         <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
       ) : error ? (
         <Text type="danger">{error}</Text>
       ) : (
-        <Table columns={columns} dataSource={data} />
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="key"
+        />
       )}
+      {/* {loading ? (
+        <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
+      ) : error ? (
+        <Text type="danger">{error}</Text>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={filteredData}
+          rowKey="key"
+        />
+      )} */}
 
       {/* Details Modal */}
       <Modal

@@ -22,7 +22,7 @@ import {
   UsergroupAddOutlined,
   DashboardOutlined
 } from "@ant-design/icons";
-import { MdOutlineAddBox } from "react-icons/md";
+import { MdOutlineAddBox, MdOutlineSettings } from "react-icons/md";
 import { BiTransferAlt } from "react-icons/bi";
 import { TiFolderDelete } from "react-icons/ti";
 import { CiPassport1 } from "react-icons/ci";
@@ -92,7 +92,7 @@ const items = [
                 {
                     key: "5",
                     icon: <FileTextOutlined />,
-                    label: "Tender Evaluation Input",
+                    label: "Tender Evaluation",
                     activeTab: 7,
                     path: "/procurement/tender/evaluation",
                 },

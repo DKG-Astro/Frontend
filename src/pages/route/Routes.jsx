@@ -77,6 +77,7 @@ import Form6 from "../dashboard/communityNomination/Form6";
 import Form9 from "../dashboard/performanceWarranty/Form9";
 import Form10 from "../dashboard/deliveryTracking/Form10";
 import QueueTable from "../dashboard/queue/QueueTable";
+import Form4a from "../dashboard/tenderRequest/Form4a";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -97,7 +98,7 @@ const RoutesComponent = () => {
                 </Route>
                 <Route path="tender">
                     <Route path="request" element={<Form4 />} />
-                    <Route path="evaluation" element={<Form5 />} />
+                    <Route path="evaluation" element={<Form4a />} />
                 </Route>
                 <Route path="purchaseOrder" element={<Form7 />} />
                 <Route path="serviceOrder" element={<Form7a />} />
