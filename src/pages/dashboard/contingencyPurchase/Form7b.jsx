@@ -12,7 +12,7 @@ import {
   Upload,
 } from "antd";
 import {
-    DeleteOutlined,
+  DeleteOutlined,
   MinusCircleOutlined,
   PlusOutlined,
   SearchOutlined,
@@ -21,6 +21,7 @@ import {
 import { Option } from "antd/es/mentions";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
+import { values } from "lodash";
 
 const Form7b = () => {
   const [form] = Form.useForm();
@@ -29,9 +30,39 @@ const Form7b = () => {
   const [projects, setProjects] = useState([]);
   const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
+  const [vendors, setVendors] = useState([]);
+  const [vendorLoading, setVendorLoading] = useState(false);
 
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      setVendorLoading(true);
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/vendor-master"
+        );
+        const data = await response.json();
+
+        if (
+          data.responseStatus.statusCode === 0 &&
+          Array.isArray(data.responseData)
+        ) {
+          setVendors(data.responseData);
+        } else {
+          message.error("Failed to fetch vendors");
+        }
+      } catch (error) {
+        console.error("Error fetching vendors:", error);
+        message.error("Failed to fetch vendor data");
+      } finally {
+        setVendorLoading(false);
+      }
+    };
+
+    fetchVendors();
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -126,6 +157,15 @@ const Form7b = () => {
   const submitContingencyData = async (values) => {
     setLoading(true);
     try {
+      const hasInvalidTotal = values.lineItems?.some((item) => {
+        const total = item.quantity * item.unitRate;
+        return total > 50000;
+      });
+
+      if (hasInvalidTotal) {
+        message.error("One or more items exceed the ₹50,000 limit");
+        return;
+      }
       const lineItem = values.lineItems[0];
 
       // 1. Create FormData instance
@@ -240,6 +280,24 @@ const Form7b = () => {
     const values = form.getFieldValue(["lineItems", name]);
     if (values?.quantity && values?.unitRate) {
       const total = values.quantity * values.unitRate;
+
+      // Set validation error if total exceeds 50,000
+      if (total > 50000) {
+        form.setFields([
+          {
+            name: ["lineItems", name, "totalPrice"],
+            errors: ["Total price cannot exceed ₹50,000"],
+          },
+        ]);
+      } else {
+        form.setFields([
+          {
+            name: ["lineItems", name, "totalPrice"],
+            errors: [],
+          },
+        ]);
+      }
+
       form.setFieldValue(["lineItems", name, "totalPrice"], total);
     }
   };
@@ -277,9 +335,20 @@ const Form7b = () => {
             name="vendorName"
             rules={[{ required: true, message: "Please enter vendor name" }]}
           >
-            <Select placeholder="Select Vendor ID">
-              <Option value="ABC">ABC</Option>
-              <Option value="ABC V">ABC V</Option>
+            <Select
+              placeholder="Select Vendor"
+              loading={vendorLoading}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {vendors.map((vendor) => (
+                <Option key={vendor.vendorId} value={vendor.vendorName}>
+                  {vendor.vendorName}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
 
@@ -423,6 +492,14 @@ const Form7b = () => {
                           {...restField}
                           name={[name, "totalPrice"]}
                           label="Total Price"
+                          validateStatus={
+                            values?.totalPrice > 50000 ? "error" : ""
+                          }
+                          help={
+                            values?.totalPrice > 50000
+                              ? "Exceeds ₹50,000 limit"
+                              : ""
+                          }
                         >
                           <Input disabled />
                         </Form.Item>
@@ -514,7 +591,10 @@ const Form7b = () => {
         >
           <Select placeholder="Select project" loading={loading} allowClear>
             {projects.map((project) => (
-              <Option key={project.projectCode} value={project.projectCode}>
+              <Option
+                key={project.projectNameDescription}
+                value={project.projectNameDescription}
+              >
                 {project.projectNameDescription}
               </Option>
             ))}

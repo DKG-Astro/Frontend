@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from "react";
-import {Form,Input,Select,Button,Upload,DatePicker,Checkbox,Space,Row,Col,message,} from "antd";
-import {MinusCircleOutlined,PlusOutlined,UploadOutlined,SearchOutlined,} from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Select,
+  Button,
+  Upload,
+  DatePicker,
+  Checkbox,
+  Space,
+  Row,
+  Col,
+  message,
+} from "antd";
+import {
+  MinusCircleOutlined,
+  PlusOutlined,
+  UploadOutlined,
+  SearchOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 // import { Option } from "antd/es/mentions";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
@@ -168,6 +186,16 @@ const Form1 = () => {
         return;
       }
 
+      const categories = materialDetails.map((item) => item.materialCategory);
+      const firstCategory = categories[0];
+      const allSame = categories.every((cat) => cat === firstCategory);
+
+      if (!allSame) {
+        message.error("All materials must belong to the same category");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         indentorName: values.indentorName,
         indentId: values.indentId,
@@ -185,9 +213,10 @@ const Form1 = () => {
 
         projectName: values.projectName || null,
         isPreBidMeetingRequired: !!values.preBidMeetingRequired,
-        preBidMeetingDate: values.preBidMeetingRequired && values.preBidMeetingDetails
-        ? dayjs(values.preBidMeetingDetails[0]).format('DD/MM/YYYY')
-        : null,  
+        preBidMeetingDate:
+          values.preBidMeetingRequired && values.preBidMeetingDetails
+            ? dayjs(values.preBidMeetingDetails[0]).format("DD/MM/YYYY")
+            : null,
 
         preBidMeetingVenue: values.preBidMeetingLocation || "",
 
@@ -328,17 +357,59 @@ const Form1 = () => {
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
 
-    if (lineItems[index]) {
-      lineItems[index] = {
-        ...lineItems[index],
-        materialCode,
-        materialDescription: materialData.description || "",
-        materialCategory: materialData.category || "",
-        materialSubcategory: materialData.subCategory || "",
-        uom: materialData.uom || "",
+    //     if (lineItems[index]) {
+    //       lineItems[index] = {
+    //         ...lineItems[index],
+    //         materialCode,
+    //         materialDescription: materialData.description || "",
+    //         materialCategory: materialData.category || "",
+    //         materialSubcategory: materialData.subCategory || "",
+    //         uom: materialData.uom || "",
+    //       };
+
+    //       form.setFieldsValue({ lineItems });
+    //     }
+    const updatedItems = [...lineItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      materialCode,
+      materialDescription: materialData.description || "",
+      materialCategory: materialData.category || "",
+      materialSubcategory: materialData.subCategory || "",
+      uom: materialData.uom || "",
+    };
+
+    form.setFieldsValue({ lineItems: updatedItems });
+
+    const categories = updatedItems
+      .map((item) => item?.materialCategory)
+      .filter((cat) => cat);
+
+    if (categories.length === 0) return; // No categories selected yet
+
+    const firstCategory = categories[0];
+    const allSame = categories.every((cat) => cat === firstCategory);
+
+    if (!allSame) {
+      message.error("All materials must be of the same category.");
+      updatedItems[index] = {
+        ...updatedItems[index],
+        materialCode: undefined,
+        materialCategory: undefined,
+        materialDescription: undefined,
+        materialSubcategory: undefined,
+        uom: undefined,
       };
 
-      form.setFieldsValue({ lineItems });
+      form.setFieldsValue({ lineItems: updatedItems });
+
+      // Show field error
+      form.setFields([
+        {
+          name: ["lineItems", index, "materialCode"],
+          errors: ["Category must match first material"],
+        },
+      ]);
     }
   };
 
@@ -412,7 +483,7 @@ const Form1 = () => {
             name="consigneeLocation"
             // rules={[{ required: true, message: "Indentor name is required" }]}
           >
-            <TextArea rows={1} placeholder="Banglore" />
+            <TextArea rows={1} defaultValue="Banglore" />
           </Form.Item>
 
           <Form.Item
@@ -440,9 +511,21 @@ const Form1 = () => {
                     style={{
                       border: "1px solid #ccc",
                       padding: "20px",
+                      paddingBottom: "5px",
                       marginBottom: "20px",
+                      position: "relative"
                     }}
                   >
+                    <DeleteOutlined
+                    onClick={() => remove(name)}
+                    style={{
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      fontSize: "18px",
+                      cursor: "pointer",
+                    }}
+                  />
                     <Space
                       style={{
                         display: "flex",
@@ -587,11 +670,14 @@ const Form1 = () => {
                             ]}
                           >
                             <Select placeholder="Select Budget Code">
-                            {projects.map((project) => (
-                            <Option key={project.projectCode} value={project.projectCode}>
-                                {project.budgetType}
-                            </Option>
-                            ))}
+                              {projects.map((project) => (
+                                <Option
+                                  key={project.projectCode}
+                                  value={project.projectCode}
+                                >
+                                  {project.budgetType}
+                                </Option>
+                              ))}
                             </Select>
                           </Form.Item>
                         </Col>
@@ -649,7 +735,7 @@ const Form1 = () => {
                           </Form.Item>
                         </Col>
                       </Row>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
+                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                     </Space>
                   </div>
                 ))}
@@ -670,11 +756,14 @@ const Form1 = () => {
         <div className="form-section">
           <Form.Item name="projectName" label="Project Name">
             <Select placeholder="Select project" loading={loading} allowClear>
-                {projects.map((project) => (
-                  <Option key={project.projectCode} value={project.projectCode}>
-                    {project.projectNameDescription}
-                  </Option>
-                ))}
+              {projects.map((project) => (
+                <Option
+                  key={project.projectNameDescription}
+                  value={project.projectNameDescription}
+                >
+                  {project.projectNameDescription}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
           <Form.Item
@@ -703,14 +792,14 @@ const Form1 = () => {
               <Col span={12}>
                 <Form.Item
                   name="preBidMeetingDetails"
-                  label="Pre-bid Meeting Details"
+                  label="Meeting Details"
                 >
                   <DatePicker format="YYYY-MM-DD" />
                 </Form.Item>
               </Col>
               <Col span={12}>
                 <Form.Item
-                  label="Pre Bid Meeting Location"
+                  label="Meeting Location"
                   name="preBidMeetingLocation"
                   rules={[
                     {
@@ -733,8 +822,8 @@ const Form1 = () => {
         </Form.Item>
         <div className="form-section">
           {rateContractIndent && (
-            <Row gutter={16}>
-              <Col span={12}>
+            <Row gutter={24}>
+              <Col span={8}>
                 <Form.Item
                   name="estimatedRate"
                   label="Estimated Rate"
@@ -748,7 +837,7 @@ const Form1 = () => {
                   <Input type="number" placeholder="Enter Estimated Rate" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item
                   name="periodOfRateContract"
                   label="Period of Rate Contract"
@@ -762,7 +851,7 @@ const Form1 = () => {
                   <Input type="number" />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <Form.Item
                   name="singleOrMultipleJob"
                   label="Single or Multiple Job"

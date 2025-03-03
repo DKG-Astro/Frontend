@@ -505,11 +505,11 @@ const Form7a = () => {
                           </Form.Item>
                         </Col>
                       </Row>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
+                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                     </Space>
                   </div>
                 ))}
-                <Form.Item>
+                {/* <Form.Item>
                   <Button
                     type="dashed"
                     onClick={() => add()}
@@ -518,7 +518,7 @@ const Form7a = () => {
                   >
                     Add Service Item
                   </Button>
-                </Form.Item>
+                </Form.Item> */}
               </>
             )}
           </Form.List>

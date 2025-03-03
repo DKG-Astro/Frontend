@@ -36,6 +36,8 @@ const Form4 = () => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
 
+  const [lastValidIndentIds, setLastValidIndentIds] = useState([]);
+
   const getFileList = (fileName) =>
     fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
 
@@ -50,24 +52,36 @@ const Form4 = () => {
   };
 
   // ----------------------------
-  // Fetch Indent Data (Assuming JSON response)
+  // Fetch Approved Indents and Full Indent Details
   // ----------------------------
   useEffect(() => {
-    const fetchIndents = async () => {
+    const fetchApprovedIndents = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
+        // Fetch approved indent IDs from the new API
+        const responseApproved = await fetch(
+          "http://103.181.158.220:8081/astro-service/approved-indents"
+        );
+        const approvedIndentIds = await responseApproved.json();
+        // approvedIndentIds looks like: ["103", "IND2010", "IND1500", ...]
+
+        // Fetch full indent details from the former API
+        const responseIndents = await fetch(
           "http://103.181.158.220:8081/astro-service/api/indents"
         );
-        const data = await response.json();
+        const data = await responseIndents.json();
 
         if (
           data.responseStatus.statusCode === 0 &&
           Array.isArray(data.responseData)
         ) {
-          setIndentData(data.responseData);
+          // Filter indent details to only include those whose indentId is in the approved list.
+          const filteredIndents = data.responseData.filter((indent) =>
+            approvedIndentIds.includes(indent.indentId.toString())
+          );
+          setIndentData(filteredIndents);
         } else {
-          message.error("Failed to fetch indent data");
+          message.error("Failed to fetch indent details");
         }
       } catch (error) {
         console.error("Error fetching indents:", error);
@@ -77,7 +91,7 @@ const Form4 = () => {
       }
     };
 
-    fetchIndents();
+    fetchApprovedIndents();
   }, []);
 
   // ----------------------------
@@ -99,10 +113,32 @@ const Form4 = () => {
   // Indent selection handler: fetch and set line items from selected indent(s)
   // ----------------------------
   const handleIndentChange = (selectedIndentIds) => {
+    // Get projects for all selected indents
+    const selectedProjects = selectedIndentIds.map((id) => {
+      const indent = indentData.find(
+        (item) => item.indentId.toString() === id.toString()
+      );
+      return indent?.projectName; // Ensure your API returns projectName for indents
+    });
+
+    // Check if all projects are the same
+    const allSameProject = selectedProjects.every(
+      (project, _, arr) => project === arr[0] && project !== undefined
+    );
+
+    if (!allSameProject && selectedIndentIds.length > 0) {
+      message.error("All selected indents must belong to the same project");
+      // Revert to last valid selection
+      form.setFieldsValue({ indentId: lastValidIndentIds });
+      return;
+    }
+
+    // Update valid selection if projects match
+    setLastValidIndentIds(selectedIndentIds);
+
+    // Existing material handling code
     let newMaterials = [];
-  
     selectedIndentIds.forEach((indentId) => {
-      // Convert both IDs to string for comparison to handle type mismatches
       const indent = indentData.find(
         (item) => item.indentId.toString() === indentId.toString()
       );
@@ -110,19 +146,13 @@ const Form4 = () => {
         newMaterials = [...newMaterials, ...indent.materialDetails];
       }
     });
-  
-    // Remove duplicate materials based on materialCode
-    const uniqueMaterials = newMaterials.filter(
-      (item, index, self) =>
-        index === self.findIndex((t) => t.materialCode === item.materialCode)
-    );
-  
-    setSelectedIndentMaterials(uniqueMaterials);
+
+    setSelectedIndentMaterials(newMaterials);
     form.setFieldsValue({
-      lineItems: uniqueMaterials.map(formatMaterial),
+      lineItems: newMaterials.map(formatMaterial),
     });
   };
-  
+
   // ----------------------------
   // Price calculation for line items
   // ----------------------------
@@ -246,12 +276,29 @@ const Form4 = () => {
   // ----------------------------
   // Form Submission & Save Draft - Handling file uploads via FormData
   // ----------------------------
-  // ... (keep all previous imports and initial code the same)
-
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
+
+      if (values.indentId?.length > 0) {
+        const projects = values.indentId.map((id) => {
+          const indent = indentData.find(
+            (item) => item.indentId.toString() === id.toString()
+          );
+          return indent?.projectName;
+        });
+
+        const firstProject = projects[0];
+        const allSame = projects.every((project) => project === firstProject);
+
+        if (!allSame) {
+          message.error(
+            "Submission failed: Indents must belong to the same project"
+          );
+          return;
+        }
+      }
 
       // Format Dates as DD/MM/YYYY
       const formatDate = (date) => (date ? date.format("DD/MM/YYYY") : null);
@@ -282,7 +329,7 @@ const Form4 = () => {
           : 0,
         updatedBy: null,
         createdBy: actionPerformer,
-        indentIds: Array.isArray(values.indentId) ? values.indentId : [], // Corrected line
+        indentIds: Array.isArray(values.indentId) ? values.indentId : [],
         materialDetails:
           values.lineItems?.map((item) => ({
             materialCode: item.materialCode,
@@ -323,7 +370,7 @@ const Form4 = () => {
         "http://103.181.158.220:8081/astro-service/api/tender-requests",
         {
           method: "POST",
-          body: formData, // Let browser set Content-Type to multipart/form-data
+          body: formData,
         }
       );
 
@@ -539,10 +586,10 @@ const Form4 = () => {
                           </Form.Item>
                         </Col>
                       </Row>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
+                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                     </div>
                   ))}
-                  <Form.Item>
+                  {/* <Form.Item>
                     <Button
                       type="dashed"
                       onClick={() => add()}
@@ -551,7 +598,7 @@ const Form4 = () => {
                     >
                       Add Item
                     </Button>
-                  </Form.Item>
+                  </Form.Item> */}
                 </>
               )}
             </Form.List>
@@ -606,7 +653,7 @@ const Form4 = () => {
           >
             <Select>
               <Option value="Single">Single</Option>
-              <Option value="Two">Two</Option>
+              <Option value="Two">Double</Option>
             </Select>
           </Form.Item>
           <Form.Item

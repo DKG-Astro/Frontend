@@ -226,6 +226,13 @@ const items = [
         },
     ]
   },
+  {
+    key: "5",
+    icon: <MdOutlineSettings />,
+    label: "Material",
+    activeTab: 25,
+    path: "/materialForm",
+  },
 ];
 
 const SideNav = ({ collapsed, toggleCollapse }) => {
