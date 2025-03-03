@@ -322,7 +322,7 @@ const QueueTable = () => {
         // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
         // remarks: rejectComment, // Use user's reject comments
         requestId: record.requestId,
-        workflowTransitionId
+        workflowTransitionId,
       };
 
       await axios.post(
@@ -571,6 +571,11 @@ const QueueTable = () => {
   ];
 
   const column1 = [
+    {
+      title: "Tender ID",
+      dataIndex: "tenderId",
+      key: "tenderId",
+    },
     {
       title: "Bid Type",
       dataIndex: "bidType",
