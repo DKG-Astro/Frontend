@@ -48,6 +48,13 @@ const items = [
     path: "/queue",
   },
   {
+    key: "6",
+    icon: <FileTextOutlined />,
+    label: "Reports",
+    // activeTab: 2,
+    path: "/reports",
+  },
+  {
     key: "3",
     label: "Procurement",
     items:[

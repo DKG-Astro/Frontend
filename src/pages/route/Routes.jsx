@@ -79,6 +79,12 @@ import Form10 from "../dashboard/deliveryTracking/Form10";
 import QueueTable from "../dashboard/queue/QueueTable";
 import Form4a from "../dashboard/tenderRequest/Form4a";
 import MaterialForm from "../dashboard/materialDetails/MaterialForm";
+import ReportsMain from "../reports/ReportsMain";
+import CpReport from "../reports/CpReport";
+import IndentReport from "../reports/IndentReport";
+import TechnoMom from "../reports/TechnoMom";
+import VendorContract from "../reports/VendorContractReport";
+import ProcurementActivityReport from "../reports/ProcurementActivityReport";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -217,8 +223,17 @@ const RoutesComponent = () => {
               <Route index element={<SmsDutyStartForm />} />
               <Route path="railId" element={<SmsHeatSummary />} />
             </Route> */}
-            <Route path="/railDetails/:railId" element={<RailDetails />} />
+            {/* <Route path="/railDetails/:railId" element={<RailDetails />} /> */}
+            <Route path="/reports">
+            <Route index element={<ReportsMain />} />
+            <Route path="contingencyPurchase" element={<CpReport />} />
+            <Route path="indent" element={<IndentReport />} />
+            <Route path="technoMom" element={<TechnoMom />} />
+            <Route path="vendorContract" element={<VendorContract />} />
+            <Route path="procurementActivity" element={<ProcurementActivityReport />} />   
+            </Route>
           </Route>
+
         </Route>
 
         <Route path="/login" element={<Login />} />
