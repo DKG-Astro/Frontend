@@ -322,7 +322,7 @@ const QueueTable = () => {
         // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
         // remarks: rejectComment, // Use user's reject comments
         requestId: record.requestId,
-        workflowTransitionId: currentTransition.workflowTransitionId,
+        workflowTransitionId
       };
 
       await axios.post(
