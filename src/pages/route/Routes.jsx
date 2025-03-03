@@ -78,6 +78,7 @@ import Form9 from "../dashboard/performanceWarranty/Form9";
 import Form10 from "../dashboard/deliveryTracking/Form10";
 import QueueTable from "../dashboard/queue/QueueTable";
 import Form4a from "../dashboard/tenderRequest/Form4a";
+import MaterialForm from "../dashboard/materialDetails/MaterialForm";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -90,6 +91,7 @@ const RoutesComponent = () => {
             {/* <Route path="/record/sms" element={<SmsRecord />} /> */}
 
             <Route path="/queue" element={<QueueTable/>}/>
+            <Route path="/materialForm" element={<MaterialForm />} />
 
             <Route path="/procurement">
                 <Route path="indent">

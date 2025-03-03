@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Table,
   Input,
@@ -14,12 +14,58 @@ import {
   Spin,
   Modal,
   Select,
+  Collapse,
+  Divider,
+  Empty,
+  Tabs,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  AuditOutlined,
+  BarsOutlined,
+  CalendarOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  InfoCircleOutlined,
+  ProfileOutlined,
+  ProjectOutlined,
+  SearchOutlined,
+  ShopOutlined,
+  ShoppingOutlined,
+  SolutionOutlined,
+  ToolOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import QueueHistory from "./QueueHistory";
+import TabPane from "antd/es/tabs/TabPane";
+// import { render } from "@testing-library/react";
 
 const { Text } = Typography;
+
+const FilterComponent = ({ onSearch, searchRequestId, onReset }) => (
+  <div style={{ marginBottom: 16 }}>
+    <Space>
+      <Input
+        placeholder="Search by Request ID"
+        prefix={<SearchOutlined />}
+        value={searchRequestId}
+        onChange={(e) => onSearch(e.target.value)}
+        style={{ width: 300 }}
+        onPressEnter={() => onSearch(searchRequestId)}
+        allowClear
+      />
+      <Button
+        type="primary"
+        icon={<SearchOutlined />}
+        onClick={() => onSearch(searchRequestId)}
+      >
+        Search
+      </Button>
+      <Button onClick={onReset}>Reset</Button>
+    </Space>
+  </div>
+);
 
 const QueueTable = () => {
   // Get the logged-in user's role details from Redux
@@ -30,7 +76,6 @@ const QueueTable = () => {
   const [error, setError] = useState(null);
   const [rejectComment, setRejectComment] = useState("");
   const [requestChangeComment, setRequestChangeComment] = useState("");
-  const [additionalInfoComment, setAdditionalInfoComment] = useState("");
   const [detailsData, setDetailsData] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -40,6 +85,9 @@ const QueueTable = () => {
   const [loadingPreviousRoles, setLoadingPreviousRoles] = useState(false);
   const [searchRequestId, setSearchRequestId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [queueData, setQueueData] = useState([]);
+  const [activeTab, setActiveTab] = useState("request");
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   useEffect(() => {
@@ -61,7 +109,6 @@ const QueueTable = () => {
     };
     fetchCurrentUser();
   }, []);
-
 
   // --- 3. Fetch queue data based on the logged-in user's role ---
   const fetchData = async (roleName) => {
@@ -121,7 +168,9 @@ const QueueTable = () => {
     setLoadingPreviousRoles(true);
     try {
       const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/allPreviousWorkflowRole?workflowId=${encodeURIComponent(workflowId)}&requestId=${encodeURIComponent(requestId)}`
+        `http://103.181.158.220:8081/astro-service/allPreviousWorkflowRole?workflowId=${encodeURIComponent(
+          workflowId
+        )}&requestId=${encodeURIComponent(requestId)}`
       );
       setPreviousRoles(response.data.responseData || []);
     } catch (error) {
@@ -255,19 +304,25 @@ const QueueTable = () => {
     }
 
     try {
-      const workflowTransitionId = await fetchWorkflowTransitionId(record.requestId);
+      const workflowTransitionId = await fetchWorkflowTransitionId(
+        record.requestId
+      );
       if (!workflowTransitionId) {
         message.error("Workflow transition ID not found for this request.");
         return;
       }
 
       const payload = {
-        action: "Request Change",
+        action: "Change requested",
         actionBy: actionPerformer,
         assignmentRole: selectedRole,
         remarks: requestChangeComment,
+        // requestId: record.requestId,
+        // workflowTransitionId,
+        // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
+        // remarks: rejectComment, // Use user's reject comments
         requestId: record.requestId,
-        workflowTransitionId,
+        workflowTransitionId: currentTransition.workflowTransitionId,
       };
 
       await axios.post(
@@ -325,6 +380,7 @@ const QueueTable = () => {
     try {
       const response = await axios.get(endpoint);
       setDetailsData(response.data.responseData);
+      setQueueData(response.data.responseData);
       setModalVisible(true);
     } catch (err) {
       message.error("Failed to fetch details.");
@@ -346,21 +402,56 @@ const QueueTable = () => {
         </Button>
       ),
     },
+    // {
+    //   title: "Workflow ID",
+    //   dataIndex: "workflowId",
+    //   key: "workflowId",
+    //   filters: [
+    //     { text: "1", value: "1" },
+    //     { text: "2", value: "2" },
+    //     { text: "3", value: "3" },
+    //   ],
+    //   onFilter: (value, record) => record.workflowId === value,
+    // },
     {
-      title: "Workflow ID",
-      dataIndex: "workflowId",
-      key: "workflowId",
-      filters: [
-        { text: "1", value: "1" },
-        { text: "2", value: "2" },
-        { text: "3", value: "3" },
-      ],
-      onFilter: (value, record) => record.workflowId === value,
+      title: "Indentor",
+      dataIndex: "indentor",
+      key: "indentor",
+      render: (_, record) => record.indentorName || "N/A",
     },
     {
-      title: "Workflow Name",
+      title: "Amount",
+      key: "amount",
+      render: (_, record) => `₹${record.totalPriceOfAllMaterials?.toFixed(2)}`, // Match modal's totalPriceOfAllMaterials
+      sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
+    },
+    {
+      title: "Project",
+      dataIndex: "projectName",
+      key: "project",
+      render: (text) => text || "N/A",
+    },
+    {
+      title: "Budget Name",
+      dataIndex: "budgetName",
+      key: "budgetName",
+      render: (text, record) => text || record.budgetName || "N/A",
+    },
+    {
+      title: "Indentor Title",
       dataIndex: "workflowName",
-      key: "workflowName",
+      key: "indentTitle",
+    },
+    {
+      title: "Mode of Procurement",
+      dataIndex: "modeOfProcurement",
+      key: "modeOfProcurement",
+    },
+    {
+      title: "Consignee",
+      dataIndex: "consignesLocation", // Match modal's consignesLocation
+      key: "consignee",
+      render: (text) => text || "N/A",
     },
     {
       title: "Status",
@@ -414,12 +505,18 @@ const QueueTable = () => {
               content={
                 <div style={{ padding: 12, width: 300 }}>
                   <Select
-                    placeholder={loadingPreviousRoles ? "Loading roles..." : "Select a role"}
+                    placeholder={
+                      loadingPreviousRoles
+                        ? "Loading roles..."
+                        : "Select a role"
+                    }
                     value={selectedRole}
                     onChange={setSelectedRole}
-                    style={{ width: '100%', marginBottom: 8 }}
+                    style={{ width: "100%", marginBottom: 8 }}
                     loading={loadingPreviousRoles}
-                    disabled={loadingPreviousRoles || previousRoles.length === 0}
+                    disabled={
+                      loadingPreviousRoles || previousRoles.length === 0
+                    }
                   >
                     {previousRoles.map((role) => (
                       <Select.Option key={role} value={role}>
@@ -441,7 +538,11 @@ const QueueTable = () => {
                     type="primary"
                     onClick={() => handleRequestChangeSubmit(record)}
                     style={{ marginTop: 8 }}
-                    disabled={!selectedRole || !requestChangeComment.trim() || loadingPreviousRoles}
+                    disabled={
+                      !selectedRole ||
+                      !requestChangeComment.trim() ||
+                      loadingPreviousRoles
+                    }
                   >
                     Submit
                   </Button>
@@ -469,42 +570,48 @@ const QueueTable = () => {
     },
   ];
 
-  
+  const column1 = [
+    {
+      title: "Bid Type",
+      dataIndex: "bidType",
+      key: "bidType",
+    },
+    {
+      title: "Last Date",
+      dataIndex: "lastDate",
+      key: "lastDate",
+    },
+    {
+      title: "Bid Opening Date",
+      dataIndex: "bidOpeningDate",
+      key: "bidOpeningDate",
+    },
+    {
+      title: "Bid Closing Date",
+      dataIndex: "bidClosingDate",
+      key: "bidClosingDate",
+    },
+    {
+      title: "Consigne Location",
+      dataIndex: "consignesLocation",
+      key: "consignesLocation",
+    },
+  ];
+
   // --- Filter Component remains unchanged ---
-  const FilterComponent = ({ onSearch }) => (
-      <div style={{ marginBottom: 16 }}>
-      <Space>
-        <Input
-          placeholder="Search by Request ID"
-          prefix={<SearchOutlined />}
-          value={searchRequestId}
-          onChange={(e) => setSearchRequestId(e.target.value)}
-          style={{ width: 300 }}
-          onPressEnter={() => onSearch(searchRequestId)}
-          allowClear
-          />
-        <Button
-          type="primary"
-          icon={<SearchOutlined />}
-          onClick={() => onSearch(searchRequestId)}
-          >
-          Search
-        </Button>
-        <Button
-          onClick={() => {
-              setSearchRequestId("");
-              setSearchTerm("");
-            }}
-            >
-          Reset
-        </Button>
-      </Space>
-    </div>
-  );
-  
-  const filteredData = data.filter(item =>
+
+  const filteredData = data.filter((item) =>
     item.requestId.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleSearch = useCallback((value) => {
+    setSearchTerm(value);
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setSearchRequestId("");
+    setSearchTerm("");
+  }, []);
 
   return (
     <div style={{ padding: 24 }}>
@@ -521,586 +628,690 @@ const QueueTable = () => {
         </Col>
       </Row>
 
-      <FilterComponent onSearch={setSearchTerm} />
+      <FilterComponent
+        onSearch={handleSearch}
+        searchRequestId={searchRequestId}
+        onReset={handleReset}
+      />
 
-      {loading ? (
-        <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
-      ) : error ? (
-        <Text type="danger">{error}</Text>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          rowKey="key"
-        />
-      )}
-      {/* {loading ? (
-        <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
-      ) : error ? (
-        <Text type="danger">{error}</Text>
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          rowKey="key"
-        />
-      )} */}
-
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane tab="Request" key="request">
+          {loading ? (
+            <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
+          ) : error ? (
+            <Text type="danger">{error}</Text>
+          ) : (
+            <Table columns={columns} dataSource={filteredData} rowKey="key" />
+          )}
+        </TabPane>
+        <TabPane tab="Action" key="action">
+          <Table columns={column1} rowKey="key" />
+        </TabPane>
+      </Tabs>
       {/* Details Modal */}
       <Modal
-        title={`${selectedRecord?.workflowName || "Details"} - ${
-          selectedRecord?.requestId || "N/A"
-        }`}
+        title={
+          <div className="flex items-center justify-between">
+            <span>
+              {`${selectedRecord?.workflowName || "Details"} - ${
+                selectedRecord?.requestId || "N/A"
+              }`}
+            </span>
+            <Button
+              type="link"
+              icon={<HistoryOutlined />}
+              onClick={() => setHistoryVisible(true)}
+            >
+              View History
+            </Button>
+          </div>
+        }
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
         width={1000}
+        className="custom-modal"
+        bodyStyle={{ padding: "24px 24px 8px" }}
       >
         {detailsData ? (
           <>
+            <style>{`
+        .custom-modal .ant-modal-title { font-size: 18px; font-weight: 600; }
+        .detail-section { margin-bottom: 24px; padding: 16px; border: 1px solid #f0f0f0; border-radius: 8px; }
+        .detail-item { margin-bottom: 12px; font-size: 14px; }
+        .detail-item strong { display: inline-block; width: 220px; color: rgba(0, 0, 0, 0.85); }
+        .section-title { margin: 16px 0; font-size: 16px; font-weight: 500; }
+        .ant-table-thead > tr > th { background-color: #fafafa; font-weight: 600; }
+        .amount { font-weight: 500; color: #1890ff; }
+      `}</style>
+
             {parseInt(selectedRecord?.workflowId, 10) === 1 && (
               <div>
-                {/* Indent Details */}
-                <p>
-                  <strong>Indentor Name:</strong> {detailsData.indentorName}
-                </p>
-                <p>
-                  <strong>Email:</strong> {detailsData.indentorEmailAddress}
-                </p>
-                <p>
-                  <strong>Mobile No:</strong> {detailsData.indentorMobileNo}
-                </p>
-                <p>
-                  <strong>Project Name:</strong> {detailsData.projectName}
-                </p>
-                <p>
-                  <strong>Location:</strong> {detailsData.consignesLocation}
-                </p>
-                <p>
-                  <strong>Estimated Rate:</strong> ₹
-                  {detailsData.estimatedRate &&
-                    detailsData.estimatedRate.toFixed(2)}
-                </p>
-                <p>
-                  <strong>Total Price of Materials:</strong> ₹
-                  {detailsData.totalPriceOfAllMaterials &&
-                    detailsData.totalPriceOfAllMaterials.toFixed(2)}
-                </p>
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <InfoCircleOutlined /> Indent Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Indentor Name:</strong>{" "}
+                        {detailsData.indentorName}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Email:</strong>{" "}
+                        {detailsData.indentorEmailAddress}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Mobile No:</strong>{" "}
+                        {detailsData.indentorMobileNo}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Project Name:</strong> {detailsData.projectName}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Location:</strong>{" "}
+                        {detailsData.consignesLocation}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Total Price:</strong> ₹
+                        {detailsData.totalPriceOfAllMaterials?.toFixed(2)}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
                 {detailsData.isPreBidMeetingRequired && (
-                  <div>
-                    <h3>Pre-Bid Meeting</h3>
-                    <p>
-                      <strong>Date:</strong> {detailsData.preBidMeetingDate}
-                    </p>
-                    <p>
-                      <strong>Venue:</strong> {detailsData.preBidMeetingVenue}
-                    </p>
+                  <div className="detail-section">
+                    <Typography.Title level={5} className="section-title">
+                      <CalendarOutlined /> Pre-Bid Meeting
+                    </Typography.Title>
+                    <Row gutter={24}>
+                      <Col span={12}>
+                        <div className="detail-item">
+                          <strong>Date:</strong> {detailsData.preBidMeetingDate}
+                        </div>
+                      </Col>
+                      <Col span={12}>
+                        <div className="detail-item">
+                          <strong>Venue:</strong>{" "}
+                          {detailsData.preBidMeetingVenue}
+                        </div>
+                      </Col>
+                    </Row>
                   </div>
                 )}
-                <h3>Material Details</h3>
-                <Table
-                  dataSource={detailsData.materialDetails}
-                  pagination={false}
-                  bordered
-                  columns={[
-                    {
-                      title: "Material Code",
-                      dataIndex: "materialCode",
-                      key: "materialCode",
-                    },
-                    {
-                      title: "Description",
-                      dataIndex: "materialDescription",
-                      key: "materialDescription",
-                    },
-                    {
-                      title: "Quantity",
-                      dataIndex: "quantity",
-                      key: "quantity",
-                    },
-                    {
-                      title: "Unit Price",
-                      dataIndex: "unitPrice",
-                      key: "unitPrice",
-                      render: (text) => `₹${text.toFixed(2)}`,
-                    },
-                    {
-                      title: "Total Price",
-                      dataIndex: "totalPrice",
-                      key: "totalPrice",
-                      render: (text) => `₹${text.toFixed(2)}`,
-                    },
-                    { title: "UOM", dataIndex: "uom", key: "uom" },
-                    {
-                      title: "Budget Code",
-                      dataIndex: "budgetCode",
-                      key: "budgetCode",
-                    },
-                  ]}
-                />
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <BarsOutlined /> Material Details
+                  </Typography.Title>
+                  <Table
+                    dataSource={detailsData.materialDetails}
+                    pagination={false}
+                    bordered
+                    scroll={{ x: true }}
+                    rowKey="materialCode"
+                    columns={[
+                      {
+                        title: "Material Code",
+                        dataIndex: "materialCode",
+                        width: 120,
+                      },
+                      {
+                        title: "Description",
+                        dataIndex: "materialDescription",
+                        ellipsis: true,
+                      },
+                      {
+                        title: "Quantity",
+                        dataIndex: "quantity",
+                        align: "right",
+                      },
+                      {
+                        title: "Unit Price",
+                        dataIndex: "unitPrice",
+                        align: "right",
+                        render: (text) => `₹${text?.toFixed(2)}`,
+                      },
+                      {
+                        title: "Total Price",
+                        dataIndex: "totalPrice",
+                        align: "right",
+                        render: (text) => (
+                          <span style={{ fontWeight: 500 }}>
+                            ₹{text?.toFixed(2)}
+                          </span>
+                        ),
+                      },
+                      { title: "UOM", dataIndex: "uom", width: 100 },
+                      {
+                        title: "Budget Code",
+                        dataIndex: "budgetCode",
+                        width: 120,
+                      },
+                    ]}
+                  />
+                </div>
               </div>
             )}
 
             {parseInt(selectedRecord?.workflowId, 10) === 2 && (
               <div>
-                {/* Contingency Purchase Details */}
-                <p>
-                  <strong>Contingency ID:</strong>{" "}
-                  {detailsData.contigencyId || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Name:</strong>{" "}
-                  {detailsData.vendorsName || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Invoice No:</strong>{" "}
-                  {detailsData.vendorsInvoiceNo || "N/A"}
-                </p>
-                <p>
-                  <strong>Material Code:</strong>{" "}
-                  {detailsData.materialCode || "N/A"}
-                </p>
-                <p>
-                  <strong>Material Description:</strong>{" "}
-                  {detailsData.materialDescription || "N/A"}
-                </p>
-                <p>
-                  <strong>Quantity:</strong> {detailsData.quantity || "N/A"}
-                </p>
-                <p>
-                  <strong>Unit Price:</strong>{" "}
-                  {detailsData.unitPrice
-                    ? `₹${detailsData.unitPrice.toFixed(2)}`
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Remarks For Purchase:</strong>{" "}
-                  {detailsData.remarksForPurchase || "N/A"}
-                </p>
-                <p>
-                  <strong>Amount To Be Paid:</strong>{" "}
-                  {detailsData.amountToBePaid
-                    ? `₹${detailsData.amountToBePaid.toFixed(2)}`
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Upload Copy Of Invoice:</strong>{" "}
-                  {detailsData.uploadCopyOfInvoice || "N/A"}
-                </p>
-                <p>
-                  <strong>Predefined Purchase Statement:</strong>{" "}
-                  {detailsData.predifinedPurchaseStatement || "N/A"}
-                </p>
-                <p>
-                  <strong>Project Detail:</strong>{" "}
-                  {detailsData.projectDetail || "N/A"}
-                </p>
-                <p>
-                  <strong>Project Name:</strong>{" "}
-                  {detailsData.projectName || "N/A"}
-                </p>
-                <p>
-                  <strong>Created By:</strong> {detailsData.createdBy || "N/A"}
-                </p>
-                <p>
-                  <strong>Created Date:</strong>{" "}
-                  {detailsData.createdDate || "N/A"}
-                </p>
-                <p>
-                  <strong>Updated By:</strong> {detailsData.updatedBy || "N/A"}
-                </p>
-                <p>
-                  <strong>Updated Date:</strong>{" "}
-                  {detailsData.updatedDate || "N/A"}
-                </p>
-                <p>
-                  <strong>Date:</strong> {detailsData.date || "N/A"}
-                </p>
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ShoppingOutlined /> Contingency Purchase Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Contingency ID:</strong>{" "}
+                        {detailsData.contigencyId || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Vendor Name:</strong>{" "}
+                        {detailsData.vendorsName || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Invoice No:</strong>{" "}
+                        {detailsData.vendorsInvoiceNo || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Amount To Be Paid:</strong>
+                        <span className="amount">
+                          {detailsData.amountToBePaid
+                            ? `₹${detailsData.amountToBePaid.toFixed(2)}`
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Purchase Statement:</strong>{" "}
+                        {detailsData.predifinedPurchaseStatement || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Invoice Copy:</strong>{" "}
+                        {detailsData.uploadCopyOfInvoice || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProfileOutlined /> Material Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Material Code:</strong>{" "}
+                        {detailsData.materialCode || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Description:</strong>{" "}
+                        {detailsData.materialDescription || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Quantity:</strong>{" "}
+                        {detailsData.quantity || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Unit Price:</strong>{" "}
+                        {detailsData.unitPrice
+                          ? `₹${detailsData.unitPrice.toFixed(2)}`
+                          : "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Project Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Project Name:</strong>{" "}
+                        {detailsData.projectName || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Created By:</strong>{" "}
+                        {detailsData.createdBy || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Last Updated:</strong>{" "}
+                        {detailsData.updatedDate || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Updated By:</strong>{" "}
+                        {detailsData.updatedBy || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
               </div>
             )}
 
             {parseInt(selectedRecord?.workflowId, 10) === 3 && (
               <div>
-                {/* Purchase Order Details */}
-                <p>
-                  <strong>PO ID:</strong> {detailsData.poId || "N/A"}
-                </p>
-                <p>
-                  <strong>Tender ID:</strong> {detailsData.tenderId || "N/A"}
-                </p>
-                <p>
-                  <strong>Indent ID:</strong> {detailsData.indentId || "N/A"}
-                </p>
-                <p>
-                  <strong>Warranty:</strong> {detailsData.warranty || "N/A"}
-                </p>
-                <p>
-                  <strong>Consignes Address:</strong>{" "}
-                  {detailsData.consignesAddress || "N/A"}
-                </p>
-                <p>
-                  <strong>Billing Address:</strong>{" "}
-                  {detailsData.billingAddress || "N/A"}
-                </p>
-                <p>
-                  <strong>Delivery Period:</strong>{" "}
-                  {detailsData.deliveryPeriod
-                    ? `${detailsData.deliveryPeriod} days`
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>LD Clause Applicable:</strong>{" "}
-                  {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Inco Terms:</strong> {detailsData.incoTerms || "N/A"}
-                </p>
-                <p>
-                  <strong>Payment Terms:</strong>{" "}
-                  {detailsData.paymentTerms || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Name:</strong>{" "}
-                  {detailsData.vendorName || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Address:</strong>{" "}
-                  {detailsData.vendorAddress || "N/A"}
-                </p>
-                <p>
-                  <strong>Applicable PBG To Be Submitted:</strong>{" "}
-                  {detailsData.applicablePbgToBeSubmitted || "N/A"}
-                </p>
-                <p>
-                  <strong>Transporter & Freight For Warer Details:</strong>{" "}
-                  {detailsData.transporterAndFreightForWarderDetails || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Account Number:</strong>{" "}
-                  {detailsData.vendorAccountNumber || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor ZFSC Code:</strong>{" "}
-                  {detailsData.vendorsZfscCode || "N/A"}
-                </p>
-                <p>
-                  <strong>Vendor Account Name:</strong>{" "}
-                  {detailsData.vendorAccountName || "N/A"}
-                </p>
-                <p>
-                  <strong>Total Value Of PO:</strong>{" "}
-                  {detailsData.totalValueOfPo !== undefined
-                    ? `₹${detailsData.totalValueOfPo}`
-                    : "N/A"}
-                </p>
-                <p>
-                  <strong>Project Name:</strong>{" "}
-                  {detailsData.projectName || "N/A"}
-                </p>
-                <h3>Purchase Order Attributes</h3>
-                <Table
-                  dataSource={detailsData.purchaseOrderAttributes}
-                  pagination={false}
-                  bordered
-                  columns={[
-                    {
-                      title: "Material Code",
-                      dataIndex: "materialCode",
-                      key: "materialCode",
-                    },
-                    {
-                      title: "Material Description",
-                      dataIndex: "materialDescription",
-                      key: "materialDescription",
-                    },
-                    {
-                      title: "Quantity",
-                      dataIndex: "quantity",
-                      key: "quantity",
-                    },
-                    {
-                      title: "Rate",
-                      dataIndex: "rate",
-                      key: "rate",
-                      render: (text) =>
-                        text !== undefined ? `${text}` : "N/A",
-                    },
-                    {
-                      title: "Currency",
-                      dataIndex: "currency",
-                      key: "currency",
-                    },
-                    {
-                      title: "Exchange Rate",
-                      dataIndex: "exchangeRate",
-                      key: "exchangeRate",
-                    },
-                    {
-                      title: "GST",
-                      dataIndex: "gst",
-                      key: "gst",
-                      render: (text) =>
-                        text !== undefined ? `${text}%` : "N/A",
-                    },
-                    {
-                      title: "Duties",
-                      dataIndex: "duties",
-                      key: "duties",
-                      render: (text) =>
-                        text !== undefined ? `${text}%` : "N/A",
-                    },
-                    {
-                      title: "Freight Charge",
-                      dataIndex: "freightCharge",
-                      key: "freightCharge",
-                      render: (text) =>
-                        text !== undefined ? `${text}` : "N/A",
-                    },
-                    {
-                      title: "Budget Code",
-                      dataIndex: "budgetCode",
-                      key: "budgetCode",
-                    },
-                  ]}
-                />
-                <p>
-                  <strong>Created By:</strong> {detailsData.createdBy || "N/A"}
-                </p>
-                <p>
-                  <strong>Created Date:</strong>{" "}
-                  {detailsData.createdDate || "N/A"}
-                </p>
-                <p>
-                  <strong>Updated By:</strong> {detailsData.updatedBy || "N/A"}
-                </p>
-                <p>
-                  <strong>Updated Date:</strong>{" "}
-                  {detailsData.updatedDate || "N/A"}
-                </p>
-                {detailsData.tenderDetails && (
-                  <>
-                    <h3>Tender Details</h3>
-                    <p>
-                      <strong>Tender ID:</strong>{" "}
-                      {detailsData.tenderDetails.tenderId || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Title of Tender:</strong>{" "}
-                      {detailsData.tenderDetails.titleOfTender || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Opening Date:</strong>{" "}
-                      {detailsData.tenderDetails.openingDate || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Closing Date:</strong>{" "}
-                      {detailsData.tenderDetails.closingDate || "N/A"}
-                    </p>
-                    {/* Additional tender details can be added here if needed */}
-                  </>
-                )}
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <FileTextOutlined /> PO Basic Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>PO ID:</strong> {detailsData.poId || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Tender ID:</strong>{" "}
+                        {detailsData.tenderId || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Delivery Period:</strong>{" "}
+                        {detailsData.deliveryPeriod
+                          ? `${detailsData.deliveryPeriod} days`
+                          : "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Total PO Value:</strong>
+                        <span className="amount">
+                          {detailsData.totalValueOfPo !== undefined
+                            ? `₹${detailsData.totalValueOfPo.toFixed(2)}`
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="detail-item">
+                        <strong>Payment Terms:</strong>{" "}
+                        {detailsData.paymentTerms || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>LD Clause:</strong>{" "}
+                        {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ShopOutlined /> Vendor Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Vendor Name:</strong>{" "}
+                        {detailsData.vendorName || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Account Number:</strong>{" "}
+                        {detailsData.vendorAccountNumber || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>ZFSC Code:</strong>{" "}
+                        {detailsData.vendorsZfscCode || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Account Name:</strong>{" "}
+                        {detailsData.vendorAccountName || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <BarsOutlined /> Purchase Order Items
+                  </Typography.Title>
+                  <Table
+                    dataSource={detailsData.purchaseOrderAttributes}
+                    pagination={false}
+                    bordered
+                    scroll={{ x: true }}
+                    rowKey="materialCode"
+                    columns={[
+                      {
+                        title: "Material Code",
+                        dataIndex: "materialCode",
+                        width: 120,
+                      },
+                      {
+                        title: "Description",
+                        dataIndex: "materialDescription",
+                        ellipsis: true,
+                      },
+                      {
+                        title: "Quantity",
+                        dataIndex: "quantity",
+                        align: "right",
+                      },
+                      {
+                        title: "Rate",
+                        dataIndex: "rate",
+                        align: "right",
+                        render: (text) => `₹${text?.toFixed(2)}`,
+                      },
+                      { title: "Currency", dataIndex: "currency", width: 100 },
+                      {
+                        title: "GST",
+                        dataIndex: "gst",
+                        render: (text) => `${text}%`,
+                        align: "right",
+                      },
+                      {
+                        title: "Freight",
+                        dataIndex: "freightCharge",
+                        align: "right",
+                        render: (text) => (text ? `₹${text}` : "N/A"),
+                      },
+                      {
+                        title: "Budget Code",
+                        dataIndex: "budgetCode",
+                        width: 120,
+                      },
+                    ]}
+                  />
+                </div>
               </div>
             )}
 
             {parseInt(selectedRecord?.workflowId, 10) === 4 && (
               <div>
-                {/* Tender Details */}
-                <p>
-                  <strong>Tender ID:</strong> {detailsData.tenderId || "N/A"}
-                </p>
-                <p>
-                  <strong>Title of Tender:</strong>{" "}
-                  {detailsData.titleOfTender || "N/A"}
-                </p>
-                <p>
-                  <strong>Opening Date:</strong>{" "}
-                  {detailsData.openingDate || "N/A"}
-                </p>
-                <p>
-                  <strong>Closing Date:</strong>{" "}
-                  {detailsData.closingDate || "N/A"}
-                </p>
-                <p>
-                  <strong>Bid Type:</strong> {detailsData.bidType || "N/A"}
-                </p>
-                <p>
-                  <strong>Last Date Of Submission:</strong>{" "}
-                  {detailsData.lastDateOfSubmission || "N/A"}
-                </p>
-                <p>
-                  <strong>Applicable Taxes:</strong>{" "}
-                  {detailsData.applicableTaxes || "N/A"}
-                </p>
-                <p>
-                  <strong>Consignes And Billing Address:</strong>{" "}
-                  {detailsData.consignesAndBillinngAddress || "N/A"}
-                </p>
-                <p>
-                  <strong>Inco Terms:</strong> {detailsData.incoTerms || "N/A"}
-                </p>
-                <p>
-                  <strong>Payment Terms:</strong>{" "}
-                  {detailsData.paymentTerms || "N/A"}
-                </p>
-                <p>
-                  <strong>LD Clause:</strong> {detailsData.ldClause || "N/A"}
-                </p>
-                <p>
-                  <strong>Applicable Performance:</strong>{" "}
-                  {detailsData.applicablePerformance || "N/A"}
-                </p>
-                <p>
-                  <strong>Bid Security Declaration:</strong>{" "}
-                  {detailsData.bidSecurityDeclaration ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>MLL Status Declaration:</strong>{" "}
-                  {detailsData.mllStatusDeclaration ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Upload Tender Documents:</strong>{" "}
-                  {detailsData.uploadTenderDocuments || "N/A"}
-                </p>
-                <p>
-                  <strong>Upload General Terms And Conditions:</strong>{" "}
-                  {detailsData.uploadGeneralTermsAndConditions || "N/A"}
-                </p>
-                <p>
-                  <strong>Upload Specific Terms And Conditions:</strong>{" "}
-                  {detailsData.uploadSpecificTermsAndConditions || "N/A"}
-                </p>
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <AuditOutlined /> Tender Overview
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Tender ID:</strong>{" "}
+                        {detailsData.tenderId || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Title:</strong>{" "}
+                        {detailsData.titleOfTender || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Bid Type:</strong>{" "}
+                        {detailsData.bidType || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Opening Date:</strong>{" "}
+                        {detailsData.openingDate || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Closing Date:</strong>{" "}
+                        {detailsData.closingDate || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Total Value:</strong>
+                        <span className="amount">
+                          {detailsData.totalTenderValue
+                            ? `₹${detailsData.totalTenderValue.toFixed(2)}`
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <FilePdfOutlined /> Document Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={8}>
+                      <div className="detail-item">
+                        <strong>Tender Documents:</strong>{" "}
+                        {detailsData.uploadTenderDocuments || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={8}>
+                      <div className="detail-item">
+                        <strong>Specific Terms & Conditions:</strong>{" "}
+                        {detailsData.uploadSpecificTermsAndConditions || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={8}>
+                      <div className="detail-item">
+                        <strong>General Terms & Conditions:</strong>{" "}
+                        {detailsData.uploadGeneralTermsAndConditions || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+
                 {detailsData.indentResponseDTO &&
                   detailsData.indentResponseDTO.length > 0 && (
-                    <>
-                      <h3>Indent Response Details</h3>
-                      <p>
-                        <strong>Indentor Name:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].indentorName || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Indent ID:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].indentId || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Indentor Mobile No:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].indentorMobileNo ||
-                          "N/A"}
-                      </p>
-                      <p>
-                        <strong>Indentor Email Address:</strong>{" "}
-                        {detailsData.indentResponseDTO[0]
-                          .indentorEmailAddress || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Consignes Location:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].consignesLocation ||
-                          "N/A"}
-                      </p>
-                      <p>
-                        <strong>Project Name:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].projectName || "N/A"}
-                      </p>
-                      <p>
-                        <strong>Pre-Bid Meeting Required:</strong>{" "}
-                        {detailsData.indentResponseDTO[0]
-                          .isPreBidMeetingRequired
-                          ? "Yes"
-                          : "No"}
-                      </p>
-                      {detailsData.indentResponseDTO[0]
-                        .isPreBidMeetingRequired && (
-                        <>
-                          <p>
-                            <strong>Pre-Bid Meeting Date:</strong>{" "}
-                            {detailsData.indentResponseDTO[0]
-                              .preBidMeetingDate || "N/A"}
-                          </p>
-                          <p>
-                            <strong>Pre-Bid Meeting Venue:</strong>{" "}
-                            {detailsData.indentResponseDTO[0]
-                              .preBidMeetingVenue || "N/A"}
-                          </p>
-                        </>
-                      )}
-                      <p>
-                        <strong>Estimated Rate:</strong>{" "}
-                        {detailsData.indentResponseDTO[0].estimatedRate
-                          ? `₹${detailsData.indentResponseDTO[0].estimatedRate.toFixed(
-                              2
-                            )}`
-                          : "N/A"}
-                      </p>
-                      <p>
-                        <strong>Total Tender Value:</strong>{" "}
-                        {detailsData.totalTenderValue
-                          ? `₹${detailsData.totalTenderValue.toFixed(2)}`
-                          : "N/A"}
-                      </p>
-                      <h3>Material Details</h3>
-                      <Table
-                        dataSource={
-                          detailsData.indentResponseDTO[0].materialDetails
-                        }
-                        pagination={false}
-                        bordered
-                        columns={[
-                          {
-                            title: "Material Code",
-                            dataIndex: "materialCode",
-                            key: "materialCode",
-                          },
-                          {
-                            title: "Description",
-                            dataIndex: "materialDescription",
-                            key: "materialDescription",
-                          },
-                          {
-                            title: "Quantity",
-                            dataIndex: "quantity",
-                            key: "quantity",
-                          },
-                          {
-                            title: "Unit Price",
-                            dataIndex: "unitPrice",
-                            key: "unitPrice",
-                            render: (text) => `₹${text.toFixed(2)}`,
-                          },
-                          {
-                            title: "Total Price",
-                            dataIndex: "totalPrice",
-                            key: "totalPrice",
-                            render: (text) => `₹${text.toFixed(2)}`,
-                          },
-                          { title: "UOM", dataIndex: "uom", key: "uom" },
-                          {
-                            title: "Budget Code",
-                            dataIndex: "budgetCode",
-                            key: "budgetCode",
-                          },
-                        ]}
-                      />
-                    </>
+                    <div className="detail-section">
+                      <Typography.Title level={5} className="section-title">
+                        <SolutionOutlined /> Associated Indents (
+                        {detailsData.indentResponseDTO.length})
+                      </Typography.Title>
+
+                      <div style={{ marginBottom: 16 }}>
+                        <strong>Indent IDs: </strong>
+                        {detailsData.indentResponseDTO.map((indent, index) => (
+                          <Tag
+                            color="blue"
+                            key={indent.indentId}
+                            style={{ margin: "4px 4px" }}
+                          >
+                            {indent.indentId || `Indent ${index + 1}`}
+                          </Tag>
+                        ))}
+                      </div>
+
+                      <Collapse accordion defaultActiveKey={["0"]}>
+                        {detailsData.indentResponseDTO.map((indent, index) => (
+                          <Collapse.Panel
+                            key={index}
+                            header={`Indent ${index + 1} - ${
+                              indent.indentId || "N/A"
+                            }`}
+                            extra={
+                              <Tag color={indent.statusColor || "processing"}>
+                                {indent.status || "Pending"}
+                              </Tag>
+                            }
+                          >
+                            <div style={{ padding: "16px 0" }}>
+                              <Row gutter={24}>
+                                <Col span={12}>
+                                  <div className="detail-item">
+                                    <strong>Project Name:</strong>{" "}
+                                    {indent.projectName || "N/A"}
+                                  </div>
+                                  <div className="detail-item">
+                                    <strong>Indentor:</strong>{" "}
+                                    {indent.indentorName || "N/A"}
+                                  </div>
+                                  <div className="detail-item">
+                                    <strong>Contact:</strong>{" "}
+                                    {indent.indentorMobileNo || "N/A"}
+                                  </div>
+                                </Col>
+                                <Col span={12}>
+                                  <div className="detail-item">
+                                    <strong>Email:</strong>{" "}
+                                    {indent.indentorEmailAddress || "N/A"}
+                                  </div>
+                                  <div className="detail-item">
+                                    <strong>Location:</strong>{" "}
+                                    {indent.consignesLocation || "N/A"}
+                                  </div>
+                                  <div className="detail-item">
+                                    <strong>Total Value:</strong> ₹
+                                    {indent.totalPriceOfAllMaterials?.toFixed(
+                                      2
+                                    ) || "N/A"}
+                                  </div>
+                                </Col>
+                              </Row>
+
+                              {indent.isPreBidMeetingRequired && (
+                                <div style={{ marginTop: 16 }}>
+                                  <Divider orientation="left" plain>
+                                    Pre-Bid Meeting Details
+                                  </Divider>
+                                  <Row gutter={24}>
+                                    <Col span={12}>
+                                      <div className="detail-item">
+                                        <strong>Date:</strong>{" "}
+                                        {indent.preBidMeetingDate || "N/A"}
+                                      </div>
+                                    </Col>
+                                    <Col span={12}>
+                                      <div className="detail-item">
+                                        <strong>Venue:</strong>{" "}
+                                        {indent.preBidMeetingVenue || "N/A"}
+                                      </div>
+                                    </Col>
+                                  </Row>
+                                </div>
+                              )}
+
+                              <Divider orientation="left" plain>
+                                Material Requirements
+                              </Divider>
+
+                              {indent.materialDetails?.length > 0 ? (
+                                <Table
+                                  dataSource={indent.materialDetails}
+                                  pagination={false}
+                                  bordered
+                                  size="small"
+                                  rowKey="materialCode"
+                                  columns={[
+                                    {
+                                      title: "Material Code",
+                                      dataIndex: "materialCode",
+                                      width: 120,
+                                    },
+                                    {
+                                      title: "Description",
+                                      dataIndex: "materialDescription",
+                                      ellipsis: true,
+                                    },
+                                    {
+                                      title: "Quantity",
+                                      dataIndex: "quantity",
+                                      align: "right",
+                                    },
+                                    {
+                                      title: "Unit Price",
+                                      dataIndex: "unitPrice",
+                                      align: "right",
+                                      render: (text) => `₹${text?.toFixed(2)}`,
+                                    },
+                                    {
+                                      title: "Total Price",
+                                      dataIndex: "totalPrice",
+                                      align: "right",
+                                      render: (text) => (
+                                        <span style={{ fontWeight: 500 }}>
+                                          ₹{text?.toFixed(2)}
+                                        </span>
+                                      ),
+                                    },
+                                    {
+                                      title: "UOM",
+                                      dataIndex: "uom",
+                                      width: 100,
+                                    },
+                                    {
+                                      title: "Budget Code",
+                                      dataIndex: "budgetCode",
+                                      width: 120,
+                                    },
+                                  ]}
+                                />
+                              ) : (
+                                <div
+                                  style={{ textAlign: "center", padding: 16 }}
+                                >
+                                  <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="No material details found"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </Collapse.Panel>
+                        ))}
+                      </Collapse>
+                    </div>
                   )}
               </div>
             )}
 
             {parseInt(selectedRecord?.workflowId, 10) === 5 && (
               <div>
-                {/* Service Order Details */}
-                <p>
-                  <strong>Service Order ID:</strong> {detailsData.soId || "N/A"}
-                </p>
-                <p>
-                  <strong>Service Details:</strong>{" "}
-                  {detailsData.details || "N/A"}
-                </p>
-                {/* Additional service order details can be added here */}
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ToolOutlined /> Service Order Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Service Order ID:</strong>{" "}
+                        {detailsData.soId || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Created Date:</strong>{" "}
+                        {detailsData.createdDate || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Service Type:</strong>{" "}
+                        {detailsData.serviceType || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Status:</strong> {detailsData.status || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                  <div className="detail-item">
+                    <strong>Service Description:</strong>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        padding: 12,
+                        background: "#fafafa",
+                        borderRadius: 4,
+                      }}
+                    >
+                      {detailsData.details || "No description provided"}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </>
         ) : (
-          <Spin tip="Loading details..." />
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <Spin tip="Loading details..." size="large" />
+          </div>
         )}
+        <QueueHistory
+          requestId={selectedRecord?.requestId}
+          open={historyVisible}
+          onCancel={() => setHistoryVisible(false)}
+        />
       </Modal>
     </div>
   );

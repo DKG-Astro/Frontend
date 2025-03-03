@@ -35,6 +35,7 @@ import Queue from './queue/Queue';
 import MainDashboard from './newDashboard/MainDashboard';
 import NewCalibrationForm from './duty/calibration/newCalibration/NewCalibrationForm';
 import Form4a from './tenderRequest/Form4a';
+import MaterialForm from './materialDetails/MaterialForm';
 // import Form21 from './lineItems/Form21';
 
 // const { Search } = Input;
@@ -150,6 +151,8 @@ const Dashboard = () => {
             return <Form7a />
         case 24:
             return <Form7b />
+        case 25:
+            return <MaterialForm />
         default:
           break
       }

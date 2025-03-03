@@ -213,7 +213,7 @@ const Form7 = () => {
         applicablePbgToBeSubmitted: values.applicablePBG,
         transposterAndFreightForWarderDetails: values.transporterDetails,
         vendorAccountNumber: values.vendorAccountNo,
-        vendorsIfscCode: values.vendorIFSCCode,
+        vendorsZfscCode: values.vendorZFSCCode,
         vendorAccountName: values.vendorAccountName,
         purchaseOrderAttributes: updatedLineItems,
         createdBy: actionPerformer,
@@ -332,7 +332,7 @@ const Form7 = () => {
                     <Space
                       style={{
                         display: "flex",
-                        marginBottom: 20,
+                        marginBottom: 5,
                         flexWrap: "wrap",
                       }}
                       align="start"
@@ -485,11 +485,11 @@ const Form7 = () => {
                           </Form.Item>
                         </Col>
                       </Row>
-                      <MinusCircleOutlined onClick={() => remove(name)} />
+                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                     </Space>
                   </div>
                 ))}
-                <Form.Item>
+                {/* <Form.Item>
                   <Button
                     type="dashed"
                     onClick={() => add()}
@@ -498,7 +498,7 @@ const Form7 = () => {
                   >
                     Add Item
                   </Button>
-                </Form.Item>
+                </Form.Item> */}
               </>
             )}
           </Form.List>
@@ -544,13 +544,13 @@ const Form7 = () => {
           </Form.Item>
 
           {/* Applicable PBG to be submitted */}
-          <Form.Item label="Applicable PBG to be submitted" name="applicablePBG">
+          <Form.Item label="Applicable PBG" name="applicablePBG">
             <TextArea rows={1} />
           </Form.Item>
 
           {/* Transporter / Freight Forwarder Details */}
           <Form.Item
-            label="Transporter/freight forwarder Details"
+            label="Transporter Details"
             name="transporterDetails"
           >
             <TextArea rows={1} />
@@ -575,7 +575,7 @@ const Form7 = () => {
           {/* Vendor's IFSC Code */}
           <Form.Item
             label="Vendor's IFSC code"
-            name="vendorIFSCCode"
+            name="vendorZFSCCode"
             rules={[{ required: true, message: "Please enter vendor's IFSC code" }]}
           >
             <Input placeholder="Enter vendor's IFSC code" />
