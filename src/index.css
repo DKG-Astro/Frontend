@@ -360,4 +360,20 @@ label{
       page-break-before: always;
     }
   }  
+
+  .large-container{
+    @apply flex flex-col gap-4 md:gap-8 bg-white p-4 w-full md:w-4/5 mx-auto h-[100vh] md:h-fit overflow-y-auto;
+  }
+  
+
+.no-border .ant-input{
+  @apply !border-0 focus:ring-0;
+}
+.no-border .ant-select-selector{
+  @apply !border-0 focus:ring-0;
+}
+
+.ant-form-item .no-border{
+  @apply !m-0;
+}
   
