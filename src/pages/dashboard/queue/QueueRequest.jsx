@@ -6,23 +6,16 @@ import {
   Space,
   Typography,
   Popover,
-  Form,
-  Row,
-  Col,
   Tag,
   message,
   Spin,
-  Modal,
   Select,
-  Collapse,
-  Divider,
-  Empty,
-  Tabs,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-// import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import {SearchOutlined,} from "@ant-design/icons";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import QueueModal from "./QueueModal";
+// import { render } from "@testing-library/react";
 
 const { Text } = Typography;
 
@@ -50,7 +43,8 @@ const FilterComponent = ({ onSearch, searchRequestId, onReset }) => (
   </div>
 );
 
-const QueueRequest = () => {
+const QueueTable = () => {
+  // Get the logged-in user's role details from Redux
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
   const [data, setData] = useState([]);
@@ -69,56 +63,31 @@ const QueueRequest = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
-  const [activeTab, setActiveTab] = useState("request");
 
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const response = await axios.get(
-          "http://103.181.158.220:8081/astro-service/api/userMaster"
-        );
-        const userData = response.data.responseData;
-        if (userData && userData.length > 0) {
-          setCurrentUserId(userData[0].userId);
-        } else {
-          message.error("No user data found.");
-        }
-      } catch (error) {
-        message.error("Failed to fetch user details.");
-        console.error("User fetch error:", error);
-      }
-    };
-    fetchCurrentUser();
-  }, []);
+  // --- 2. Fetch the current user details from the UserMaster API ---
+//   useEffect(() => {
+//     const fetchCurrentUser = async () => {
+//       try {
+//         const response = await axios.get(
+//           "http://103.181.158.220:8081/astro-service/api/userMaster"
+//         );
+//         const userData = response.data.responseData;
+//         if (userData && userData.length > 0) {
+//           setCurrentUserId(userData[0].userId);
+//         } else {
+//           message.error("No user data found.");
+//         }
+//       } catch (error) {
+//         message.error("Failed to fetch user details.");
+//         console.error("User fetch error:", error);
+//       }
+//     };
+//     fetchCurrentUser();
+//   }, []);
 
-  const fetchData = async (roleName) => {
-    if (!roleName) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransition?roleName=${encodeURIComponent(
-          roleName
-        )}`
-      );
-      const apiData = response.data.responseData;
-      const formattedData = apiData.map((item, index) => ({
-        key: index.toString(),
-        requestId: item.requestId,
-        originalRequestId: item.requestId,
-        workflowId: item.workflowId, // Note: we'll use workflowId here
-        workflowName: item.workflowName,
-        status: item.nextAction,
-        remarks: item.remarks || "No remarks",
-      }));
-      setData(formattedData);
-    } catch (err) {
-      setError(err.message);
-      message.error("Failed to fetch queue data from the API.");
-      console.error("fetchData error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+
+
 
   // When the logged-in role information is available, fetch queue data
   useEffect(() => {
@@ -162,10 +131,10 @@ const QueueRequest = () => {
   };
 
   const handleApprove = async (record) => {
-    if (!currentUserId) {
-      message.error("User details not loaded yet.");
-      return;
-    }
+    // if (!currentUserId) {
+    //   message.error("User details not loaded yet.");
+    //   return;
+    // }
     try {
       const workflowTransitionId = await fetchWorkflowTransitionId(
         record.requestId
@@ -201,7 +170,7 @@ const QueueRequest = () => {
   const fetchWorkflowTransitionHistory = async (requestId) => {
     try {
       const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/workflowTransitionHistory?requestId=${requestId}`
+        `/astro-service/workflowTransitionHistory?requestId=${requestId}`
       );
       return response.data.responseData;
     } catch (error) {
@@ -215,10 +184,10 @@ const QueueRequest = () => {
       message.warning("Please enter a reject comment.");
       return;
     }
-    if (!currentUserId) {
-      message.error("User details not loaded yet.");
-      return;
-    }
+    // if (!currentUserId) {
+    //   message.error("User details not loaded yet.");
+    //   return;
+    // }
     try {
       // Get full transition history
       const history = await fetchWorkflowTransitionHistory(record.requestId);
@@ -253,7 +222,7 @@ const QueueRequest = () => {
       };
 
       await axios.post(
-        "http://103.181.158.220:8081/astro-service/performTransitionAction",
+        "/astro-service/performTransitionAction",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -306,7 +275,7 @@ const QueueRequest = () => {
       };
 
       await axios.post(
-        "http://103.181.158.220:8081/astro-service/performTransitionAction",
+        "/astro-service/performTransitionAction",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
@@ -337,19 +306,19 @@ const QueueRequest = () => {
 
     switch (workflowId) {
       case 1:
-        endpoint = `http://103.181.158.220:8081/astro-service/api/indents/${record.requestId}`;
+        endpoint = `/astro-service/api/indents/${record.requestId}`;
         break;
       case 2:
-        endpoint = `http://103.181.158.220:8081/astro-service/api/contigency-purchase/${record.requestId}`;
+        endpoint = `/astro-service/api/contigency-purchase/${record.requestId}`;
         break;
       case 3:
-        endpoint = `http://103.181.158.220:8081/astro-service/api/purchase-orders/${record.requestId}`;
+        endpoint = `/astro-service/api/purchase-orders/${record.requestId}`;
         break;
       case 4:
-        endpoint = `http://103.181.158.220:8081/astro-service/api/tender-requests/${record.requestId}`;
+        endpoint = `/astro-service/api/tender-requests/${record.requestId}`;
         break;
       case 5:
-        endpoint = `http://103.181.158.220:8081/astro-service/api/service-orders/${record.requestId}`;
+        endpoint = `/astro-service/api/service-orders/${record.requestId}`;
         break;
       default:
         message.error("Invalid workflow ID.");
@@ -362,11 +331,150 @@ const QueueRequest = () => {
       setDetailsData(response.data.responseData);
       setQueueData(response.data.responseData);
       setModalVisible(true);
+      setData((prev) =>
+        prev.map((item) =>
+          item.requestId === record.requestId
+            ? {
+                ...item,
+                ...getCommonFields(response.data),
+              }
+            : item
+        )
+      );
     } catch (err) {
       message.error("Failed to fetch details.");
       console.error("Fetch details error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getCommonFields = (apiResponse) => {
+    const workflowId = apiResponse.responseData.workflowId; // Add workflowId to API response
+    return {
+      indentor: getCommonField(workflowId, apiResponse, "indentor"),
+      amount: getCommonField(workflowId, apiResponse, "amount"),
+      project: getCommonField(workflowId, apiResponse, "project"),
+      // Add other fields
+    };
+  };
+
+  const fetchData = async (roleName) => {
+    if (!roleName) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransition?roleName=${encodeURIComponent(
+          roleName
+        )}`
+      );
+      //   const apiData = response.data.responseData;
+      //   const formattedData = apiData.map((item, index) => ({
+      //     key: index.toString(),
+      //     requestId: item.requestId,
+      //     originalRequestId: item.requestId,
+      //     workflowId: item.workflowId, // Note: we'll use workflowId here
+      //     workflowName: item.workflowName,
+      //     status: item.nextAction,
+      //     remarks: item.remarks || "No remarks",
+      //   }));
+      const formattedData = response.data.responseData.map((item) => ({
+        // Common fields
+        key: item.requestId,
+        requestId: item.requestId,
+        workflowId: item.workflowId,
+        workflowName: item.workflowName,
+        ...(item.workflowId === 1 && {
+          indentorName: item.indentorName,
+          totalPriceOfAllMaterials: item.totalPriceOfAllMaterials,
+          projectName: item.projectName,
+          budgetName: item.budgetName,
+          modeOfProcurement: item.modeOfProcurement,
+          consignesLocation: item.consignesLocation,
+        }),
+        ...(item.workflowId === 2 && {
+          createdBy: item.createdBy,
+          amountToBePaid: item.amountToBePaid,
+          projectName: item.projectName,
+          deliveryLocation: item.deliveryLocation,
+        }),
+        ...(item.workflowId === 3 && {
+          createdBy: item.createdBy,
+          totalValueOfPo: item.totalValueOfPo,
+          projectName: item.projectName,
+          budgetCode: item.budgetCode,
+          procurementType: item.procurementType,
+          deliveryAddress: item.deliveryAddress,
+        }),
+        status: item.nextAction,
+        remarks: item.remarks || "No remarks",
+      }));
+      setData(formattedData);
+    } catch (err) {
+      setError(err.message);
+      message.error("Failed to fetch queue data from the API.");
+      console.error("fetchData error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCommonField = (workflowId, apiData, field) => {
+    switch (workflowId) {
+      // Indent (workflowId=1)
+      case 1:
+        return {
+          indentor: apiData.indentorName,
+          amount: apiData.totalPriceOfAllMaterials,
+          project: apiData.projectName,
+          budgetName: apiData.budgetName,
+          indentTitle: apiData.workflowName,
+          procurementMode: apiData.modeOfProcurement,
+          consignee: apiData.consignesLocation,
+        }[field];
+
+      // Contingency Purchase (workflowId=2)
+      case 2:
+        return {
+          indentor: apiData.createdBy,
+          amount: apiData.amountToBePaid,
+          project: apiData.projectName,
+          budgetName: "N/A", // Contingency may not have budget
+          indentTitle: "Contingency Purchase",
+          procurementMode: "Direct Purchase",
+          indentor: apiData.vendorsName
+            ? `${apiData.vendorsName} (${apiData.createdBy})`
+            : `User ${apiData.createdBy}`,
+          consignee: apiData.deliveryLocation,
+        }[field];
+
+      // Purchase Order (workflowId=3)
+      case 3:
+        return {
+          indentor: apiData.createdBy,
+          amount: apiData.totalValueOfPo,
+          project:
+            apiData.tenderDetails?.indentResponseDTO?.[0]?.projectName || "N/A",
+          budgetName: apiData.budgetCode,
+          indentTitle: "Purchase Order",
+          procurementMode: apiData.procurementType,
+          consignee: apiData.deliveryAddress,
+        }[field];
+
+      // Add cases 4 (Tender) and 5 (Service Order) similarly
+      case 4:
+        return {
+          indentor: apiData.createdBy,
+          //   amount: apiData.totalValueOfPo,
+          project: apiData.projectName,
+          budgetName: apiData.budgetCode,
+          indentTitle: "Tender",
+          procurementMode: apiData.procurementType,
+          consignee: apiData.deliveryAddress,
+        }[field];
+
+      default:
+        return "N/A";
     }
   };
 
@@ -381,6 +489,7 @@ const QueueRequest = () => {
           {text}
         </Button>
       ),
+      fixed: "left",
     },
     // {
     //   title: "Workflow ID",
@@ -397,41 +506,52 @@ const QueueRequest = () => {
       title: "Indentor",
       dataIndex: "indentor",
       key: "indentor",
-      render: (_, record) => record.indentorName || "N/A",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "indentor") || "-",
     },
     {
       title: "Amount",
       key: "amount",
-      render: (_, record) => `₹${record.totalPriceOfAllMaterials?.toFixed(2)}`, // Match modal's totalPriceOfAllMaterials
+      render: (_, record) => {
+        const amount = getCommonField(record.workflowId, record, "amount");
+        return amount ? `₹${amount.toFixed(2)}` : "-";
+      },
       sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
     },
     {
       title: "Project",
       dataIndex: "projectName",
       key: "project",
-      render: (text) => text || "N/A",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "project") || "-",
     },
     {
       title: "Budget Name",
       dataIndex: "budgetName",
       key: "budgetName",
-      render: (text, record) => text || record.budgetName || "N/A",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "budget") || "-",
     },
     {
       title: "Indentor Title",
       dataIndex: "workflowName",
       key: "indentTitle",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "indentTitle") || "-",
     },
     {
       title: "Mode of Procurement",
       dataIndex: "modeOfProcurement",
       key: "modeOfProcurement",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "procurementMode") || "-",
     },
     {
       title: "Consignee",
       dataIndex: "consignesLocation", // Match modal's consignesLocation
       key: "consignee",
-      render: (text) => text || "N/A",
+      render: (_, record) =>
+        getCommonField(record.workflowId, record, "consignee") || "-",
     },
     {
       title: "Status",
@@ -449,6 +569,7 @@ const QueueRequest = () => {
     {
       title: "Actions",
       key: "actions",
+      fixed: "right",
       render: (_, record) => {
         if (record.status === "Approved") return null;
         return (
@@ -566,12 +687,13 @@ const QueueRequest = () => {
   }, []);
 
   return (
-    <div>
+    <div style={{ padding: 24 }}>
       <FilterComponent
         onSearch={handleSearch}
         searchRequestId={searchRequestId}
         onReset={handleReset}
       />
+
       {loading ? (
         <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
       ) : error ? (
@@ -579,8 +701,16 @@ const QueueRequest = () => {
       ) : (
         <Table columns={columns} dataSource={filteredData} rowKey="key" />
       )}
+      <QueueModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        selectedRecord={selectedRecord}
+        detailsData={detailsData}
+        historyVisible={historyVisible}
+        setHistoryVisible={setHistoryVisible}
+      />
     </div>
   );
 };
 
-export default QueueRequest;
+export default QueueTable;
