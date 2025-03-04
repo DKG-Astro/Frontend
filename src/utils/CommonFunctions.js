@@ -3,35 +3,38 @@ import axios from "axios";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
-  // const header = {
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: `Bearer ${token}`,
-  //   },
-  // };
+  const header = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
-  // try {
-  //   let response;
+  try {
+    let response;
 
-  //   if (method === "GET") {
-  //     response = await axios.get(url, header);
-  //   } else if (method === "POST") {
-  //     response = await axios.post(url, payload, header);
-  //   }
+    if (method === "GET") {
+      response = await axios.get(url);
+    } else if (method === "POST") {
+      response = await axios.post(url, payload);
+    }
 
-  //   // Check response status code
-  //   if (response.data.responseStatus.statusCode === 1) {
-  //     return response; // Return the data on success
-  //   } else {
-  //     // Throw an error if the status code indicates failure
-  //     throw new Error(response.data.responseStatus.message || "Request failed.");
-  //   }
-  // } catch (error) {
-  //   // Display error alert
-  //   message.error(error?.response?.data?.responseStatus?.message || "Some error occurred.");
-  //   // Rethrow the error for the calling function to handle
-  //   throw error;
-  // }
+    // // Check response status code
+    // if (response.data.responseStatus.statusCode === 1) {
+    //   return response; // Return the data on success
+    // } else {
+    //   // Throw an error if the status code indicates failure
+    //   throw new Error(response.data.responseStatus.message || "Request failed.");
+    // }
+
+    return response
+  } catch (error) {
+    // Display error alert
+    message.error(error?.response?.data?.responseStatus?.message || "Some error occurred.");
+    // Rethrow the error for the calling function to handle
+    console.log("ERRORRR: ", error)
+    throw error;
+  }
 };
 
 

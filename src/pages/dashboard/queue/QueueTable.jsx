@@ -111,6 +111,8 @@ const QueueTable = () => {
     fetchCurrentUser();
   }, []);
 
+  const [actionTableData, setActionTableData] = useState([])
+
   // --- 3. Fetch queue data based on the logged-in user's role ---
   const fetchData = async (roleName) => {
     if (!roleName) return;
