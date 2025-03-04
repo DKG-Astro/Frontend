@@ -34,10 +34,11 @@ label{
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('./assets/images/iia-bg-image.PNG'); /* Replace with your image URL */
+  /* background-image: url('./assets/images/iia-bg-image.PNG'); Replace with your image URL */
+  background-color: white;
   background-size: cover; /* Adjust as needed */
   background-position: center; /* Adjust as needed */
-  opacity: 0.2; /* Change this value for desired opacity */
+  opacity: 0; /* Change this value for desired opacity */
   z-index: 0; /* Ensure it's behind the content */
 }
 
