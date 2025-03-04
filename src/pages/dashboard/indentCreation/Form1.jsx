@@ -13,7 +13,6 @@ import {
   message,
 } from "antd";
 import {
-  MinusCircleOutlined,
   PlusOutlined,
   UploadOutlined,
   SearchOutlined,
@@ -73,7 +72,7 @@ const Form1 = () => {
 
     try {
       const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
+        `/astro-service/api/indents/${indentorId}`
       );
 
       if (!response.ok)
