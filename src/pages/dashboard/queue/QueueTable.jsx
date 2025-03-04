@@ -89,6 +89,7 @@ const QueueTable = () => {
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
   const [activeTab, setActiveTab] = useState("request");
+  
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   useEffect(() => {
@@ -114,34 +115,7 @@ const QueueTable = () => {
   const [actionTableData, setActionTableData] = useState([])
 
   // --- 3. Fetch queue data based on the logged-in user's role ---
-  const fetchData = async (roleName) => {
-    if (!roleName) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransition?roleName=${encodeURIComponent(
-          roleName
-        )}`
-      );
-      const apiData = response.data.responseData;
-      const formattedData = apiData.map((item, index) => ({
-        key: index.toString(),
-        requestId: item.requestId,
-        originalRequestId: item.requestId,
-        workflowId: item.workflowId, // Note: we'll use workflowId here
-        workflowName: item.workflowName,
-        status: item.nextAction,
-        remarks: item.remarks || "No remarks",
-      }));
-      setData(formattedData);
-    } catch (err) {
-      setError(err.message);
-      message.error("Failed to fetch queue data from the API.");
-      console.error("fetchData error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   // When the logged-in role information is available, fetch queue data
   useEffect(() => {
@@ -344,6 +318,7 @@ const QueueTable = () => {
       console.error("Request change error:", error);
     }
   };
+  
 
   // --- Fetch details based on workflowId ---
   const fetchWorkflowDetails = async (record) => {
@@ -385,11 +360,146 @@ const QueueTable = () => {
       setDetailsData(response.data.responseData);
       setQueueData(response.data.responseData);
       setModalVisible(true);
+      setData(prev => prev.map(item => 
+        item.requestId === record.requestId ? {
+          ...item,
+          ...getCommonFields(response.data)
+        } : item
+      ));
     } catch (err) {
       message.error("Failed to fetch details.");
       console.error("Fetch details error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getCommonFields = (apiResponse) => {
+    const workflowId = apiResponse.responseData.workflowId; // Add workflowId to API response
+    return {
+      indentor: getCommonField(workflowId, apiResponse, "indentor"),
+      amount: getCommonField(workflowId, apiResponse, "amount"),
+      project: getCommonField(workflowId, apiResponse, "project"),
+      // Add other fields
+    };
+  };
+
+  const fetchData = async (roleName) => {
+    if (!roleName) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransition?roleName=${encodeURIComponent(
+          roleName
+        )}`
+      );
+    //   const apiData = response.data.responseData;
+    //   const formattedData = apiData.map((item, index) => ({
+    //     key: index.toString(),
+    //     requestId: item.requestId,
+    //     originalRequestId: item.requestId,
+    //     workflowId: item.workflowId, // Note: we'll use workflowId here
+    //     workflowName: item.workflowName,
+    //     status: item.nextAction,
+    //     remarks: item.remarks || "No remarks",
+    //   }));
+    const formattedData = response.data.responseData.map(item => ({
+        // Common fields
+        key: item.requestId,
+        requestId: item.requestId,
+        workflowId: item.workflowId,
+        workflowName: item.workflowName,
+        ...(item.workflowId === 1 && {
+          indentorName: item.indentorName,
+          totalPriceOfAllMaterials: item.totalPriceOfAllMaterials,
+          projectName: item.projectName,
+          budgetName: item.budgetName,
+          modeOfProcurement: item.modeOfProcurement,
+          consignesLocation: item.consignesLocation,
+        }),
+        ...(item.workflowId === 2 && {
+          createdBy: item.createdBy,
+          amountToBePaid: item.amountToBePaid,
+          projectName: item.projectName,
+          deliveryLocation: item.deliveryLocation,
+        }),
+        ...(item.workflowId === 3 && {
+            createdBy: item.createdBy,
+            totalValueOfPo: item.totalValueOfPo,
+            projectName: item.projectName,
+            budgetCode: item.budgetCode,
+            procurementType: item.procurementType,
+            deliveryAddress: item.deliveryAddress,
+            }),
+        status: item.nextAction,
+        remarks: item.remarks || "No remarks",
+        }));
+      setData(formattedData);
+    } catch (err) {
+      setError(err.message);
+      message.error("Failed to fetch queue data from the API.");
+      console.error("fetchData error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCommonField = (workflowId, apiData, field) => {
+    switch (workflowId) {
+      // Indent (workflowId=1)
+      case 1:
+        return {
+          indentor: apiData.indentorName,
+          amount: apiData.totalPriceOfAllMaterials,
+          project: apiData.projectName,
+          budgetName: apiData.budgetName,
+          indentTitle: apiData.workflowName,
+          procurementMode: apiData.modeOfProcurement,
+          consignee: apiData.consignesLocation
+        }[field];
+  
+      // Contingency Purchase (workflowId=2)
+      case 2:
+        return {
+          indentor: apiData.createdBy,
+          amount: apiData.amountToBePaid,
+          project: apiData.projectName,
+          budgetName: "N/A", // Contingency may not have budget
+          indentTitle: "Contingency Purchase",
+          procurementMode: "Direct Purchase",
+          indentor: apiData.vendorsName ? 
+      `${apiData.vendorsName} (${apiData.createdBy})` : 
+      `User ${apiData.createdBy}`,
+          consignee: apiData.deliveryLocation
+        }[field];
+  
+      // Purchase Order (workflowId=3)
+      case 3:
+        return {
+          indentor: apiData.createdBy,
+          amount: apiData.totalValueOfPo,
+          project: apiData.tenderDetails?.indentResponseDTO?.[0]?.projectName || 
+           "N/A",
+          budgetName: apiData.budgetCode,
+          indentTitle: "Purchase Order",
+          procurementMode: apiData.procurementType,
+          consignee: apiData.deliveryAddress
+        }[field];
+  
+      // Add cases 4 (Tender) and 5 (Service Order) similarly
+      case 4:
+        return {
+          indentor: apiData.createdBy,
+        //   amount: apiData.totalValueOfPo,
+          project: apiData.projectName,
+          budgetName: apiData.budgetCode,
+          indentTitle: "Tender",
+          procurementMode: apiData.procurementType,
+          consignee: apiData.deliveryAddress
+        }[field];
+        
+      default:
+        return "N/A";
     }
   };
 
@@ -421,41 +531,52 @@ const QueueTable = () => {
       title: "Indentor",
       dataIndex: "indentor",
       key: "indentor",
-      render: (_, record) => record.indentorName || "N/A",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "indentor") || "-"
     },
     {
       title: "Amount",
       key: "amount",
-      render: (_, record) => `₹${record.totalPriceOfAllMaterials?.toFixed(2)}`, // Match modal's totalPriceOfAllMaterials
+      render: (_, record) => {
+        const amount = getCommonField(record.workflowId, record, "amount");
+        return amount ? `₹${amount.toFixed(2)}` : "-";
+      },
       sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
     },
     {
       title: "Project",
       dataIndex: "projectName",
       key: "project",
-      render: (text) => text || "N/A",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "project") || "-"
     },
     {
       title: "Budget Name",
       dataIndex: "budgetName",
       key: "budgetName",
-      render: (text, record) => text || record.budgetName || "N/A",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "budget") || "-"
     },
     {
       title: "Indentor Title",
       dataIndex: "workflowName",
       key: "indentTitle",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "indentTitle") || "-"
     },
     {
       title: "Mode of Procurement",
       dataIndex: "modeOfProcurement",
       key: "modeOfProcurement",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "procurementMode") || "-"
     },
     {
       title: "Consignee",
       dataIndex: "consignesLocation", // Match modal's consignesLocation
       key: "consignee",
-      render: (text) => text || "N/A",
+      render: (_, record) => 
+      getCommonField(record.workflowId, record, "consignee") || "-"
     },
     {
       title: "Status",
@@ -612,7 +733,7 @@ const QueueTable = () => {
       />
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <TabPane tab="Request" key="request">
+        <TabPane tab="Queue1" key="request">
           {loading ? (
             <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
           ) : error ? (
@@ -621,7 +742,7 @@ const QueueTable = () => {
             <Table columns={columns} dataSource={filteredData} rowKey="key" />
           )}
         </TabPane>
-        <TabPane tab="Action" key="action">
+        <TabPane tab="Queue2" key="action">
           <QueueAction/>
       </TabPane>
       </Tabs>
