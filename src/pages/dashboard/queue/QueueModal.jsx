@@ -29,9 +29,6 @@ import {
 } from "@ant-design/icons";
 import QueueHistory from "./QueueHistory";
 
-const { Title, Text } = Typography;
-const { Panel } = Collapse;
-
 const QueueModal = ({
   modalVisible,
   setModalVisible,
@@ -650,37 +647,118 @@ const QueueModal = ({
                 <Row gutter={24}>
                   <Col span={12}>
                     <div className="detail-item">
-                      <strong>Service Order ID:</strong>{" "}
-                      {detailsData.soId || "N/A"}
+                      <strong>SO ID:</strong> {detailsData.soId || "N/A"}
                     </div>
                     <div className="detail-item">
-                      <strong>Created Date:</strong>{" "}
-                      {detailsData.createdDate || "N/A"}
+                      <strong>Tender ID:</strong>{" "}
+                      {detailsData.tenderId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Job Completion Period:</strong>{" "}
+                      {detailsData.jobCompletionPeriod
+                        ? `${detailsData.jobCompletionPeriod} days`
+                        : "N/A"}
                     </div>
                   </Col>
                   <Col span={12}>
                     <div className="detail-item">
-                      <strong>Service Type:</strong>{" "}
-                      {detailsData.serviceType || "N/A"}
+                      <strong>Total SO Value:</strong>
+                      <span className="amount">
+                        {detailsData.totalValueOfSo !== undefined
+                          ? `₹${detailsData.totalValueOfSo.toFixed(2)}`
+                          : "N/A"}
+                      </span>
                     </div>
                     <div className="detail-item">
-                      <strong>Status:</strong> {detailsData.status || "N/A"}
+                      <strong>Payment Terms:</strong>{" "}
+                      {detailsData.paymentTerms || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>LD Clause:</strong>{" "}
+                      {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
                     </div>
                   </Col>
                 </Row>
-                <div className="detail-item">
-                  <strong>Service Description:</strong>
-                  <div
-                    style={{
-                      marginTop: 8,
-                      padding: 12,
-                      background: "#fafafa",
-                      borderRadius: 4,
-                    }}
-                  >
-                    {detailsData.details || "No description provided"}
-                  </div>
+              </div>
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ShopOutlined /> Vendor Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Vendor Name:</strong>{" "}
+                        {detailsData.vendorName || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Account Number:</strong>{" "}
+                        {detailsData.vendorsAccountNo || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>IFSC Code:</strong>{" "}
+                        {detailsData.vendorsZRSCCode || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Account Name:</strong>{" "}
+                        {detailsData.vendorsAccountName || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
                 </div>
+                <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <BarsOutlined /> Purchase Order Items
+                </Typography.Title>
+                <Table
+                  dataSource={detailsData.materials}
+                  pagination={false}
+                  bordered
+                  scroll={{ x: true }}
+                  rowKey="materialCode"
+                  columns={[
+                    {
+                      title: "Material Code",
+                      dataIndex: "materialCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Description",
+                      dataIndex: "materialDescription",
+                      ellipsis: true,
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      align: "right",
+                    },
+                    {
+                      title: "Rate",
+                      dataIndex: "rate",
+                      align: "right",
+                      render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    { title: "Currency", dataIndex: "currency", width: 100 },
+                    {
+                      title: "GST",
+                      dataIndex: "gst",
+                      render: (text) => `${text}%`,
+                      align: "right",
+                    },
+                    {
+                      title: "Freight",
+                      dataIndex: "freightCharge",
+                      align: "right",
+                      render: (text) => (text ? `₹${text}` : "N/A"),
+                    },
+                    {
+                      title: "Budget Code",
+                      dataIndex: "budgetCode",
+                      width: 120,
+                    },
+                  ]}
+                />
               </div>
             </div>
           )}

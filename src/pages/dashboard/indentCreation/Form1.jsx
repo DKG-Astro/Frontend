@@ -22,6 +22,7 @@ import {
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
+import LineItem from "../LineItem";
 
 const { Option } = Select;
 
@@ -72,7 +73,7 @@ const Form1 = () => {
 
     try {
       const response = await fetch(
-        `/astro-service/api/indents/${indentorId}`
+        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
       );
 
       if (!response.ok)
@@ -160,122 +161,150 @@ const Form1 = () => {
     return e && e.fileList;
   };
 
-  const handleSubmit = async (values) => {
-    setLoading(true);
+  const uploadFileToServer = async (file) => {
     try {
-      // Ensure line items have valid data
-      const materialDetails = (values.lineItems || [])
-        .filter((item) => item.materialCode) // Remove empty line items
-        .map((item) => ({
-          materialCode: item.materialCode,
-          materialDescription: item.materialDescription || "",
-          quantity: parseFloat(item.quantity) || 0,
-          unitPrice: parseFloat(item.unitPrice) || 0,
-          uom: item.uom || "",
-          totalPrize: parseFloat(item.totalPrice) || 0,
-          budgetCode: item.budgetCode || "",
-          materialCategory: item.materialCategory || "",
-          materialSubCategory: item.materialSubcategory || "",
-          materialAndJob: item.materialOrJobCodeUsedByDept || "",
-        }));
-
-      if (materialDetails.length === 0) {
-        message.error("At least one valid line item is required");
-        setLoading(false);
-        return;
-      }
-
-      const categories = materialDetails.map((item) => item.materialCategory);
-      const firstCategory = categories[0];
-      const allSame = categories.every((cat) => cat === firstCategory);
-
-      if (!allSame) {
-        message.error("All materials must belong to the same category");
-        setLoading(false);
-        return;
-      }
-
-      const payload = {
-        indentorName: values.indentorName,
-        indentId: values.indentId,
-        indentorMobileNo: values.indentorMobileNo,
-        indentorEmailAddress: values.indentorEmail,
-        consignesLocation: values.consigneeLocation || "Banglore",
-
-        uploadingPriorApprovalsFileName:
-          values.uploadingPriorApprovals?.[0]?.name || "",
-        uploadTenderDocumentsFileName:
-          values.uploadTenderDocuments?.[0]?.name || "",
-        uploadGOIOrRFPFileName: values.uploadGOIOrRFP?.[0]?.name || "",
-        uploadPACOrBrandPACFileName:
-          values.uploadPACOrBrandPAC?.[0]?.name || "",
-
-        projectName: values.projectName || null,
-        isPreBidMeetingRequired: !!values.preBidMeetingRequired,
-        preBidMeetingDate:
-          values.preBidMeetingRequired && values.preBidMeetingDetails
-            ? dayjs(values.preBidMeetingDetails[0]).format("DD/MM/YYYY")
-            : null,
-
-        preBidMeetingVenue: values.preBidMeetingLocation || "",
-
-        isItARateContractIndent: !!values.rateContractIndent,
-        estimatedRate: parseFloat(values.estimatedRate) || 0,
-        periodOfContract: parseFloat(values.periodOfRateContract) || 0,
-        singleAndMultipleJob: values.singleOrMultipleJob || "",
-
-        materialCategory: materialDetails[0].materialCategory,
-        totalPriceOfAllMaterials: materialDetails.reduce(
-          (sum, item) => sum + item.totalPrize,
-          0
-        ),
-
-        materialDetails: materialDetails,
-
-        createdBy: actionPerformer,
-        updatedBy: null,
-      };
-
-      // Ensure payload is a proper JSON object
-      const payloadJson = JSON.stringify(payload);
-      console.log("Payload JSON:", payloadJson);
-
       const formData = new FormData();
-      formData.append("indentRequestDto", payloadJson);
-
-      // Limit file sizes and types
-      const fileFields = [
-        "uploadingPriorApprovals",
-        "uploadTenderDocuments",
-        "uploadGOIOrRFP",
-        "uploadPACOrBrandPAC",
-      ];
-
-      fileFields.forEach((field) => {
-        const files = values[field];
-        if (files && files.length > 0) {
-          const file = files[0].originFileObj;
-          // Validate file size (e.g., max 5MB)
-          if (file.size > 5 * 1024 * 1024) {
-            message.error(`${field} file is too large. Maximum 5MB allowed.`);
-            throw new Error(`File too large: ${field}`);
-          }
-          formData.append(field, file);
-        }
-      });
+      formData.append("file", file);
 
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/indents",
+        `http://103.181.158.220:8081/astro-service/file/upload?fileType=Indent`,
         {
           method: "POST",
           body: formData,
         }
       );
 
+      if (!response.ok) throw new Error("File upload failed");
+
+      const data = await response.json();
+      return data.responseData; // Returns the uploaded filename
+    } catch (error) {
+      console.error("File upload error:", error);
+      throw error;
+    }
+  };
+
+  // Update the handleSubmit function with these changes
+  const handleSubmit = async (values) => {
+    setLoading(true);
+    try {
+      // 1. Process file uploads first
+      const uploadFile = async (file, fieldName) => {
+        if (!file) return "";
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(
+            `${fieldName} file is too large. Maximum 5MB allowed.`
+          );
+        }
+        return await uploadFileToServer(file);
+      };
+
+      // Upload all files in parallel
+      const [
+        priorApprovalsFile,
+        tenderDocumentsFile,
+        goiOrRfpFile,
+        pacOrBrandFile,
+      ] = await Promise.all([
+        uploadFile(
+          values.uploadingPriorApprovals?.[0]?.originFileObj,
+          "Prior Approvals"
+        ),
+        uploadFile(
+          values.uploadTenderDocuments?.[0]?.originFileObj,
+          "Tender Documents"
+        ),
+        uploadFile(values.uploadGOIOrRFP?.[0]?.originFileObj, "GOI/RFP"),
+        uploadFile(
+          values.uploadPACOrBrandPAC?.[0]?.originFileObj,
+          "PAC/Brand PAC"
+        ),
+      ]);
+
+      // 2. Process material details with strict number validation
+      const materialDetails = (values.lineItems || [])
+        .filter((item) => item.materialCode)
+        .map((item) => ({
+          materialCode: String(item.materialCode),
+          materialDescription: String(item.materialDescription || ""),
+          quantity: Number(item.quantity) || 0,
+          unitPrice: Number(item.unitPrice) || 0,
+          uom: String(item.uom || ""),
+          totalPrize: Number(item.totalPrice) || 0,
+          budgetCode: String(item.budgetCode || ""),
+          materialCategory: String(item.materialCategory || ""),
+          materialSubCategory: String(item.materialSubcategory || ""),
+          materialAndJob: String(item.materialOrJobCodeUsedByDept || ""),
+        }));
+
+      // 3. Build payload with explicit type conversions
+      const payload = {
+        consignesLocation: String(values.consigneeLocation || "Banglore"),
+        createdBy: Number(actionPerformer) || 0,
+        estimatedRate: Number(values.estimatedRate) || 0,
+        fileType: "Indent",
+        indentId: String(values.indentId || ""),
+        indentorEmailAddress: String(values.indentorEmail || ""),
+        indentorMobileNo: String(values.indentorMobileNo || ""),
+        indentorName: String(values.indentorName || ""),
+        isItARateContractIndent: Boolean(values.rateContractIndent),
+        isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
+        materialDetails,
+        periodOfContract: Number(values.periodOfRateContract) || 0,
+        preBidMeetingDate: values.preBidMeetingDetails?.[0]?.isValid()
+          ? values.preBidMeetingDetails[0].format("DD/MM/YYYY")
+          : null,
+        preBidMeetingVenue: String(values.preBidMeetingLocation || ""),
+        projectName: String(values.projectName || ""),
+        singleAndMultipleJob: String(values.singleOrMultipleJob || ""),
+        updatedBy: null,
+        uploadGOIOrRFPFileName: String(goiOrRfpFile || ""),
+        uploadPACOrBrandPACFileName: String(pacOrBrandFile || ""),
+        uploadTenderDocumentsFileName: String(tenderDocumentsFile || ""),
+        uploadingPriorApprovalsFileName: String(priorApprovalsFile || ""),
+      };
+
+      // 4. Validate numeric fields
+      const numericFields = [
+        "estimatedRate",
+        "periodOfContract",
+        ...materialDetails.flatMap((_, i) => [
+          `materialDetails[${i}].quantity`,
+          `materialDetails[${i}].unitPrice`,
+          `materialDetails[${i}].totalPrize`,
+        ]),
+      ];
+
+      numericFields.forEach((field) => {
+        const value = _.get(payload, field);
+        if (isNaN(value) || typeof value !== "number") {
+          throw new Error(`Invalid numeric value in field: ${field}`);
+        }
+      });
+
+      console.log("Sent Payload:",payload);
+      // 5. Submit the request
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/indents",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Full Error Response:", errorText);
-        throw new Error(`Submission failed: ${response.status}`);
+        throw new Error(`Submission failed: ${errorText}`);
+      }
+
+      const responseData = await response.json();
+      if (responseData.responseStatus.statusCode !== 0) {
+        throw new Error(
+          responseData.responseStatus.message || "Submission failed"
+        );
       }
 
       message.success("Indent submitted successfully!");
@@ -489,269 +518,27 @@ const Form1 = () => {
             label="Upload Prior Approvals"
             name="uploadingPriorApprovals"
             valuePropName="fileList"
-            getValueFromEvent={normFile} // <--- added
+            getValueFromEvent={normFile}
             rules={[
               { required: true, message: "Prior approvals are required" },
             ]}
           >
-            <Upload beforeUpload={() => false}>
+            <Upload beforeUpload={() => false} maxCount={1}>
               <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
             </Upload>
           </Form.Item>
         </div>
 
-        <div>
-          <Form.List name="lineItems" initialValue={[{}]}>
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }, index) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: "1px solid #ccc",
-                      padding: "20px",
-                      paddingBottom: "5px",
-                      marginBottom: "20px",
-                      position: "relative"
-                    }}
-                  >
-                    <DeleteOutlined
-                    onClick={() => remove(name)}
-                    style={{
-                      position: "absolute",
-                      top: "10px",
-                      right: "10px",
-                      fontSize: "18px",
-                      cursor: "pointer",
-                    }}
-                  />
-                    <Space
-                      style={{
-                        display: "flex",
-                        marginBottom: 20,
-                        flexWrap: "wrap",
-                      }}
-                      align="start"
-                    >
-                      <Row gutter={16}>
-                        <Col span={8}>
-                          <Form.Item
-                            name={[name, "materialCode"]}
-                            label="Material Code"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please select a material code!",
-                              },
-                            ]}
-                          >
-                            <Select
-                              placeholder="Select Material Code"
-                              onChange={(value) =>
-                                handleMaterialSelect(index, value)
-                              }
-                            >
-                              {materialList.map((code) => (
-                                <Option key={code} value={code}>
-                                  {code}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Col>
+        <LineItem
+          form={form}
+          materialList={materialList}
+          projects={projects}
+          materialDetailsMap={materialDetailsMap}
+          calculateTotalPrice={calculateTotalPrice}
+          handleMaterialSelect={handleMaterialSelect}
+          handlePriceCalculation={handlePriceCalculation}
+        />
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialDescription"]}
-                            label="Material Description"
-                            rules={[
-                              {
-                                required: true,
-                                message:
-                                  "Please select a material description!",
-                              },
-                            ]}
-                          >
-                            <Select placeholder="Select Material Description">
-                              <Option value="Description 1">
-                                Description 1
-                              </Option>
-                              <Option value="Description 2">
-                                Description 2
-                              </Option>
-                              <Option value="Description 3">
-                                Description 3
-                              </Option>
-                            </Select>
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "quantity"]}
-                            label="Quantity"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter quantity!",
-                              },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              placeholder="Enter Quantity"
-                              onChange={(e) =>
-                                handlePriceCalculation(
-                                  index,
-                                  "quantity",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "unitPrice"]}
-                            label="Unit Price"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter unit price!",
-                              },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              placeholder="Enter Unit Price"
-                              onChange={(e) =>
-                                handlePriceCalculation(
-                                  index,
-                                  "unitPrice",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "uom"]}
-                            label="UOM"
-                            rules={[
-                              { required: true, message: "Please select UOM!" },
-                            ]}
-                          >
-                            <Select placeholder="Select UOM">
-                              <Option value="Kg">Kg</Option>
-                              <Option value="Litre">Litre</Option>
-                              <Option value="Unit">Unit</Option>
-                            </Select>
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "budgetCode"]}
-                            label="Budget Code"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please select a budget code!",
-                              },
-                            ]}
-                          >
-                            <Select placeholder="Select Budget Code">
-                              {projects.map((project) => (
-                                <Option
-                                  key={project.projectCode}
-                                  value={project.projectCode}
-                                >
-                                  {project.budgetType}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialCategory"]}
-                            label="Material Category"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter material category!",
-                              },
-                            ]}
-                          >
-                            <Input placeholder="Enter Material Category" />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialSubcategory"]}
-                            label="Material Subcategory"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter material subcategory!",
-                              },
-                            ]}
-                          >
-                            <Input placeholder="Enter Material Subcategory" />
-                          </Form.Item>
-                        </Col>
-
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "totalPrice"]}
-                            label="Total Price"
-                            shouldUpdate
-                          >
-                            <Input placeholder="Auto-calculated" />
-                          </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialOrJobCodeUsedByDept"]}
-                            label="Material/Job Code Used By Dept"
-                            style={{ width: "100%" }}
-                          >
-                            <Input />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
-                    </Space>
-                  </div>
-                ))}
-                <Form.Item>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    icon={<PlusOutlined />}
-                    style={{ width: "32%" }}
-                  >
-                    Add Item
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-        </div>
         <div className="form-section">
           <Form.Item name="projectName" label="Project Name">
             <Select placeholder="Select project" loading={loading} allowClear>
@@ -765,7 +552,7 @@ const Form1 = () => {
               ))}
             </Select>
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             label="Upload Tender Documents"
             name="uploadTenderDocuments"
             valuePropName="fileList"
@@ -775,6 +562,19 @@ const Form1 = () => {
             ]}
           >
             <Upload beforeUpload={() => false}>
+              <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
+            </Upload>
+          </Form.Item> */}
+          <Form.Item
+            label="Upload Tender Documents"
+            name="uploadTenderDocuments"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[
+              { required: true, message: "Tender documents are required" },
+            ]}
+          >
+            <Upload beforeUpload={() => false} maxCount={1}>
               <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
             </Upload>
           </Form.Item>
@@ -789,11 +589,13 @@ const Form1 = () => {
           {preBidRequired && (
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item
-                  name="preBidMeetingDetails"
-                  label="Meeting Details"
-                >
-                  <DatePicker format="YYYY-MM-DD" />
+                <Form.Item name="preBidMeetingDetails" label="Meeting Details">
+                  <DatePicker
+                    format="DD/MM/YYYY"
+                    disabledDate={(current) =>
+                      current && current < dayjs().startOf("day")
+                    }
+                  />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -870,7 +672,7 @@ const Form1 = () => {
           )}
         </div>
         <div className="form-section">
-          <Form.Item
+          {/* <Form.Item
             label="Upload GOI or RFP"
             name="uploadGOIOrRFP"
             valuePropName="fileList"
@@ -880,9 +682,20 @@ const Form1 = () => {
             <Upload beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Upload GOI/RFP</Button>
             </Upload>
+          </Form.Item> */}
+          <Form.Item
+            label="Upload GOI or RFP"
+            name="uploadGOIOrRFP"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[{ required: true, message: "GOI or RFP is required" }]}
+          >
+            <Upload beforeUpload={() => false} maxCount={1}>
+              <Button icon={<UploadOutlined />}>Upload GOI or RFP</Button>
+            </Upload>
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Upload PAC or Brand PAC"
             name="uploadPACOrBrandPAC"
             valuePropName="fileList"
@@ -893,6 +706,19 @@ const Form1 = () => {
           >
             <Upload beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Upload PAC/Brand PAC</Button>
+            </Upload>
+          </Form.Item> */}
+          <Form.Item
+            label="Upload PAC or Brand PAC"
+            name="uploadPACOrBrandPAC"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            rules={[
+              { required: true, message: "PAC or Brand PAC is required" },
+            ]}
+          >
+            <Upload beforeUpload={() => false} maxCount={1}>
+              <Button icon={<UploadOutlined />}>Upload PAC or Brand</Button>
             </Upload>
           </Form.Item>
         </div>

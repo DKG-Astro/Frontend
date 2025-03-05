@@ -89,10 +89,10 @@ const Form7a = () => {
         paymentTerms: soDetails.paymentTerms,
         vendorName: soDetails.vendorName,
         vendorAddress: soDetails.vendorAddress,
-        applicablePBG: soDetails.applicablePbgToBeSubmitted,
-        vendorAccountNo: soDetails.vendorAccountNumber,
-        vendorIFSCCode: soDetails.vendorsIfscCode,
-        vendorAccountName: soDetails.vendorAccountName,
+        applicablePBG: soDetails.applicablePBGToBeSubmitted,
+        vendorAccountNo: soDetails.vendorsAccountNo,
+        vendorIFSCCode: soDetails.vendorsZRSCCode,
+        vendorAccountName: soDetails.vendorsAccountName,
       });
 
       // Format service materials as line items
@@ -235,17 +235,17 @@ const Form7a = () => {
         paymentTerms: values.paymentTerms,
         vendorName: values.vendorName,
         vendorAddress: values.vendorAddress,
-        applicablePbgToBeSubmitted: values.applicablePBG,
-        vendorAccountNumber: values.vendorAccountNo,
-        vendorsIfscCode: values.vendorIFSCCode,
-        vendorAccountName: values.vendorAccountName,
+        applicablePBGToBeSubmitted: values.applicablePBG,
+        vendorsAccountNo: values.vendorAccountNo,
+        vendorsZRSCCode: values.vendorIFSCCode,
+        vendorsAccountName: values.vendorAccountName,
         materials: updatedLineItems,
         createdBy: actionPerformer,
         updatedBy: null,
       };
   
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/service-orders",
+        "/astro-service/api/service-orders",
         {
           method: "POST",
           headers: {
