@@ -3,7 +3,7 @@ import Routes from './pages/route/Routes';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 
-axios.defaults.baseURL="http://103.181.158.220:8081"
+axios.defaults.baseURL="http://103.181.158.220:8081/astro-service"
 
 function App() {
   const dispatch = useDispatch();

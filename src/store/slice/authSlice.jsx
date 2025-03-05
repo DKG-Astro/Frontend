@@ -17,7 +17,7 @@ export const login = createAsyncThunk(
   async (formData, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://103.181.158.220:8081/astro-service/login',
+        '/login',
         formData
       );
       const data = response.data;
