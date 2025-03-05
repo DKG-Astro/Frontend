@@ -11,7 +11,7 @@ import {
   Spin,
   Select,
 } from "antd";
-import {SearchOutlined,} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import QueueModal from "./QueueModal";
@@ -43,7 +43,7 @@ const FilterComponent = ({ onSearch, searchRequestId, onReset }) => (
   </div>
 );
 
-const QueueTable = () => {
+const QueueRequest = () => {
   // Get the logged-in user's role details from Redux
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -65,29 +65,25 @@ const QueueTable = () => {
   const [queueData, setQueueData] = useState([]);
 
   // --- 2. Fetch the current user details from the UserMaster API ---
-//   useEffect(() => {
-//     const fetchCurrentUser = async () => {
-//       try {
-//         const response = await axios.get(
-//           "http://103.181.158.220:8081/astro-service/api/userMaster"
-//         );
-//         const userData = response.data.responseData;
-//         if (userData && userData.length > 0) {
-//           setCurrentUserId(userData[0].userId);
-//         } else {
-//           message.error("No user data found.");
-//         }
-//       } catch (error) {
-//         message.error("Failed to fetch user details.");
-//         console.error("User fetch error:", error);
-//       }
-//     };
-//     fetchCurrentUser();
-//   }, []);
-
-
-
-
+  //   useEffect(() => {
+  //     const fetchCurrentUser = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           "http://103.181.158.220:8081/astro-service/api/userMaster"
+  //         );
+  //         const userData = response.data.responseData;
+  //         if (userData && userData.length > 0) {
+  //           setCurrentUserId(userData[0].userId);
+  //         } else {
+  //           message.error("No user data found.");
+  //         }
+  //       } catch (error) {
+  //         message.error("Failed to fetch user details.");
+  //         console.error("User fetch error:", error);
+  //       }
+  //     };
+  //     fetchCurrentUser();
+  //   }, []);
 
   // When the logged-in role information is available, fetch queue data
   useEffect(() => {
@@ -172,6 +168,9 @@ const QueueTable = () => {
       const response = await axios.get(
         `/astro-service/workflowTransitionHistory?requestId=${requestId}`
       );
+      if (!response.data.responseData?.[0]?.remarks) {
+        console.warn("No remarks found in transition history");
+      }
       return response.data.responseData;
     } catch (error) {
       console.error("Error fetching workflow transition history:", error);
@@ -221,15 +220,11 @@ const QueueTable = () => {
         workflowTransitionId: currentTransition.workflowTransitionId,
       };
 
-      await axios.post(
-        "/astro-service/performTransitionAction",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      await axios.post("/astro-service/performTransitionAction", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-      message.success(
-        `Request ${record.requestId} rejected and sent back to ${lastApproval.assignmentRole}`
-      );
+      message.success(`Request ${record.requestId} rejected and out of queue`);
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
       setRejectComment("");
     } catch (error) {
@@ -247,10 +242,10 @@ const QueueTable = () => {
       message.warning("Please enter request change comments.");
       return;
     }
-    if (!currentUserId) {
-      message.error("User details not loaded yet.");
-      return;
-    }
+    // if (!currentUserId) {
+    //   message.error("User details not loaded yet.");
+    //   return;
+    // }
 
     try {
       const workflowTransitionId = await fetchWorkflowTransitionId(
@@ -271,14 +266,12 @@ const QueueTable = () => {
         // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
         // remarks: rejectComment, // Use user's reject comments
         requestId: record.requestId,
-        workflowTransitionId,
+        workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
       };
 
-      await axios.post(
-        "/astro-service/performTransitionAction",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
+      await axios.post("/astro-service/performTransitionAction", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
       message.success("Request change submitted successfully.");
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
@@ -364,7 +357,7 @@ const QueueTable = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransition?roleName=${encodeURIComponent(
+        `/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
           roleName
         )}`
       );
@@ -379,35 +372,54 @@ const QueueTable = () => {
       //     remarks: item.remarks || "No remarks",
       //   }));
       const formattedData = response.data.responseData.map((item) => ({
-        // Common fields
         key: item.requestId,
         requestId: item.requestId,
         workflowId: item.workflowId,
         workflowName: item.workflowName,
+        remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
+        // Correct field mappings based on workflowId
         ...(item.workflowId === 1 && {
+          // Indent
           indentorName: item.indentorName,
-          totalPriceOfAllMaterials: item.totalPriceOfAllMaterials,
+          amount: item.amount,
           projectName: item.projectName,
           budgetName: item.budgetName,
           modeOfProcurement: item.modeOfProcurement,
-          consignesLocation: item.consignesLocation,
+          consignee: item.consignee,
         }),
         ...(item.workflowId === 2 && {
+          // Contingency Purchase
           createdBy: item.createdBy,
-          amountToBePaid: item.amountToBePaid,
+          amount: item.amount,
           projectName: item.projectName,
-          deliveryLocation: item.deliveryLocation,
+          consignee: item.deliveryLocation,
         }),
         ...(item.workflowId === 3 && {
+          // Purchase Order
           createdBy: item.createdBy,
-          totalValueOfPo: item.totalValueOfPo,
+          amount: item.amount,
           projectName: item.projectName,
           budgetCode: item.budgetCode,
           procurementType: item.procurementType,
-          deliveryAddress: item.deliveryAddress,
+          consignee: item.consignee,
         }),
+        ...(item.workflowId === 4 && {
+          // Tender
+          createdBy: item.createdBy,
+          projectName: item.projectName,
+          budgetCode: item.budgetCode,
+          procurementType: item.procurementType,
+          consignee: item.deliveryAddress,
+        }),
+        ...(item.workflowId === 5 &&
+          {
+            createdBy: item.createdBy,
+            projectName: item.projectName,
+            budgetCode: item.budgetCode,
+            procurementType: item.procurementType,
+            consignee: item.consignee
+          }),
         status: item.nextAction,
-        remarks: item.remarks || "No remarks",
       }));
       setData(formattedData);
     } catch (err) {
@@ -425,19 +437,19 @@ const QueueTable = () => {
       case 1:
         return {
           indentor: apiData.indentorName,
-          amount: apiData.totalPriceOfAllMaterials,
+          amount: apiData.amount,
           project: apiData.projectName,
           budgetName: apiData.budgetName,
           indentTitle: apiData.workflowName,
-          procurementMode: apiData.modeOfProcurement,
-          consignee: apiData.consignesLocation,
+          modeOfProcurement: apiData.modeOfProcurement,
+          consignee: apiData.consignee,
         }[field];
 
       // Contingency Purchase (workflowId=2)
       case 2:
         return {
           indentor: apiData.createdBy,
-          amount: apiData.amountToBePaid,
+          amount: apiData.amount,
           project: apiData.projectName,
           budgetName: "N/A", // Contingency may not have budget
           indentTitle: "Contingency Purchase",
@@ -445,20 +457,20 @@ const QueueTable = () => {
           indentor: apiData.vendorsName
             ? `${apiData.vendorsName} (${apiData.createdBy})`
             : `User ${apiData.createdBy}`,
-          consignee: apiData.deliveryLocation,
+          consignee: apiData.consignee,
         }[field];
 
       // Purchase Order (workflowId=3)
       case 3:
         return {
           indentor: apiData.createdBy,
-          amount: apiData.totalValueOfPo,
+          amount: apiData.amount,
           project:
             apiData.tenderDetails?.indentResponseDTO?.[0]?.projectName || "N/A",
           budgetName: apiData.budgetCode,
           indentTitle: "Purchase Order",
           procurementMode: apiData.procurementType,
-          consignee: apiData.deliveryAddress,
+          consignee: apiData.consignee,
         }[field];
 
       // Add cases 4 (Tender) and 5 (Service Order) similarly
@@ -473,6 +485,17 @@ const QueueTable = () => {
           consignee: apiData.deliveryAddress,
         }[field];
 
+      case 5:
+        return {
+          indentor: apiData.createdBy,
+          //   amount: apiData.totalValueOfPo,
+          project: apiData.projectName,
+          budgetName: apiData.budgetCode,
+          indentTitle: "Service Order",
+          procurementMode: apiData.procurementType,
+          consignee: apiData.consignee,
+        }[field];
+
       default:
         return "N/A";
     }
@@ -483,7 +506,6 @@ const QueueTable = () => {
       title: "Request ID",
       dataIndex: "requestId",
       key: "requestId",
-      sorter: (a, b) => a.requestId.localeCompare(b.requestId),
       render: (text, record) => (
         <Button type="link" onClick={() => fetchWorkflowDetails(record)}>
           {text}
@@ -491,17 +513,6 @@ const QueueTable = () => {
       ),
       fixed: "left",
     },
-    // {
-    //   title: "Workflow ID",
-    //   dataIndex: "workflowId",
-    //   key: "workflowId",
-    //   filters: [
-    //     { text: "1", value: "1" },
-    //     { text: "2", value: "2" },
-    //     { text: "3", value: "3" },
-    //   ],
-    //   onFilter: (value, record) => record.workflowId === value,
-    // },
     {
       title: "Indentor",
       dataIndex: "indentor",
@@ -514,7 +525,7 @@ const QueueTable = () => {
       key: "amount",
       render: (_, record) => {
         const amount = getCommonField(record.workflowId, record, "amount");
-        return amount ? `₹${amount.toFixed(2)}` : "-";
+        return amount ? `₹${amount}` : "-";
       },
       sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
     },
@@ -544,11 +555,11 @@ const QueueTable = () => {
       dataIndex: "modeOfProcurement",
       key: "modeOfProcurement",
       render: (_, record) =>
-        getCommonField(record.workflowId, record, "procurementMode") || "-",
+        getCommonField(record.workflowId, record, "modeOfProcurement") || "-",
     },
     {
       title: "Consignee",
-      dataIndex: "consignesLocation", // Match modal's consignesLocation
+      dataIndex: "consignee", // Match modal's consignesLocation
       key: "consignee",
       render: (_, record) =>
         getCommonField(record.workflowId, record, "consignee") || "-",
@@ -565,6 +576,11 @@ const QueueTable = () => {
       title: "Remarks",
       dataIndex: "remarks",
       key: "remarks",
+      render: (text, record) => (
+        <span>
+          {text || record.transitionHistory?.[0]?.action || "No remarks"}
+        </span>
+      ),
     },
     {
       title: "Actions",
@@ -573,7 +589,7 @@ const QueueTable = () => {
       render: (_, record) => {
         if (record.status === "Approved") return null;
         return (
-          <Space wrap>
+          <Space>
             <Button type="link" onClick={() => handleApprove(record)}>
               Approve
             </Button>
@@ -713,4 +729,4 @@ const QueueTable = () => {
   );
 };
 
-export default QueueTable;
+export default QueueRequest;
