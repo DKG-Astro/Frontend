@@ -177,7 +177,7 @@ const Form1 = () => {
       if (!response.ok) throw new Error("File upload failed");
 
       const data = await response.json();
-      return data.responseData; // Returns the uploaded filename
+      return data.responseData.fileName; // Returns the uploaded filename
     } catch (error) {
       console.error("File upload error:", error);
       throw error;
@@ -239,29 +239,29 @@ const Form1 = () => {
 
       // 3. Build payload with explicit type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation || "Banglore"),
-        createdBy: Number(actionPerformer) || 0,
-        estimatedRate: Number(values.estimatedRate) || 0,
+        consignesLocation: values.consigneeLocation || "Banglore",
+        createdBy: actionPerformer || 0,
+        estimatedRate: values.estimatedRate || 0,
         fileType: "Indent",
-        indentId: String(values.indentId || ""),
-        indentorEmailAddress: String(values.indentorEmail || ""),
-        indentorMobileNo: String(values.indentorMobileNo || ""),
-        indentorName: String(values.indentorName || ""),
-        isItARateContractIndent: Boolean(values.rateContractIndent),
-        isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
+        indentId: values.indentId || "",
+        indentorEmailAddress: values.indentorEmail || "",
+        indentorMobileNo: values.indentorMobileNo || "",
+        indentorName: values.indentorName || "",
+        isItARateContractIndent: values.rateContractIndent,
+        isPreBidMeetingRequired: values.preBidMeetingRequired,
         materialDetails,
-        periodOfContract: Number(values.periodOfRateContract) || 0,
+        periodOfContract: values.periodOfRateContract || 0,
         preBidMeetingDate: values.preBidMeetingDetails?.[0]?.isValid()
-          ? values.preBidMeetingDetails[0].format("DD/MM/YYYY")
+          ? values.preBidMeetingDetails?.[0]?.format("DD/MM/YYYY")
           : null,
-        preBidMeetingVenue: String(values.preBidMeetingLocation || ""),
-        projectName: String(values.projectName || ""),
-        singleAndMultipleJob: String(values.singleOrMultipleJob || ""),
+        preBidMeetingVenue: values.preBidMeetingLocation || "",
+        projectName: values.projectName || "",
+        singleAndMultipleJob: values.singleOrMultipleJob || "",
         updatedBy: null,
-        uploadGOIOrRFPFileName: String(goiOrRfpFile || ""),
-        uploadPACOrBrandPACFileName: String(pacOrBrandFile || ""),
-        uploadTenderDocumentsFileName: String(tenderDocumentsFile || ""),
-        uploadingPriorApprovalsFileName: String(priorApprovalsFile || ""),
+        uploadGOIOrRFPFileName: goiOrRfpFile || "",
+        uploadPACOrBrandPACFileName: pacOrBrandFile || "",
+        uploadTenderDocumentsFileName: tenderDocumentsFile || "",
+        uploadingPriorApprovalsFileName: priorApprovalsFile || "",
       };
 
       // 4. Validate numeric fields
@@ -275,12 +275,12 @@ const Form1 = () => {
         ]),
       ];
 
-      numericFields.forEach((field) => {
-        const value = _.get(payload, field);
-        if (isNaN(value) || typeof value !== "number") {
-          throw new Error(`Invalid numeric value in field: ${field}`);
-        }
-      });
+    //   numericFields.forEach((field) => {
+    //     const value = _.get(payload, field);
+    //     if (isNaN(value) || typeof value !== "number") {
+    //       throw new Error(`Invalid numeric value in field: ${field}`);
+    //     }
+    //   });
 
       console.log("Sent Payload:",payload);
       // 5. Submit the request
@@ -400,7 +400,7 @@ const Form1 = () => {
     const updatedItems = [...lineItems];
     updatedItems[index] = {
       ...updatedItems[index],
-      materialCode,
+      materialCode: undefined,
       materialDescription: materialData.description || "",
       materialCategory: materialData.category || "",
       materialSubcategory: materialData.subCategory || "",
@@ -589,7 +589,7 @@ const Form1 = () => {
           {preBidRequired && (
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="preBidMeetingDetails" label="Meeting Details">
+                <Form.Item name="preBidMeetingDetails" label="Meeting Details" required={{message:"Enter Date"}}>
                   <DatePicker
                     format="DD/MM/YYYY"
                     disabledDate={(current) =>

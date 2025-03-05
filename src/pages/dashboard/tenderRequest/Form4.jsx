@@ -58,26 +58,39 @@ const Form4 = () => {
     const fetchApprovedIndents = async () => {
       setLoading(true);
       try {
-        // Fetch approved indent IDs from the new API
+        // 1. Fetch approved indent IDs
         const responseApproved = await fetch(
           "http://103.181.158.220:8081/astro-service/approved-indents"
         );
-        const approvedIndentIds = await responseApproved.json();
-        // approvedIndentIds looks like: ["103", "IND2010", "IND1500", ...]
-
-        // Fetch full indent details from the former API
+        
+        if (!responseApproved.ok) {
+          throw new Error(`HTTP error! status: ${responseApproved.status}`);
+        }
+        
+        const dataApproved = await responseApproved.json();
+        
+        // Check if response has the expected structure
+        if (!Array.isArray(dataApproved.responseData)) {
+          throw new Error("Approved indents API returned unexpected format");
+        }
+        
+        const approvedIndentIds = dataApproved.responseData;
+  
+        // 2. Fetch all indents
         const responseIndents = await fetch(
           "http://103.181.158.220:8081/astro-service/api/indents"
         );
+        
+        if (!responseIndents.ok) {
+          throw new Error(`HTTP error! status: ${responseIndents.status}`);
+        }
+        
         const data = await responseIndents.json();
-
-        if (
-          data.responseStatus.statusCode === 0 &&
-          Array.isArray(data.responseData)
-        ) {
-          // Filter indent details to only include those whose indentId is in the approved list.
-          const filteredIndents = data.responseData.filter((indent) =>
-            approvedIndentIds.includes(indent.indentId.toString())
+  
+        // 3. Process data
+        if (data.responseStatus.statusCode === 0 && Array.isArray(data.responseData)) {
+          const filteredIndents = data.responseData.filter(indent => 
+            approvedIndentIds.includes(indent.indentId?.toString()) // Handle possible null/undefined
           );
           setIndentData(filteredIndents);
         } else {
@@ -85,12 +98,12 @@ const Form4 = () => {
         }
       } catch (error) {
         console.error("Error fetching indents:", error);
-        message.error("Failed to fetch indent data");
+        message.error(`Error: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchApprovedIndents();
   }, []);
 
@@ -275,12 +288,37 @@ const Form4 = () => {
 
   // ----------------------------
   // Form Submission & Save Draft - Handling file uploads via FormData
+
+  const uploadFileToServer = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Tender",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+  
+      if (!response.ok) throw new Error("File upload failed");
+      
+      const data = await response.json();
+      return data.responseData.fileName; // Return the uploaded filename
+  
+    } catch (error) {
+      console.error("File upload error:", error);
+      throw error;
+    }
+  };
   // ----------------------------
   const handleSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-
+  
+      // Validate project consistency
       if (values.indentId?.length > 0) {
         const projects = values.indentId.map((id) => {
           const indent = indentData.find(
@@ -288,19 +326,39 @@ const Form4 = () => {
           );
           return indent?.projectName;
         });
-
+  
         const firstProject = projects[0];
         const allSame = projects.every((project) => project === firstProject);
-
+  
         if (!allSame) {
-          message.error(
-            "Submission failed: Indents must belong to the same project"
-          );
+          message.error("Submission failed: Indents must belong to the same project");
           return;
         }
       }
-
-      // Format Dates as DD/MM/YYYY
+  
+      // Upload files and get their names
+      const uploadFiles = async (fileList) => {
+        if (!fileList || fileList.length === 0) return "";
+        try {
+          return await uploadFileToServer(fileList[0].originFileObj);
+        } catch (error) {
+          message.error(`File upload failed: ${error.message}`);
+          throw error;
+        }
+      };
+  
+      // Upload all files in parallel
+      const [
+        tenderUploadFileName,
+        generalTermsFileName,
+        specificTermsFileName
+      ] = await Promise.all([
+        uploadFiles(values.tenderUpload),
+        uploadFiles(values["generalTerms&Conditions"]),
+        uploadFiles(values["specificTerms&Conditions"]),
+      ]);
+  
+      // Prepare the payload with uploaded file names
       const formatDate = (date) => (date ? date.format("DD/MM/YYYY") : null);
 
       // Prepare the Payload
@@ -345,44 +403,27 @@ const Form4 = () => {
       };
 
       // Create FormData
-      const formData = new FormData();
-      formData.append("tenderRequestDto", JSON.stringify(payload));
-
-      // Handle File Uploads
-      const appendFile = (fieldName, fileList) => {
-        if (fileList && fileList.length > 0) {
-          formData.append(fieldName, fileList[0].originFileObj);
-        }
-      };
-
-      appendFile("uploadTenderDocuments", values.tenderUpload);
-      appendFile(
-        "uploadGeneralTermsAndConditions",
-        values["generalTerms&Conditions"]
-      );
-      appendFile(
-        "uploadSpecificTermsAndConditions",
-        values["specificTerms&Conditions"]
-      );
-
-      // API Call
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/tender-requests",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         }
       );
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Submission failed: ${errorText}`);
       }
-
+  
       const result = await response.json();
       message.success("Tender submitted successfully");
       console.log("API Response:", result);
       form.resetFields();
+  
     } catch (error) {
       console.error("Submission Error:", error);
       message.error(`Error: ${error.message}`);
