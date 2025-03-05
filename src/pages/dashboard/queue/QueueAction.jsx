@@ -3,6 +3,7 @@ import { Table } from "antd";
 import React from "react";
 import { useSelector } from "react-redux";
 import ApprovedTenders from "./ApprovedTenders";
+import SubworkflowTransition from "./SubworkflowTransition";
 
 const QueueAction = () => {
   // const columns = [
@@ -47,6 +48,10 @@ const QueueAction = () => {
 
   if(parseInt(roleId) === 17){ // tender evaluator, show approved tender id
     return <ApprovedTenders />
+  }
+
+  if(parseInt(roleId) === 1){
+    return <SubworkflowTransition />
   }
 };
 
