@@ -85,6 +85,7 @@ import IndentReport from "../reports/IndentReport";
 import TechnoMom from "../reports/TechnoMom";
 import VendorContract from "../reports/VendorContractReport";
 import ProcurementActivityReport from "../reports/ProcurementActivityReport";
+import Temp from "../dashboard/goodsProvisionalRecieptNote/Temp";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -232,7 +233,9 @@ const RoutesComponent = () => {
             <Route path="vendorContract" element={<VendorContract />} />
             <Route path="procurementActivity" element={<ProcurementActivityReport />} />   
             </Route>
+          <Route path="/temp" element={<Temp />} />
           </Route>
+
 
         </Route>
 

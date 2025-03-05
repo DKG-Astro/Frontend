@@ -167,7 +167,7 @@ label{
 /* ------------------ ASTRO ------------------- */
 
 .a4-container{
-  @apply mx-auto w-full max-w-[210mm] aspect-[210/297] bg-[#e4f2f2] border border-[#ccc] p-6
+  @apply mx-auto w-full max-w-[210mm] aspect-[210/297] bg-[#e4f2f2] border border-[#ccc]
 }
 
 .org-dtl-container{
@@ -377,4 +377,7 @@ label{
 .ant-form-item .no-border{
   @apply !m-0;
 }
-  
+
+.ant-form-item-label > label {
+  @apply !text-sm
+}
