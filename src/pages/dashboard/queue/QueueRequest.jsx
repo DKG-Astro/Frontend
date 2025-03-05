@@ -357,7 +357,7 @@ const QueueRequest = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
+        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
           roleName
         )}`
       );

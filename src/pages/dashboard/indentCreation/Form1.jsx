@@ -161,26 +161,39 @@ const Form1 = () => {
     return e && e.fileList;
   };
 
-  const uploadFileToServer = async (file) => {
+  const uploadFileToServer = async (file, fieldName) => {
     try {
+      if (!file) return "";
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error(`${fieldName} file is too large. Maximum 5MB allowed.`);
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
       const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/file/upload?fileType=Indent`,
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Indent",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${auth.token}`, // Add authentication if needed
+          },
           body: formData,
         }
       );
 
-      if (!response.ok) throw new Error("File upload failed");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.responseStatus?.message || "File upload failed"
+        );
+      }
 
       const data = await response.json();
-      return data.responseData.fileName; // Returns the uploaded filename
+      return data.responseData.fileName;
     } catch (error) {
-      console.error("File upload error:", error);
-      throw error;
+      console.error(`File upload error (${fieldName}):`, error);
+      throw new Error(`Failed to upload ${fieldName}: ${error.message}`);
     }
   };
 
@@ -188,122 +201,95 @@ const Form1 = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      // 1. Process file uploads first
-      const uploadFile = async (file, fieldName) => {
-        if (!file) return "";
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error(
-            `${fieldName} file is too large. Maximum 5MB allowed.`
-          );
-        }
-        return await uploadFileToServer(file);
+      // Upload all files in parallel with better error handling
+      const uploadFiles = async (fileList, fieldName) => {
+        if (!fileList || fileList.length === 0) return "";
+        return uploadFileToServer(fileList[0].originFileObj, fieldName);
       };
 
-      // Upload all files in parallel
       const [
         priorApprovalsFile,
         tenderDocumentsFile,
         goiOrRfpFile,
         pacOrBrandFile,
       ] = await Promise.all([
-        uploadFile(
-          values.uploadingPriorApprovals?.[0]?.originFileObj,
-          "Prior Approvals"
-        ),
-        uploadFile(
-          values.uploadTenderDocuments?.[0]?.originFileObj,
-          "Tender Documents"
-        ),
-        uploadFile(values.uploadGOIOrRFP?.[0]?.originFileObj, "GOI/RFP"),
-        uploadFile(
-          values.uploadPACOrBrandPAC?.[0]?.originFileObj,
-          "PAC/Brand PAC"
-        ),
+        uploadFiles(values.uploadingPriorApprovals, "Prior Approvals"),
+        uploadFiles(values.uploadTenderDocuments, "Tender Documents"),
+        uploadFiles(values.uploadGOIOrRFP, "GOI/RFP"),
+        uploadFiles(values.uploadPACOrBrandPAC, "PAC/Brand PAC"),
       ]);
 
-      // 2. Process material details with strict number validation
-      const materialDetails = (values.lineItems || [])
-        .filter((item) => item.materialCode)
-        .map((item) => ({
-          materialCode: String(item.materialCode),
+      // Process material details with enhanced validation
+      const materialDetails = (values.lineItems || []).map((item) => {
+        const quantity = Number(item.quantity) || 0;
+        const unitPrice = Number(item.unitPrice) || 0;
+        const totalPrice = quantity * unitPrice;
+
+        if (isNaN(quantity) || quantity <= 0) {
+          throw new Error(`Invalid quantity for material ${item.materialCode}`);
+        }
+
+        return {
+          materialCode: String(item.materialCode || ""),
           materialDescription: String(item.materialDescription || ""),
-          quantity: Number(item.quantity) || 0,
-          unitPrice: Number(item.unitPrice) || 0,
+          quantity: quantity,
+          unitPrice: unitPrice,
           uom: String(item.uom || ""),
-          totalPrize: Number(item.totalPrice) || 0,
+          totalPrize: totalPrice,
           budgetCode: String(item.budgetCode || ""),
           materialCategory: String(item.materialCategory || ""),
           materialSubCategory: String(item.materialSubcategory || ""),
           materialAndJob: String(item.materialOrJobCodeUsedByDept || ""),
-        }));
+        };
+      });
 
-      // 3. Build payload with explicit type conversions
+      // Build payload with proper type conversions
       const payload = {
-        consignesLocation: values.consigneeLocation || "Banglore",
-        createdBy: actionPerformer || 0,
-        estimatedRate: values.estimatedRate || 0,
+        consignesLocation: String(values.consigneeLocation || "Banglore"),
+        createdBy: Number(actionPerformer) || 0,
+        estimatedRate: Number(values.estimatedRate) || 0,
         fileType: "Indent",
-        indentId: values.indentId || "",
-        indentorEmailAddress: values.indentorEmail || "",
-        indentorMobileNo: values.indentorMobileNo || "",
-        indentorName: values.indentorName || "",
-        isItARateContractIndent: values.rateContractIndent,
-        isPreBidMeetingRequired: values.preBidMeetingRequired,
-        materialDetails,
-        periodOfContract: values.periodOfRateContract || 0,
+        indentId: String(values.indentId || ""),
+        indentorEmailAddress: String(values.indentorEmail || ""),
+        indentorMobileNo: String(values.indentorMobileNo || ""),
+        indentorName: String(values.indentorName || ""),
+        isItARateContractIndent: Boolean(values.rateContractIndent),
+        isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
+        materialDetails: materialDetails,
+        periodOfContract: Number(values.periodOfRateContract) || 0,
         preBidMeetingDate: values.preBidMeetingDetails?.[0]?.isValid()
-          ? values.preBidMeetingDetails?.[0]?.format("DD/MM/YYYY")
+          ? values.preBidMeetingDetails[0].format("DD/MM/YYYY")
           : null,
-        preBidMeetingVenue: values.preBidMeetingLocation || "",
-        projectName: values.projectName || "",
-        singleAndMultipleJob: values.singleOrMultipleJob || "",
+        preBidMeetingVenue: String(values.preBidMeetingLocation || ""),
+        projectName: String(values.projectName || ""),
+        singleAndMultipleJob: String(values.singleOrMultipleJob || ""),
         updatedBy: null,
-        uploadGOIOrRFPFileName: goiOrRfpFile || "",
-        uploadPACOrBrandPACFileName: pacOrBrandFile || "",
-        uploadTenderDocumentsFileName: tenderDocumentsFile || "",
-        uploadingPriorApprovalsFileName: priorApprovalsFile || "",
+        uploadGOIOrRFPFileName: String(goiOrRfpFile || ""),
+        uploadPACOrBrandPACFileName: String(pacOrBrandFile || ""),
+        uploadTenderDocumentsFileName: String(tenderDocumentsFile || ""),
+        uploadingPriorApprovalsFileName: String(priorApprovalsFile || ""),
       };
 
-      // 4. Validate numeric fields
-      const numericFields = [
-        "estimatedRate",
-        "periodOfContract",
-        ...materialDetails.flatMap((_, i) => [
-          `materialDetails[${i}].quantity`,
-          `materialDetails[${i}].unitPrice`,
-          `materialDetails[${i}].totalPrize`,
-        ]),
-      ];
+      console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
-    //   numericFields.forEach((field) => {
-    //     const value = _.get(payload, field);
-    //     if (isNaN(value) || typeof value !== "number") {
-    //       throw new Error(`Invalid numeric value in field: ${field}`);
-    //     }
-    //   });
-
-      console.log("Sent Payload:",payload);
-      // 5. Submit the request
+      // Submit request with authentication headers
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/indents",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
           },
           body: JSON.stringify(payload),
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Submission failed: ${errorText}`);
-      }
-
       const responseData = await response.json();
-      if (responseData.responseStatus.statusCode !== 0) {
+
+      if (!response.ok || responseData.responseStatus.statusCode !== 0) {
         throw new Error(
-          responseData.responseStatus.message || "Submission failed"
+          responseData.responseStatus?.message || "Submission failed"
         );
       }
 
@@ -384,23 +370,10 @@ const Form1 = () => {
   const handleMaterialSelect = (index, materialCode) => {
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
-
-    //     if (lineItems[index]) {
-    //       lineItems[index] = {
-    //         ...lineItems[index],
-    //         materialCode,
-    //         materialDescription: materialData.description || "",
-    //         materialCategory: materialData.category || "",
-    //         materialSubcategory: materialData.subCategory || "",
-    //         uom: materialData.uom || "",
-    //       };
-
-    //       form.setFieldsValue({ lineItems });
-    //     }
     const updatedItems = [...lineItems];
     updatedItems[index] = {
       ...updatedItems[index],
-      materialCode: undefined,
+      materialCode: materialCode, // Fixed syntax error here
       materialDescription: materialData.description || "",
       materialCategory: materialData.category || "",
       materialSubcategory: materialData.subCategory || "",
@@ -589,7 +562,11 @@ const Form1 = () => {
           {preBidRequired && (
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item name="preBidMeetingDetails" label="Meeting Details" required={{message:"Enter Date"}}>
+                <Form.Item
+                  name="preBidMeetingDetails"
+                  label="Meeting Details"
+                  required={{ message: "Enter Date" }}
+                >
                   <DatePicker
                     format="DD/MM/YYYY"
                     disabledDate={(current) =>
