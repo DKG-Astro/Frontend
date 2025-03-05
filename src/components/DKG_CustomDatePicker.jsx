@@ -76,6 +76,7 @@ const CustomDatePicker = ({
 
   return (
     <Form.Item
+    name={name}
       label={label}
       rules={[
         { required: required ?? false, message: "Please input value!" },

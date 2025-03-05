@@ -1,5 +1,8 @@
 import { message } from "antd";
+import FormItemInput from "antd/es/form/FormItemInput";
 import axios from "axios";
+import CustomDatePicker from "../components/DKG_CustomDatePicker";
+import FormInputItem from "../components/DKG_FormInputItem";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -159,3 +162,101 @@ export const apiCall = async (method, url, token, payload = null) => {
       return { ...prevValues, items: updatedItems1 };
     });
   };  
+
+  // const conditonalRender = (field, handleChange) => {
+  //   console.log("CONDITIONAL RENDER")
+  //   if(!field || !field.type){
+  //     throw new Error("Provided provide field type.")
+  //   }
+
+  //   const {type} = field;
+
+  //   switch (type){
+  //     case "text":
+  //       return <FormItemInput label={field?.label} name={field?.name} required = {field?.required} disabled={field?.disabled} onChange={handleChange} />
+  //     case "date":
+  //       return <CustomDatePicker label={field?.label} name={field?.name} required = {field?.required} disabled={field?.disabled} onChange={handleChange} />
+  //     default:
+  //       throw new Error("Provided field type doesnt exist.")
+  //   }
+  // }
+
+
+  const conditonalRender = (field, handleChange) => {
+    console.log("CONDITIONAL RENDER");
+  
+    if (!field || !field.type) {
+      throw new Error("Provided field type is missing.");
+    }
+  
+    const { type } = field;
+  
+    switch (type) {
+      case "text":
+        return (
+          <FormInputItem
+            label={field?.label}
+            name={field?.name}
+            // required={field?.required}
+            disabled={field?.disabled}
+            onChange={handleChange}
+            className="w-full"
+          />
+        );
+  
+      case "date":
+        return (
+          <CustomDatePicker
+            label={field?.label}
+            name={field?.name}
+            disabled={field?.disabled}
+            onChange={handleChange}
+          />
+        );
+  
+      default:
+        throw new Error("Provided field type doesn't exist.");
+    }
+  };
+
+  const colClasses = {
+    2: "md:grid-cols-2",
+    3: "md:grid-cols-3",
+    4: "md:grid-cols-4",
+    5: "md:grid-cols-5",
+  };
+ 
+// export const renderFormFields = (detail, handleChange) => {
+//   console.log("DETAIL: ", detail)
+//   return (
+//     <>  
+//       <h1>{detail[0]?.heading}</h1>
+//       <div className={`grid md:gap-x-4 ${colClasses[detail[0].colCnt] || "md:grid-cols-3"}`}>
+//         {detail[0]?.fieldList?.map((field, index) => (
+//           <div key={index} className={`col-span-${field?.span || 1}`}>
+//             {conditonalRender(field, handleChange)}
+//             </div>
+//         ))}
+//       </div>
+//     </>
+//   );
+// };
+
+export const renderFormFields = (detail, handleChange) => {
+  return (
+    <>
+      {detail.map((section, sectionIndex) => (
+        <div key={sectionIndex}>
+          <h1 className="font-semibold my-2">{section?.heading}</h1>
+          <div className={`grid md:gap-x-4 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
+            {section?.fieldList?.map((field, fieldIndex) => (
+              <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
+                {conditonalRender(field, handleChange)}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};

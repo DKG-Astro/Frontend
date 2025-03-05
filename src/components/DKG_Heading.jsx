@@ -1,19 +1,11 @@
 import React from "react";
 
-const Heading = ({title, txnType, date, txnNo}) => {
+const Heading = ({title}) => {
   return (
-    <div className="flex w-full justify-between">
-      <h4>
-        {/* {txnType} No. : <br />
-        {txnNo} */}
-      </h4>
-      <h2 className="text-center font-bold text-lg">
-        {title}
-      </h2>
-      <h4>
-        {/* {txnType} Date. : <br /> {date} */}
-      </h4>
-    </div>
+    <section className="text-center">
+      <h1 className="font-semibold !text-xl">Indian Institue of Astrophysics</h1>
+      <h2 className="font-semibold !text-lg">{title}</h2>
+    </section>
   );
 };
 
