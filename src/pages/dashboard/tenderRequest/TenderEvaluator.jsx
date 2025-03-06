@@ -7,6 +7,7 @@ import Heading from '../../../components/DKG_Heading';
 import Btn from '../../../components/DKG_Btn';
 import { message } from 'antd';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const TenderEvaluator = ({bidType, tenderId}) => {
 
@@ -70,7 +71,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
             formData.append('file', doc.file.originFileObj);
             
             return axios.post(
-              'http://103.181.158.220:8081/astro-service/file/upload?fileType=Tender',
+              '/file/upload?fileType=Tender',
               formData,
               {
                 headers: {
@@ -103,7 +104,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
         };
 
         const evaluationResponse = await axios.post(
-          'http://103.181.158.220:8081/astro-service/api/tender-evaluation',
+          '/api/tender-evaluation',
           tenderEvaluationBody,
           {
             headers: {
@@ -114,6 +115,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
 
         if (evaluationResponse.data.responseStatus.statusCode === 0) {
           message.success('Documents uploaded and evaluation submitted successfully');
+          navigate("/queue");
         } else {
           throw new Error('Tender evaluation submission failed');
         }
@@ -125,9 +127,12 @@ const TenderEvaluator = ({bidType, tenderId}) => {
         setIsUploading(false);
       }
     };
+
+    const navigate = useNavigate();
     
   return (
     <FormContainer>
+      <Btn onClick={() => navigate("/queue")} className="mb-4">Back</Btn>
       <Heading title={`Tender Evaluation for Tender ID: ${tenderId} and Bid Type: ${bidType}`} />
         <div>
             {

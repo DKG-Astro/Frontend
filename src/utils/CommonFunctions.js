@@ -163,26 +163,7 @@ export const apiCall = async (method, url, token, payload = null) => {
     });
   };  
 
-  // const conditonalRender = (field, handleChange) => {
-  //   console.log("CONDITIONAL RENDER")
-  //   if(!field || !field.type){
-  //     throw new Error("Provided provide field type.")
-  //   }
-
-  //   const {type} = field;
-
-  //   switch (type){
-  //     case "text":
-  //       return <FormItemInput label={field?.label} name={field?.name} required = {field?.required} disabled={field?.disabled} onChange={handleChange} />
-  //     case "date":
-  //       return <CustomDatePicker label={field?.label} name={field?.name} required = {field?.required} disabled={field?.disabled} onChange={handleChange} />
-  //     default:
-  //       throw new Error("Provided field type doesnt exist.")
-  //   }
-  // }
-
-
-  const conditonalRender = (field, handleChange) => {
+  const conditonalRender = (field, handleChange, formData) => {
     console.log("CONDITIONAL RENDER");
   
     if (!field || !field.type) {
@@ -197,7 +178,7 @@ export const apiCall = async (method, url, token, payload = null) => {
           <FormInputItem
             label={field?.label}
             name={field?.name}
-            // required={field?.required}
+            required={field?.required}
             disabled={field?.disabled}
             onChange={handleChange}
             className="w-full"
@@ -207,10 +188,12 @@ export const apiCall = async (method, url, token, payload = null) => {
       case "date":
         return (
           <CustomDatePicker
+          required={field?.required}
             label={field?.label}
             name={field?.name}
             disabled={field?.disabled}
             onChange={handleChange}
+            defaultValue={formData[field.name]}
           />
         );
   
@@ -224,37 +207,57 @@ export const apiCall = async (method, url, token, payload = null) => {
     3: "md:grid-cols-3",
     4: "md:grid-cols-4",
     5: "md:grid-cols-5",
+    6: "md:grid-cols-6",
+    7: "md:grid-cols-7",
+    8: "md:grid-cols-8",
+    9: "md:grid-cols-9",
+    10: "md:grid-cols-10",
   };
  
-// export const renderFormFields = (detail, handleChange) => {
-//   console.log("DETAIL: ", detail)
-//   return (
-//     <>  
-//       <h1>{detail[0]?.heading}</h1>
-//       <div className={`grid md:gap-x-4 ${colClasses[detail[0].colCnt] || "md:grid-cols-3"}`}>
-//         {detail[0]?.fieldList?.map((field, index) => (
-//           <div key={index} className={`col-span-${field?.span || 1}`}>
-//             {conditonalRender(field, handleChange)}
-//             </div>
-//         ))}
-//       </div>
-//     </>
-//   );
-// };
-
-export const renderFormFields = (detail, handleChange) => {
+export const renderFormFields = (detail, handleChange, formData, parentName = "", index = null) => {
   return (
     <>
       {detail.map((section, sectionIndex) => (
-        <div key={sectionIndex}>
-          <h1 className="font-semibold my-2">{section?.heading}</h1>
-          <div className={`grid md:gap-x-4 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
-            {section?.fieldList?.map((field, fieldIndex) => (
-              <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
-                {conditonalRender(field, handleChange)}
-              </div>
-            ))}
-          </div>
+        <div key={sectionIndex} className="mb-4">
+          <h1 className="font-semibold">{section?.heading}</h1>
+          
+          {section?.fieldList ? (
+            <div className={`grid md:gap-x-4 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
+              {section.fieldList.map((field, fieldIndex) => (
+                <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
+                  {conditonalRender(
+                    {
+                      ...field,
+                      name: parentName && index !== null 
+                        ? `${parentName}[${index}].${field.name}` 
+                        : field.name
+                    }, 
+                    handleChange, 
+                    formData
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : section?.children ? (
+            // Recursively render children if present
+            <div className="pl-4 border-l-2 border-gray-200 my-2">
+              {Array.isArray(formData[section.name]) ? 
+                formData[section.name].map((childData, childIndex) => (
+                  <div key={childIndex} className="mb-4 p-3 border border-gray-200 rounded">
+                    <h3 className="text-sm font-medium mb-2">Item {childIndex + 1}</h3>
+                    {renderFormFields(
+                      [{ ...section, fieldList: section.children }],
+                      handleChange,
+                      childData,
+                      section.name,
+                      childIndex
+                    )}
+                  </div>
+                )) : 
+                <div className="text-gray-500">No items added yet</div>
+              }
+            </div>
+          ) : null}
         </div>
       ))}
     </>
