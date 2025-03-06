@@ -19,22 +19,24 @@ import QueueModal from "./QueueModal";
 
 const { Text } = Typography;
 
-const FilterComponent = ({ onSearch, searchRequestId, onReset }) => (
+const FilterComponent = (
+  { onSearch, searchTerm, onReset } // Changed prop name
+) => (
   <div style={{ marginBottom: 16 }}>
     <Space>
       <Input
         placeholder="Search by Request ID"
         prefix={<SearchOutlined />}
-        value={searchRequestId}
+        value={searchTerm} // Now using searchTerm
         onChange={(e) => onSearch(e.target.value)}
         style={{ width: 300 }}
-        onPressEnter={() => onSearch(searchRequestId)}
+        onPressEnter={() => onSearch(searchTerm)}
         allowClear
       />
       <Button
         type="primary"
         icon={<SearchOutlined />}
-        onClick={() => onSearch(searchRequestId)}
+        onClick={() => onSearch(searchTerm)}
       >
         Search
       </Button>
@@ -59,7 +61,7 @@ const QueueRequest = () => {
   const [previousRoles, setPreviousRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
   const [loadingPreviousRoles, setLoadingPreviousRoles] = useState(false);
-  const [searchRequestId, setSearchRequestId] = useState("");
+  //   const [searchRequestId, setSearchRequestId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
@@ -411,14 +413,13 @@ const QueueRequest = () => {
           procurementType: item.procurementType,
           consignee: item.deliveryAddress,
         }),
-        ...(item.workflowId === 5 &&
-          {
-            createdBy: item.createdBy,
-            projectName: item.projectName,
-            budgetCode: item.budgetCode,
-            procurementType: item.procurementType,
-            consignee: item.consignee
-          }),
+        ...(item.workflowId === 5 && {
+          createdBy: item.createdBy,
+          projectName: item.projectName,
+          budgetCode: item.budgetCode,
+          procurementType: item.procurementType,
+          consignee: item.consignee,
+        }),
         status: item.nextAction,
       }));
       setData(formattedData);
@@ -690,7 +691,7 @@ const QueueRequest = () => {
   // --- Filter Component remains unchanged ---
 
   const filteredData = data.filter((item) =>
-    item.requestId.toLowerCase().includes(searchTerm.toLowerCase())
+    item.requestId.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSearch = useCallback((value) => {
@@ -698,7 +699,7 @@ const QueueRequest = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    setSearchRequestId("");
+    // setSearchRequestId("");
     setSearchTerm("");
   }, []);
 
@@ -706,7 +707,7 @@ const QueueRequest = () => {
     <div style={{ padding: 24 }}>
       <FilterComponent
         onSearch={handleSearch}
-        searchRequestId={searchRequestId}
+        searchTerm={searchTerm}
         onReset={handleReset}
       />
 
