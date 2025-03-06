@@ -245,7 +245,7 @@ const Form1 = () => {
 
       // Build payload with proper type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation || "Bengaluru"),
+        consignesLocation: String(values.consigneeLocation || "Banglore"),
         createdBy: Number(actionPerformer) || 0,
         estimatedRate: Number(values.estimatedRate) || 0,
         fileType: "Indent",
@@ -484,7 +484,7 @@ const Form1 = () => {
             name="consigneeLocation"
             // rules={[{ required: true, message: "Indentor name is required" }]}
           >
-            <TextArea rows={1} defaultValue="Bengaluru" />
+            <TextArea rows={1} defaultValue="Banglore" />
           </Form.Item>
 
           <Form.Item
