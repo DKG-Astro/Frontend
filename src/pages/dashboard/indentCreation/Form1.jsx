@@ -232,29 +232,29 @@ const Form1 = () => {
         }
 
         return {
-          materialCode: String(item.materialCode || ""),
-          materialDescription: String(item.materialDescription || ""),
+          materialCode: String(item.materialCode) || null,
+          materialDescription: String(item.materialDescription) || null,
           quantity: quantity,
           unitPrice: unitPrice,
-          uom: String(item.uom || ""),
+          uom: String(item.uom )|| null,
           totalPrize: totalPrice,
-          budgetCode: String(item.budgetCode || ""),
-          materialCategory: String(item.materialCategory || ""),
-          materialSubCategory: String(item.materialSubcategory || ""),
-          materialAndJob: String(item.materialOrJobCodeUsedByDept || ""),
+          budgetCode: String(item.budgetCode) || null,
+          materialCategory: String(item.materialCategory) || null,
+          materialSubCategory: String(item.materialSubcategory) || null,
+          materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
         };
       });
 
       // Build payload with proper type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation || "Banglore"),
+        consignesLocation: String(values.consigneeLocation) || "Banglore",
         createdBy: Number(actionPerformer) || 0,
         estimatedRate: Number(values.estimatedRate) || 0,
         fileType: "Indent",
-        indentId: String(values.indentId || ""),
-        indentorEmailAddress: String(values.indentorEmail || ""),
-        indentorMobileNo: String(values.indentorMobileNo || ""),
-        indentorName: String(values.indentorName || ""),
+        indentId: String(values.indentId) || null,
+        indentorEmailAddress: String(values.indentorEmail) || null,
+        indentorMobileNo: String(values.indentorMobileNo) || null,
+        indentorName: String(values.indentorName) || null,
         isItARateContractIndent: Boolean(values.rateContractIndent),
         isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
         materialDetails: materialDetails,
@@ -262,14 +262,14 @@ const Form1 = () => {
         preBidMeetingDate: values.preBidMeetingDetails?.isValid()
           ? values.preBidMeetingDetails.format("DD/MM/YYYY")
           : null,
-        preBidMeetingVenue: String(values.preBidMeetingLocation || ""),
-        projectName: String(values.projectName || ""),
-        singleAndMultipleJob: String(values.singleOrMultipleJob || ""),
+        preBidMeetingVenue: String(values.preBidMeetingLocation) || null,
+        projectName: values.projectName || null,
+        singleAndMultipleJob: String(values.singleOrMultipleJob) || null,
         updatedBy: null,
-        uploadGOIOrRFPFileName: String(goiOrRfpFile || ""),
-        uploadPACOrBrandPACFileName: String(pacOrBrandFile || ""),
-        uploadTenderDocumentsFileName: String(tenderDocumentsFile || ""),
-        uploadingPriorApprovalsFileName: String(priorApprovalsFile || ""),
+        uploadGOIOrRFPFileName: String(goiOrRfpFile) || null,
+        uploadPACOrBrandPACFileName: String(pacOrBrandFile) || null,
+        uploadTenderDocumentsFileName: String(tenderDocumentsFile) || null,
+        uploadingPriorApprovalsFileName: String(priorApprovalsFile) || null,
       };
 
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
