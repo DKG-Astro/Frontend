@@ -38,7 +38,7 @@ const items = [
     icon: <DashboardOutlined />,
     label: "Dashboard",
     activeTab: 1,
-    path: "/",
+    path: "/dashboard",
   },
   {
     key: "2",
