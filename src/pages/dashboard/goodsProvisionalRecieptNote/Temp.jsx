@@ -7,9 +7,69 @@ import { generalDtls } from './InputFields';
 
 const Temp = () => {
     const printRef = useRef();
-    const [formData, setFormData] = useState({
+    // const [formData, setFormData] = useState({
 
-    })
+    // })
+
+
+    const [formData, setFormData] = useState({
+      gprnNo: "GPRN-2025001",
+      poId: "PO-123456",
+      // date: "13/12/2001",
+      deliveryChallanNo: "DCN-78901",
+      // deliveryChallanDate: "13/12/2001",
+      vendorId: "VEND-001",
+      vendorName: "Astro Supplies Ltd.",
+      vendorEmail: "vendor@example.com",
+      vendorContactNo: 9876543210,
+      fieldStation: "Station A",
+      indentorName: "John Doe",
+      // expectedSupplyDate: "13/12/2001",
+      consigneeDetail: "XYZ Warehouse, New York",
+      warrantyYears: 2,
+      project: "Space Exploration Project",
+      receivedQty: "100",
+      pendingQty: "20",
+      acceptedQty: "80",
+      provisionalReceiptCertificate: null,
+      receivedBy: "Jane Doe",
+      createdBy: "Admin",
+      updatedBy: "Editor",
+      // createdDate: "13/12/2001",
+      // updatedDate: "13/12/2001",
+      gprnMaterials: [
+        {
+          materialCode: "MAT-001",
+          description: "Aluminum Sheet",
+          uom: "KG",
+          orderedQuantity: 200,
+          quantityDelivered: 180,
+          receivedQuantity: 170,
+          unitPrice: 25.5,
+          makeNo: "Make-123",
+          modelNo: "Model-XYZ",
+          serialNo: "SN-001A",
+          warranty: "2 Years",
+          note: "Handle with care",
+          photographPath: "images/aluminum_sheet.jpg",
+        },
+        {
+          materialCode: "MAT-002",
+          description: "Copper Wire",
+          uom: "Meters",
+          orderedQuantity: 500,
+          quantityDelivered: 480,
+          receivedQuantity: 460,
+          unitPrice: 15.75,
+          makeNo: "Make-456",
+          modelNo: "Model-ABC",
+          serialNo: "SN-002B",
+          warranty: "3 Years",
+          note: "For electrical use",
+          photographPath: "images/copper_wire.jpg",
+        },
+      ],
+    });
 
     const handleChange = (fieldName, value) => {
       setFormData(prev => ({...prev, [fieldName]: value}))
@@ -20,7 +80,7 @@ const Temp = () => {
     <Card className='a4-container' ref={printRef}>
       <Heading title="Goods Provisional Receipt Note"/>
       <CustomForm formData={formData}>
-        {renderFormFields(generalDtls, handleChange)}
+        {renderFormFields(generalDtls, handleChange, formData)}
       </CustomForm>
       
     </Card>

@@ -10,6 +10,7 @@ import Btn from "../../../components/DKG_Btn";
 import { useLocation } from "react-router-dom";
 import FileUpload from "../../../components/DKG_FileUpload";
 import TenderEvaluator from "./TenderEvaluator";
+import IndentorUpload from "./IndentorUpload";
 
 const Form4a = () => {
   const [form] = Form.useForm();
@@ -27,10 +28,15 @@ const Form4a = () => {
   const location = useLocation();
   const tenderId = location.state?.tenderId || null;
   const bidType = location.state?.bidType || null;
+  const requestId =  location.state?.requestId ||null;
 
     // tender evaluator
     if(parseInt(roleId) === 17){
       return <TenderEvaluator bidType={bidType} tenderId={tenderId} />
+    }
+
+    if(parseInt(roleId) === 1){
+      return <IndentorUpload requestId={requestId} />
     }
 
   return (

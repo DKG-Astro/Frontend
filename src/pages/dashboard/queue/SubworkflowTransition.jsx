@@ -1,12 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { apiCall } from '../../../utils/CommonFunctions'
 import { useSelector } from 'react-redux'
-import { Table } from 'antd'
+import { Button, message, Table } from 'antd'
 import dayjs from 'dayjs'
+import Btn from '../../../components/DKG_Btn'
+import { useNavigate } from 'react-router-dom'
 
 const SubworkflowTransition = () => {
     const {userId} = useSelector(state => state.auth)
     const [queueData, setQueueData] = useState([])
+    const navigate = useNavigate();
+
+    const handleRowClick = (record) => {
+        navigate("/procurement/tender/evaluation", { state: { requestId: record.requestId}})
+    }
+
+    const handleApprove = async (subWorkflowTransitionId) => {
+        try{
+            const {data} = await apiCall("POST", `approveSubWorkflow?subWorkflowTransitionId=${subWorkflowTransitionId}`)
+            message.success("Approval successful")
+                populateData()
+        }catch(err){
+            console.log(err)
+        }
+    }
 
     const columns = [
         {
@@ -60,6 +77,16 @@ const SubworkflowTransition = () => {
             dataIndex: 'modificationDate',
             key: 'modificationDate',
             render: (text) => text ? dayjs(text).format('DD/MM/YYYY') : '-'
+        },
+        {
+            title: "Actions",
+            dataIndex: "actions",
+            render: (_, record) =>(
+                <div className='flex gap-2 items-center'>
+                    <Btn onClick={() => handleRowClick(record)}>Upload</Btn>
+                    <Button className='border-darkBlue hover:border-darkBlueHover' onClick={() => handleApprove(record.subWorkflowTransitionId)}>Approve</Button>
+                </div>
+            ) 
         }
     ]
 

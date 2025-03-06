@@ -381,3 +381,11 @@ label{
 .ant-form-item-label > label {
   @apply !text-sm
 }
+
+/* .ant-form-item{
+  @apply !m-0
+}
+
+.ant-form-item-label{
+  @apply !p-0
+} */
