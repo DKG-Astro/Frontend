@@ -86,6 +86,7 @@ import TechnoMom from "../reports/TechnoMom";
 import VendorContract from "../reports/VendorContractReport";
 import ProcurementActivityReport from "../reports/ProcurementActivityReport";
 import Temp from "../dashboard/goodsProvisionalRecieptNote/Temp";
+import MainDashboard from "../dashboard/newDashboard/MainDashboard";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -97,6 +98,7 @@ const RoutesComponent = () => {
             <Route index element={<Dashboard />} />
             {/* <Route path="/record/sms" element={<SmsRecord />} /> */}
 
+            <Route path="/dashboard" element={<MainDashboard/>} />
             <Route path="/queue" element={<QueueTable/>}/>
             <Route path="/materialForm" element={<MaterialForm />} />
 

@@ -222,7 +222,7 @@ const QueueRequest = () => {
         workflowTransitionId: currentTransition.workflowTransitionId,
       };
 
-      await axios.post("/astro-service/performTransitionAction", payload, {
+      await axios.post("/performTransitionAction", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -271,7 +271,7 @@ const QueueRequest = () => {
         workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
       };
 
-      await axios.post("/astro-service/performTransitionAction", payload, {
+      await axios.post("/performTransitionAction", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -301,19 +301,19 @@ const QueueRequest = () => {
 
     switch (workflowId) {
       case 1:
-        endpoint = `/astro-service/api/indents/${record.requestId}`;
+        endpoint = `/api/indents/${record.requestId}`;
         break;
       case 2:
-        endpoint = `/astro-service/api/contigency-purchase/${record.requestId}`;
+        endpoint = `/api/contigency-purchase/${record.requestId}`;
         break;
       case 3:
-        endpoint = `/astro-service/api/purchase-orders/${record.requestId}`;
+        endpoint = `/api/purchase-orders/${record.requestId}`;
         break;
       case 4:
-        endpoint = `/astro-service/api/tender-requests/${record.requestId}`;
+        endpoint = `/api/tender-requests/${record.requestId}`;
         break;
       case 5:
-        endpoint = `/astro-service/api/service-orders/${record.requestId}`;
+        endpoint = `/api/service-orders/${record.requestId}`;
         break;
       default:
         message.error("Invalid workflow ID.");
@@ -573,16 +573,16 @@ const QueueRequest = () => {
         <Tag color={status === "Approved" ? "green" : "volcano"}>{status}</Tag>
       ),
     },
-    {
-      title: "Remarks",
-      dataIndex: "remarks",
-      key: "remarks",
-      render: (text, record) => (
-        <span>
-          {text || record.transitionHistory?.[0]?.action || "No remarks"}
-        </span>
-      ),
-    },
+    // {
+    //   title: "Remarks",
+    //   dataIndex: "remarks",
+    //   key: "remarks",
+    //   render: (text, record) => (
+    //     <span>
+    //       {text || record.transitionHistory?.[0]?.action || "No remarks"}
+    //     </span>
+    //   ),
+    // },
     {
       title: "Actions",
       key: "actions",

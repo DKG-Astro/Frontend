@@ -21,8 +21,10 @@ import {
 // import { Option } from "antd/es/mentions";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useSelector } from "react-redux";
 import LineItem from "../LineItem";
+dayjs.extend(customParseFormat);
 
 const { Option } = Select;
 
@@ -102,7 +104,7 @@ const Form1 = () => {
         projectName: responseData.projectName || "",
         preBidMeetingRequired: responseData.isPreBidMeetingRequired || false,
         preBidMeetingDetails: responseData.preBidMeetingDate
-          ? [dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")]
+          ? dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")
           : null,
         preBidMeetingLocation: responseData.preBidMeetingVenue || "",
         rateContractIndent: responseData.isItARateContractIndent || false,
@@ -257,8 +259,8 @@ const Form1 = () => {
         isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
         materialDetails: materialDetails,
         periodOfContract: Number(values.periodOfRateContract) || 0,
-        preBidMeetingDate: values.preBidMeetingDetails?.[0]?.isValid()
-          ? values.preBidMeetingDetails[0].format("DD/MM/YYYY")
+        preBidMeetingDate: values.preBidMeetingDetails?.isValid()
+          ? values.preBidMeetingDetails.format("DD/MM/YYYY")
           : null,
         preBidMeetingVenue: String(values.preBidMeetingLocation || ""),
         projectName: String(values.projectName || ""),
@@ -565,7 +567,20 @@ const Form1 = () => {
                 <Form.Item
                   name="preBidMeetingDetails"
                   label="Meeting Details"
-                  required={{ message: "Enter Date" }}
+                  rules={[
+                    {
+                      required: preBidRequired,
+                      message: "Meeting date is required",
+                    },
+                    () => ({
+                      validator(_, value) {
+                        if (!value || value.isValid()) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject("Invalid date format");
+                      },
+                    }),
+                  ]}
                 >
                   <DatePicker
                     format="DD/MM/YYYY"
