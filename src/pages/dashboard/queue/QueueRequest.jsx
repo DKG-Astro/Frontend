@@ -19,22 +19,24 @@ import QueueModal from "./QueueModal";
 
 const { Text } = Typography;
 
-const FilterComponent = ({ onSearch, searchRequestId, onReset }) => (
+const FilterComponent = (
+  { onSearch, searchTerm, onReset } // Changed prop name
+) => (
   <div style={{ marginBottom: 16 }}>
     <Space>
       <Input
         placeholder="Search by Request ID"
         prefix={<SearchOutlined />}
-        value={searchRequestId}
+        value={searchTerm} // Now using searchTerm
         onChange={(e) => onSearch(e.target.value)}
         style={{ width: 300 }}
-        onPressEnter={() => onSearch(searchRequestId)}
+        onPressEnter={() => onSearch(searchTerm)}
         allowClear
       />
       <Button
         type="primary"
         icon={<SearchOutlined />}
-        onClick={() => onSearch(searchRequestId)}
+        onClick={() => onSearch(searchTerm)}
       >
         Search
       </Button>
@@ -59,7 +61,7 @@ const QueueRequest = () => {
   const [previousRoles, setPreviousRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
   const [loadingPreviousRoles, setLoadingPreviousRoles] = useState(false);
-  const [searchRequestId, setSearchRequestId] = useState("");
+  //   const [searchRequestId, setSearchRequestId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
@@ -220,7 +222,7 @@ const QueueRequest = () => {
         workflowTransitionId: currentTransition.workflowTransitionId,
       };
 
-      await axios.post("/astro-service/performTransitionAction", payload, {
+      await axios.post("/performTransitionAction", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -269,7 +271,7 @@ const QueueRequest = () => {
         workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
       };
 
-      await axios.post("/astro-service/performTransitionAction", payload, {
+      await axios.post("/performTransitionAction", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -299,19 +301,19 @@ const QueueRequest = () => {
 
     switch (workflowId) {
       case 1:
-        endpoint = `/astro-service/api/indents/${record.requestId}`;
+        endpoint = `/api/indents/${record.requestId}`;
         break;
       case 2:
-        endpoint = `/astro-service/api/contigency-purchase/${record.requestId}`;
+        endpoint = `/api/contigency-purchase/${record.requestId}`;
         break;
       case 3:
-        endpoint = `/astro-service/api/purchase-orders/${record.requestId}`;
+        endpoint = `/api/purchase-orders/${record.requestId}`;
         break;
       case 4:
-        endpoint = `/astro-service/api/tender-requests/${record.requestId}`;
+        endpoint = `/api/tender-requests/${record.requestId}`;
         break;
       case 5:
-        endpoint = `/astro-service/api/service-orders/${record.requestId}`;
+        endpoint = `/api/service-orders/${record.requestId}`;
         break;
       default:
         message.error("Invalid workflow ID.");
@@ -411,14 +413,13 @@ const QueueRequest = () => {
           procurementType: item.procurementType,
           consignee: item.deliveryAddress,
         }),
-        ...(item.workflowId === 5 &&
-          {
-            createdBy: item.createdBy,
-            projectName: item.projectName,
-            budgetCode: item.budgetCode,
-            procurementType: item.procurementType,
-            consignee: item.consignee
-          }),
+        ...(item.workflowId === 5 && {
+          createdBy: item.createdBy,
+          projectName: item.projectName,
+          budgetCode: item.budgetCode,
+          procurementType: item.procurementType,
+          consignee: item.consignee,
+        }),
         status: item.nextAction,
       }));
       setData(formattedData);
@@ -572,16 +573,16 @@ const QueueRequest = () => {
         <Tag color={status === "Approved" ? "green" : "volcano"}>{status}</Tag>
       ),
     },
-    {
-      title: "Remarks",
-      dataIndex: "remarks",
-      key: "remarks",
-      render: (text, record) => (
-        <span>
-          {text || record.transitionHistory?.[0]?.action || "No remarks"}
-        </span>
-      ),
-    },
+    // {
+    //   title: "Remarks",
+    //   dataIndex: "remarks",
+    //   key: "remarks",
+    //   render: (text, record) => (
+    //     <span>
+    //       {text || record.transitionHistory?.[0]?.action || "No remarks"}
+    //     </span>
+    //   ),
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -690,7 +691,7 @@ const QueueRequest = () => {
   // --- Filter Component remains unchanged ---
 
   const filteredData = data.filter((item) =>
-    item.requestId.toLowerCase().includes(searchTerm.toLowerCase())
+    item.requestId.toString().toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSearch = useCallback((value) => {
@@ -698,7 +699,7 @@ const QueueRequest = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    setSearchRequestId("");
+    // setSearchRequestId("");
     setSearchTerm("");
   }, []);
 
@@ -706,7 +707,7 @@ const QueueRequest = () => {
     <div style={{ padding: 24 }}>
       <FilterComponent
         onSearch={handleSearch}
-        searchRequestId={searchRequestId}
+        searchTerm={searchTerm}
         onReset={handleReset}
       />
 
