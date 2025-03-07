@@ -167,8 +167,10 @@ label{
 /* ------------------ ASTRO ------------------- */
 
 .a4-container{
-  @apply mx-auto w-full max-w-[210mm] aspect-[210/297] bg-[#e4f2f2] border border-[#ccc]
+  @apply mx-auto w-full max-w-[210mm] border border-[#ccc] h-max;
 }
+/* bg-[#e4f2f2] */
+/* aspect-[210/297] */
 
 .org-dtl-container{
   @apply grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-4
@@ -382,7 +384,7 @@ label{
   @apply !text-sm
 }
 
-.ant-form-item{
+/* .ant-form-item{
   @apply !m-0
 }
 
@@ -396,4 +398,4 @@ input{
 
 .ant-picker{
   @apply !px-[0.1rem] !py-0
-}
+} */
