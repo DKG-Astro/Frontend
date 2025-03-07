@@ -5,8 +5,7 @@ const DKG_CustomForm = ({ formData, onFinish, onFinishFailed, children }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    console.log("triggered")
-    // form.setFieldsValue({...formData, date: formData.date ? dayjs(formData.date, "DD/MM/YYYY")});
+    form.setFieldsValue(formData);
   }, [formData, form]);
   return (
     <Form

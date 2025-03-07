@@ -222,7 +222,7 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
           <h1 className="font-semibold">{section?.heading}</h1>
           
           {section?.fieldList ? (
-            <div className={`grid md:gap-x-4 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
+            <div className={`grid md:gap-x-4 md:gap-y-2 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
               {section.fieldList.map((field, fieldIndex) => (
                 <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
                   {conditonalRender(
@@ -240,20 +240,27 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
             </div>
           ) : section?.children ? (
             // Recursively render children if present
-            <div className="pl-4 border-l-2 border-gray-200 my-2">
+            <div className="border-gray-200 my-2">
               {Array.isArray(formData[section.name]) ? 
                 formData[section.name].map((childData, childIndex) => (
-                  <div key={childIndex} className="mb-4 p-3 border border-gray-200 rounded">
-                    <h3 className="text-sm font-medium mb-2">Item {childIndex + 1}</h3>
-                    {renderFormFields(
-                      [{ ...section, fieldList: section.children }],
-                      handleChange,
-                      childData,
-                      section.name,
-                      childIndex
-                    )}
+                  <div key={childIndex} className="mb-4 p-3 border border-black rounded">
+                    <div className={`grid md:gap-x-4 md:gap-y-2 ${section.colCnt ? colClasses[section.colCnt] : "md:grid-cols-3"}`}>
+                      {section.children.map((child, subIndex) => (
+                        <div key={subIndex} className={`col-span-${child?.span || 1}`}>
+                          {conditonalRender(
+                            {
+                              ...child,
+                              name: [section.name, childIndex, child.name]
+                            },
+                            handleChange,
+                            formData
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                )) : 
+                )) 
+                : 
                 <div className="text-gray-500">No items added yet</div>
               }
             </div>
@@ -263,3 +270,17 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
     </>
   );
 };
+
+
+                //   (
+                //   <div key={childIndex} className="mb-4 p-3 border border-gray-200 rounded">
+                //     <h3 className="text-sm font-medium mb-2">Item {childIndex + 1}</h3>
+                //     {renderFormFields(
+                //       [{ ...section, fieldList: section.children }],
+                //       handleChange,
+                //       childData,
+                //       `${parentName ? `${parentName}[${index}]` : section.name}`,
+                //       childIndex
+                //     )}
+                //   </div>
+                // ))

@@ -194,7 +194,7 @@ label{
   @apply !m-0;
 }
 
-@media print {
+/* @media print {
   .print-css-tandc{
     @apply grid grid-cols-2
   }
@@ -268,7 +268,7 @@ label{
     gap: 50px;
     margin-bottom: 0px;
   }
-}
+} */
 
 .form-container {
     margin: 15px auto;
@@ -382,10 +382,18 @@ label{
   @apply !text-sm
 }
 
-/* .ant-form-item{
+.ant-form-item{
   @apply !m-0
 }
 
 .ant-form-item-label{
   @apply !p-0
-} */
+}
+
+input{
+  @apply !px-2 !py-[0.1rem]
+}
+
+.ant-picker{
+  @apply !px-[0.1rem] !py-0
+}
