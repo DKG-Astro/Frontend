@@ -1,14 +1,14 @@
 export const generalDtls = [
     {
-        heading: "Purchase & Order Details",
-        colCnt: 5,
+        heading: "Purchase & Order Details", // optional
+        colCnt: 5, // optional
         fieldList: [
             {
-                name: "gprnNo",
-                label: "GPRN No",
-                type:"text",
-                disabled: true,
-                required: true
+                name: "gprnNo", // required
+                label: "GPRN No", // optional
+                type:"text", // required
+                disabled: true, //optional
+                required: true // option
             },
             {
                 name: "poId",
@@ -27,102 +27,117 @@ export const generalDtls = [
                 label: "Project",
                 type: "text",
                 required: true,
-                span: 2
+                span: 2 // optional
             }
 
         ]
     },
     {
         heading: "Vendor Details",
-        colCnt: 4,
+        colCnt: 10,
         fieldList: [
             {
                 name: "vendorId",
                 label: "Vendor ID",
                 type: "text",
+                span: 2,
                 required: true
             },
             {
                 name: "vendorName",
                 label: "Vendor Name",
                 type: "text",
+                span: 3,
                 required: true
             },
             {
                 name: "vendorEmail",
                 label: "Vendor Email",
                 type: "text",
+                span: 3,
                 required: true
             },
             {
                 name: "vendorContactNo",
-                label: "Vendor Contact No",
+                label: "Vendor Contact",
                 type: "text",
+                span: 2,
                 required: true
             }
         ]
     },
     {
         heading: "Delivery & Invoice Details",
-        colCnt: 6,
+        colCnt: 5,
         fieldList: [
             {
                 name: "deliveryChallanNo",
-                label: "Delivery Challan/Invoice No.",
+                label: "Challan/Invoice No.",
                 type: "text",
                 required: true,
                 span: 2
             },
             {
                 name: "deliveryChallanDate",
-                label: "Delivery Challan/Invoice Date",
+                label: "Delivery Date",
                 type: "date",
                 required: true,
-                span: 2
+                span: 1
             },
             {
                 name: "expectedSupplyDate",
-                label: "Expected Date of Supply",
+                label: "Date of Supply",
                 type: "date",
                 required: true,
-                span: 2
+                span: 1
             },
             {
                 name: "fieldStation",
                 label: "Field Station",
                 type: "text",
                 required: true,
-                span: 3
+                span: 2
             },
             {
                 name: "indentorName",
                 label: "Indentor Name",
                 type: "text",
                 required: true,
-                span: 3
+                span: 2
             },
         ]
     },
     {
         heading: "Material Details",
         name: "gprnMaterials",
+        colCnt: 8,
         children: [
             {
                 name: "materialCode",
                 label: "Material Code",
                 type: "text",
+                span: 2,
                 required: true
             },
             {
                 name: "description",
                 label: "Description",
                 type: "text",
+                span: 3,
                 required: true
             },
             {
                 name: "uom",
                 label: "UOM",
                 type: "text",
+                span: 1,
+                required: true
+            },
+            {
+                name: "warranty",
+                label: "Warranty",
+                type: "text",
+                span: 2,
                 required: true
             },
             {
@@ -153,38 +168,36 @@ export const generalDtls = [
                 name: "makeNo",
                 label: "Make No.",
                 type: "text",
+                span: 2,
                 required: true
             },
             {
                 name: "modelNo",
                 label: "Model No.",
                 type: "text",
+                span: 2,
                 required: true
             },
             {
                 name: "serialNo",
                 label: "Serial No.",
                 type: "text",
-                required: true
-            },
-            {
-                name: "warranty",
-                label: "Warranty",
-                type: "text",
+                span: 2,
                 required: true
             },
             {
                 name: "note",
                 label: "Note",
                 type: "text",
+                span: 5,
                 required: true
             },
-            {
-                name: "photographPath",
-                label: "Photograph",
-                type: "text",
-                required: true
-            }
+            // {
+            //     name: "photographPath",
+            //     label: "Photograph",
+            //     type: "text",
+            //     required: true
+            // }
         ]
     },
     {

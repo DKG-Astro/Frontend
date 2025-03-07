@@ -4,9 +4,14 @@ import Heading from '../../../components/DKG_Heading'
 import CustomForm from '../../../components/DKG_CustomForm';
 import { renderFormFields } from '../../../utils/CommonFunctions';
 import { generalDtls } from './InputFields';
+import ButtonContainer from '../../../components/ButtonContainer';
+import { useReactToPrint } from 'react-to-print';
 
 const Temp = () => {
     const printRef = useRef();
+    const handlePrint = useReactToPrint({
+      content: () => printRef.current,
+    });
     // const [formData, setFormData] = useState({
 
     // })
@@ -53,21 +58,21 @@ const Temp = () => {
           note: "Handle with care",
           photographPath: "images/aluminum_sheet.jpg",
         },
-        {
-          materialCode: "MAT-002",
-          description: "Copper Wire",
-          uom: "Meters",
-          orderedQuantity: 500,
-          quantityDelivered: 480,
-          receivedQuantity: 460,
-          unitPrice: 15.75,
-          makeNo: "Make-456",
-          modelNo: "Model-ABC",
-          serialNo: "SN-002B",
-          warranty: "3 Years",
-          note: "For electrical use",
-          photographPath: "images/copper_wire.jpg",
-        },
+        // {
+        //   materialCode: "MAT-002",
+        //   description: "Copper Wire",
+        //   uom: "Meters",
+        //   orderedQuantity: 500,
+        //   quantityDelivered: 480,
+        //   receivedQuantity: 460,
+        //   unitPrice: 15.75,
+        //   makeNo: "Make-456",
+        //   modelNo: "Model-ABC",
+        //   serialNo: "SN-002B",
+        //   warranty: "3 Years",
+        //   note: "For electrical use",
+        //   photographPath: "images/copper_wire.jpg",
+        // },
       ],
     });
 
@@ -75,12 +80,24 @@ const Temp = () => {
       setFormData(prev => ({...prev, [fieldName]: value}))
     }
 
-    console.log("Formdata: ", formData)
+    const onFinish = async () => {
+
+    }
+    
   return (
     <Card className='a4-container' ref={printRef}>
       <Heading title="Goods Provisional Receipt Note"/>
       <CustomForm formData={formData}>
         {renderFormFields(generalDtls, handleChange, formData)}
+        <ButtonContainer
+         onFinish={onFinish} 
+         formData={formData} 
+         draftDataName="gprnDraft" 
+         submitBtnEnabled
+         printBtnEnabled
+         draftBtnEnabled
+         handlePrint={handlePrint}
+         />
       </CustomForm>
       
     </Card>
