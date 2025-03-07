@@ -94,22 +94,22 @@ const QueueRequest = () => {
     }
   }, [auth.role]);
 
-  // --- Helper function: Fetch workflowTransitionId for a given requestId ---
-  const fetchWorkflowTransitionId = async (requestId) => {
-    try {
-      const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/workflowTransitionHistory?requestId=${requestId}`
-      );
-      const data = response.data.responseData;
-      if (Array.isArray(data) && data.length > 0) {
-        return data[0].workflowTransitionId;
-      }
-      return null;
-    } catch (error) {
-      console.error("Error fetching workflowTransitionId:", error);
-      return null;
-    }
-  };
+  // // --- Helper function: Fetch workflowTransitionId for a given requestId ---
+  // const fetchWorkflowTransitionId = async (requestId) => {
+  //   try {
+  //     const response = await axios.get(
+  //       `http://103.181.158.220:8081/astro-service/pendingWorkflowTransitionQueue?requestId=${requestId}`
+  //     );
+  //     const data = response.data.responseData;
+  //     if (Array.isArray(data) && data.length > 0) {
+  //       return data[0].workflowTransitionId;
+  //     }
+  //     return null;
+  //   } catch (error) {
+  //     console.error("Error fetching workflowTransitionId:", error);
+  //     return null;
+  //   }
+  // };
 
   const fetchPreviousRoles = async (workflowId, requestId) => {
     setLoadingPreviousRoles(true);
@@ -129,14 +129,16 @@ const QueueRequest = () => {
   };
 
   const handleApprove = async (record) => {
+    console.log("Handleapprove clicked: ", record)
     // if (!currentUserId) {
     //   message.error("User details not loaded yet.");
     //   return;
     // }
     try {
-      const workflowTransitionId = await fetchWorkflowTransitionId(
-        record.requestId
-      );
+      // const workflowTransitionId = await fetchWorkflowTransitionId(
+      //   record.requestId
+      // );
+      const workflowTransitionId = record.workflowTransitionId;
       if (!workflowTransitionId) {
         message.error("Workflow transition ID not found for this request.");
         return;
@@ -250,9 +252,10 @@ const QueueRequest = () => {
     // }
 
     try {
-      const workflowTransitionId = await fetchWorkflowTransitionId(
-        record.requestId
-      );
+      // const workflowTransitionId = await fetchWorkflowTransitionId(
+      //   record.requestId
+      // );
+      const workflowTransitionId = record.workflowTransitionId;
       if (!workflowTransitionId) {
         message.error("Workflow transition ID not found for this request.");
         return;
@@ -268,7 +271,8 @@ const QueueRequest = () => {
         // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
         // remarks: rejectComment, // Use user's reject comments
         requestId: record.requestId,
-        workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
+        // workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
+        workflowTransitionId: record.workflowTransitionId
       };
 
       await axios.post("/performTransitionAction", payload, {
@@ -421,6 +425,7 @@ const QueueRequest = () => {
           consignee: item.consignee,
         }),
         status: item.nextAction,
+        workflowTransitionId: item.workflowTransitionId
       }));
       setData(formattedData);
     } catch (err) {
