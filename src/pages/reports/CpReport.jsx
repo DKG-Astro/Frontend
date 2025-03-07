@@ -2,7 +2,7 @@ import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 
 const CpReport = () => {
-  const api = "/astro-service/api/reports/cp/report"
+  const api = "/api/reports/cp/report"
   const columns = [
     {
       title: 'ID',
