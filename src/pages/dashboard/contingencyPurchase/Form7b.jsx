@@ -105,6 +105,8 @@ const Form7b = () => {
 
       if (data.responseData) {
         const purchase = data.responseData;
+        const getFileList = (fileName) =>
+          fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
         const formattedData = {
           vendorName: purchase.vendorsName,
           vendorInvoiceNo: purchase.vendorsInvoiceNo,
@@ -113,6 +115,7 @@ const Form7b = () => {
           amountToBePaid: purchase.amountToBePaid,
           predefinedPurchaseStatement: purchase.predifinedPurchaseStatement,
           projectDetail: purchase.projectDetail,
+          uploadCopyOfInvoice: getFileList(purchase.uploadedFileName),
           lineItems: [
             {
               materialCode: purchase.materialCode,
@@ -145,13 +148,38 @@ const Form7b = () => {
 
   // Submit contingency purchase data
   // Add this utility function at the top of your file
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  const uploadFileToServer = async (file, fieldName) => {
+    try {
+      if (!file) return "";
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error(`${fieldName} file is too large. Maximum 5MB allowed.`);
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=CP",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.responseStatus?.message || "File upload failed"
+        );
+      }
+
+      const data = await response.json();
+      return data.responseData.fileName;
+    } catch (error) {
+      console.error(`File upload error (${fieldName}):`, error);
+      throw new Error(`Failed to upload ${fieldName}: ${error.message}`);
+    }
+  };
 
   // Modified submit function
   const submitContingencyData = async (values) => {
@@ -161,19 +189,26 @@ const Form7b = () => {
         const total = item.quantity * item.unitRate;
         return total > 50000;
       });
-
+  
       if (hasInvalidTotal) {
         message.error("One or more items exceed the ₹50,000 limit");
         return;
       }
       const lineItem = values.lineItems[0];
-
-      // 1. Create FormData instance
-      const formData = new FormData();
-
-      // 2. Build JSON payload with corrected field names
+  
+      // Handle file upload first
+      const uploadFile = async (fileList, fieldName) => {
+        if (!fileList || fileList.length === 0) return "";
+        return uploadFileToServer(fileList[0].originFileObj, fieldName);
+      };
+  
+      const [uploadedFileName] = await Promise.all([
+        uploadFile(values.uploadCopyOfInvoice, "Invoice Copy"),
+      ]);
+  
+      // Build payload with file name
       const payload = {
-        contigencyId: contingencyId || null, // Note spelling (missing 'n' in contingency)
+        contigencyId: contingencyId || null,
         vendorsName: values.vendorName,
         vendorsInvoiceNo: values.vendorInvoiceNo,
         materialCode: lineItem.materialCode,
@@ -182,40 +217,35 @@ const Form7b = () => {
         unitPrice: parseFloat(lineItem.unitRate) || 0,
         remarksForPurchase: values.remarks,
         amountToBePaid: parseFloat(values.amountToBePaid) || 0,
-        predifinedPurchaseStatement: values.predefinedPurchaseStatement, // Note spelling
-        projectName: values.projectName,
+        predifinedPurchaseStatement: values.predefinedPurchaseStatement || null,
+        projectName: values.projectName || null,
         date: values.date?.format("DD/MM/YYYY"),
         createdBy: actionPerformer,
         updatedBy: null,
+        uploadCopyOfInvoice: uploadedFileName || "", // Changed field name to match DTO
+        fileType: "CP" // Add fileType as per DTO
       };
-
-      // 3. Handle file upload
-      const uploadCopyOfInvoice = form.getFieldValue("uploadCopyOfInvoice")?.[0]
-        ?.originFileObj;
-      if (uploadCopyOfInvoice) {
-        formData.append("uploadCopyOfInvoice", uploadCopyOfInvoice);
-      }
-
-      // 4. Append JSON payload with EXACT name the backend expects
-      formData.append("contigencyPurchaseDto", JSON.stringify(payload));
-
-      // 5. Send request
+  
+      // Submit as JSON
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/contigency-purchase",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         }
       );
-
+  
       const responseData = await response.json();
-
-      if (!response.ok) {
+  
+      if (!response.ok || responseData.responseStatus.statusCode !== 0) {
         throw new Error(
           responseData.responseStatus?.message || "Submission failed"
         );
       }
-
+  
       message.success("Contingency submitted successfully!");
       form.resetFields();
     } catch (error) {
