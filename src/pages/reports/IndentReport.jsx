@@ -2,7 +2,7 @@ import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 
 const IndentReport = () => {
-  const api = "/astro-service/api/reports/indent"
+  const api = "/api/reports/indent"
   const columns = [
     {
       title: "Indent ID",
