@@ -111,7 +111,7 @@ const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, requi
   
   const handleDateChange = (date) => {
     // Convert dayjs to ISO string for consistent storage
-    const dateString = date ? date.format('YYYY-MM-DD') : null;
+    const dateString = date ? date.format('DD/MM/YYYY') : null;
     onChange(name, dateString);
   };
 

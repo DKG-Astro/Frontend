@@ -2,7 +2,7 @@ import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 
 const VendorContract = () => {
-  const api = "/astro-service/api/reports/vendor-contracts/report"
+  const api = "/api/reports/vendor-contracts/report"
   const columns = [
     {
       title: "Order ID",

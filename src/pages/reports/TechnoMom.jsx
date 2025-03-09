@@ -2,7 +2,7 @@ import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 
 const TechnoMom = () => {
-  const api = "/astro-service/api/reports/techNoMom/report"
+  const api = "/api/reports/techNoMom/report"
   const columns = [
     {
       title: "Date",
