@@ -36,6 +36,9 @@ import MainDashboard from './newDashboard/MainDashboard';
 import NewCalibrationForm from './duty/calibration/newCalibration/NewCalibrationForm';
 import Form4a from './tenderRequest/Form4a';
 import MaterialForm from './materialDetails/MaterialForm';
+import Temp from './goodsProvisionalRecieptNote/GPRN';
+import GPRN from './goodsProvisionalRecieptNote/GPRN';
+import GoodsInspection from './goodsInspection/GoodsInspection';
 // import Form21 from './lineItems/Form21';
 
 // const { Search } = Input;
@@ -128,9 +131,9 @@ const Dashboard = () => {
         case 12:
             return <Form10 />
         case 13:
-            return <Form11 />
+            return <GPRN />
         case 14:
-            return <Form12 />
+            return <GoodsInspection />
         case 15:
             return <Form13 />
         case 16:

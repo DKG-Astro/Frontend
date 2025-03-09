@@ -287,23 +287,47 @@ const Form7b = () => {
     fetchMaterials();
   }, []);
 
-  const handleMaterialSelect = (index, materialCode) => {
+const handleMaterialSelect = (index, materialCode) => {
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
+    const updatedItems = [...lineItems];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      materialCode: materialCode,
+      materialDescription: materialData.description || "",
+      materialCategory: materialData.category || "",
+    };
 
-    if (lineItems[index]) {
-      lineItems[index] = {
-        ...lineItems[index],
-        materialCode,
-        materialDescription: materialData.description || "",
-        materialCategory: materialData.category || "",
-        materialSubcategory: materialData.subCategory || "",
-        uom: materialData.uom || "",
+    form.setFieldsValue({ lineItems: updatedItems });
+
+    const categories = updatedItems
+      .map((item) => item?.materialCategory)
+      .filter((cat) => cat);
+
+    if (categories.length === 0) return; // No categories selected yet
+
+    const firstCategory = categories[0];
+    const allSame = categories.every((cat) => cat === firstCategory);
+
+    if (!allSame) {
+      message.error("All materials must be of the same category.");
+      updatedItems[index] = {
+        ...updatedItems[index],
+        materialCode: undefined,
+        materialCategory: undefined,
       };
 
-      form.setFieldsValue({ lineItems });
+      form.setFieldsValue({ lineItems: updatedItems });
+
+      // Show field error
+      form.setFields([
+        {
+          name: ["lineItems", index, "materialCode"],
+          errors: ["Category must match first material"],
+        },
+      ]);
     }
-  };
+};
 
   // Calculate total price dynamically
   const updateTotalPrice = (name) => {
@@ -339,21 +363,23 @@ const Form7b = () => {
       <div className="form-section" style={{ marginBottom: "20px" }}>
         <Row justify="end">
           <Col>
-            <Form.Item label="Contingency ID">
-              <Input
-                placeholder="Enter Contingency ID"
-                value={contingencyId}
-                onChange={(e) => setContingencyId(e.target.value)}
-                style={{ width: "200px", marginRight: "10px" }}
-              />
-              <Button
-                type="primary"
-                onClick={() => fetchContingencyData(contingencyId)}
-                disabled={!contingencyId}
-              >
-                <SearchOutlined />
-              </Button>
-            </Form.Item>
+          <Form form={form} layout="inline" style={{marginBottom:16}}>
+                <Form.Item label="Contingency ID">
+                <Input
+                    placeholder="Enter Contingency ID"
+                    value={contingencyId}
+                    onChange={(e) => setContingencyId(e.target.value)}
+                    style={{ width: "200px", marginRight: "10px" }}
+                />
+                <Button
+                    type="primary"
+                    onClick={() => fetchContingencyData(contingencyId)}
+                    disabled={!contingencyId}
+                >
+                    <SearchOutlined />
+                </Button>
+                </Form.Item>
+          </Form>
           </Col>
         </Row>
       </div>
@@ -617,7 +643,7 @@ const Form7b = () => {
           name="projectName"
           label="Project Name"
           style={{ width: "32%" }}
-          rules={[{ required: true, message: "Please enter project detail" }]}
+        //   rules={[{ required: true, message: "Please enter project detail" }]}
         >
           <Select placeholder="Select project" loading={loading} allowClear>
             {projects.map((project) => (

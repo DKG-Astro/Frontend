@@ -1,6 +1,6 @@
-import React from 'react';
-import { Form, Input, Select, Button, Space, Row, Col } from 'antd';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import React from "react";
+import { Form, Input, Select, Button, Space, Row, Col } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -12,7 +12,8 @@ const LineItem = ({
   calculateTotalPrice,
   handleMaterialSelect,
   handlePriceCalculation,
-  showAndRemove = true
+  handleMaterialDescriptionSelect,
+  showAndRemove = true,
 }) => {
   return (
     <div>
@@ -30,17 +31,17 @@ const LineItem = ({
                   position: "relative",
                 }}
               >
-                {showAndRemove &&(
-                    <DeleteOutlined
+                {showAndRemove && (
+                  <DeleteOutlined
                     onClick={() => remove(name)}
                     style={{
-                        position: "absolute",
-                        top: "10px",
-                        right: "10px",
-                        fontSize: "18px",
-                        cursor: "pointer",
+                      position: "absolute",
+                      top: "10px",
+                      right: "10px",
+                      fontSize: "18px",
+                      cursor: "pointer",
                     }}
-                    />
+                  />
                 )}
                 <Space
                   style={{
@@ -89,10 +90,26 @@ const LineItem = ({
                           },
                         ]}
                       >
-                        <Select placeholder="Select Material Description">
-                          <Option value="Description 1">Description 1</Option>
-                          <Option value="Description 2">Description 2</Option>
-                          <Option value="Description 3">Description 3</Option>
+                        <Select
+                          placeholder="Select Material Description"
+                          showSearch
+                          onChange={(value)=>handleMaterialDescriptionSelect(index,value)}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                        >
+                          {Object.values(materialDetailsMap).map((material) => (
+                            <Option
+                              key={material.materialCode}
+                              value={material.materialCode} // Store code as value
+                            >
+                              {material.description}{" "}
+                              {/* Show description from API */}
+                            </Option>
+                          ))}
                         </Select>
                       </Form.Item>
                     </Col>
@@ -158,11 +175,7 @@ const LineItem = ({
                           { required: true, message: "Please select UOM!" },
                         ]}
                       >
-                        <Select placeholder="Select UOM">
-                          <Option value="Kg">Kg</Option>
-                          <Option value="Litre">Litre</Option>
-                          <Option value="Unit">Unit</Option>
-                        </Select>
+                        <Input placeholder="Enter UOM" disabled/>
                       </Form.Item>
                     </Col>
 
@@ -249,16 +262,16 @@ const LineItem = ({
               </div>
             ))}
             {showAndRemove && (
-                <Form.Item>
+              <Form.Item>
                 <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    icon={<PlusOutlined />}
-                    style={{ width: "32%" }}
+                  type="dashed"
+                  onClick={() => add()}
+                  icon={<PlusOutlined />}
+                  style={{ width: "32%" }}
                 >
-                    Add Item
+                  Add Item
                 </Button>
-                </Form.Item>
+              </Form.Item>
             )}
           </>
         )}

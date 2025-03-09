@@ -85,8 +85,10 @@ import IndentReport from "../reports/IndentReport";
 import TechnoMom from "../reports/TechnoMom";
 import VendorContract from "../reports/VendorContractReport";
 import ProcurementActivityReport from "../reports/ProcurementActivityReport";
-import Temp from "../dashboard/goodsProvisionalRecieptNote/Temp";
+import Temp from "../dashboard/goodsProvisionalRecieptNote/GPRN";
 import MainDashboard from "../dashboard/newDashboard/MainDashboard";
+import GPRN from "../dashboard/goodsProvisionalRecieptNote/GPRN";
+import GoodsInspection from "../dashboard/goodsInspection/GoodsInspection";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -120,8 +122,8 @@ const RoutesComponent = () => {
             </Route>
 
             <Route path="/inventory">
-                <Route path="gprn" element={<Form11 />} />
-                <Route path="goodsInspection" element={<Form12 />} />
+                <Route path="gprn" element={<GPRN />} />
+                <Route path="goodsInspection" element={<GoodsInspection />} />
                 <Route path="goodsReturn" element={<Form13 />} />
                 <Route path="goodsReceipt" element={<Form14 />} />
                 <Route path="assetMaster" element={<Form15 />} />
@@ -235,7 +237,7 @@ const RoutesComponent = () => {
             <Route path="vendorContract" element={<VendorContract />} />
             <Route path="procurementActivity" element={<ProcurementActivityReport />} />   
             </Route>
-          <Route path="/temp" element={<Temp />} />
+          
           </Route>
 
 

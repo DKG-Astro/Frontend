@@ -32,6 +32,7 @@ const Form4 = () => {
   // For Tender Search (separate functionality)
   const [searchTenderId, setSearchTenderId] = useState("");
   const [tenderDetails, setTenderDetails] = useState(null);
+  const [usedIndentIds, setUsedIndentIds] = useState(new Set());
 
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -59,38 +60,37 @@ const Form4 = () => {
       setLoading(true);
       try {
         // 1. Fetch approved indent IDs
-        const responseApproved = await fetch(
-          "http://103.181.158.220:8081/astro-service/approved-indents"
-        );
-        
+        const responseApproved = await fetch("/astro-service/approved-indents");
+
         if (!responseApproved.ok) {
           throw new Error(`HTTP error! status: ${responseApproved.status}`);
         }
-        
+
         const dataApproved = await responseApproved.json();
-        
+
         // Check if response has the expected structure
         if (!Array.isArray(dataApproved.responseData)) {
           throw new Error("Approved indents API returned unexpected format");
         }
-        
+
         const approvedIndentIds = dataApproved.responseData;
-  
+
         // 2. Fetch all indents
-        const responseIndents = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/indents"
-        );
-        
+        const responseIndents = await fetch("/astro-service/api/indents");
+
         if (!responseIndents.ok) {
           throw new Error(`HTTP error! status: ${responseIndents.status}`);
         }
-        
+
         const data = await responseIndents.json();
-  
+
         // 3. Process data
-        if (data.responseStatus.statusCode === 0 && Array.isArray(data.responseData)) {
-          const filteredIndents = data.responseData.filter(indent => 
-            approvedIndentIds.includes(indent.indentId?.toString()) // Handle possible null/undefined
+        if (
+          data.responseStatus.statusCode === 0 &&
+          Array.isArray(data.responseData)
+        ) {
+          const filteredIndents = data.responseData.filter(
+            (indent) => approvedIndentIds.includes(indent.indentId?.toString()) // Handle possible null/undefined
           );
           setIndentData(filteredIndents);
         } else {
@@ -103,7 +103,7 @@ const Form4 = () => {
         setLoading(false);
       }
     };
-  
+
     fetchApprovedIndents();
   }, []);
 
@@ -187,6 +187,52 @@ const Form4 = () => {
       form.setFieldsValue({ lineItems: updatedItems });
     }
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // 1. Fetch all tenders to get used indent IDs
+        const tenderResponse = await fetch(
+          "/astro-service/api/tender-requests"
+        );
+        const tenderData = await tenderResponse.json();
+
+        // Extract all indent IDs from all tenders
+        const allUsedIndents = tenderData.responseData.flatMap(
+          (tender) => tender.indentIds?.map(String) || []
+        );
+        setUsedIndentIds(new Set(allUsedIndents));
+
+        // 2. Fetch approved indents
+        const approvedResponse = await fetch(
+          "http://103.181.158.220:8081/astro-service/approved-indents"
+        );
+        const approvedData = await approvedResponse.json();
+
+        // 3. Fetch all indents
+        const indentsResponse = await fetch("/astro-service/api/indents");
+        const indentsData = await indentsResponse.json();
+
+        // 4. Filter indents
+        const filtered = indentsData.responseData.filter((indent) => {
+          const isApproved = approvedData.responseData.includes(
+            indent.indentId?.toString()
+          );
+          const isUnused = !usedIndentIds.has(indent.indentId?.toString());
+          return isApproved && isUnused;
+        });
+
+        setIndentData(filtered);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        message.error("Failed to load indents");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // ----------------------------
   // Tender Search Functionality
@@ -201,7 +247,7 @@ const Form4 = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
+        `/astro-service/api/tender-requests/${tenderId}`
       );
       if (!response.ok) {
         throw new Error(`Failed to fetch tender: ${response.statusText}`);
@@ -248,6 +294,7 @@ const Form4 = () => {
       };
 
       // If indentResponseDTO exists, populate indentId and merge line items
+      // Inside the tenderSearch function
       if (
         responseData.indentResponseDTO &&
         Array.isArray(responseData.indentResponseDTO)
@@ -256,7 +303,6 @@ const Form4 = () => {
           (indent) => indent.indentId
         );
 
-        // Merge material details from each indent
         let allMaterials = [];
         responseData.indentResponseDTO.forEach((indent) => {
           if (indent.materialDetails && Array.isArray(indent.materialDetails)) {
@@ -264,15 +310,9 @@ const Form4 = () => {
           }
         });
 
-        // Remove duplicate materials based on materialCode
-        const uniqueMaterials = allMaterials.filter(
-          (item, index, self) =>
-            index ===
-            self.findIndex((t) => t.materialCode === item.materialCode)
-        );
-
-        formData.indentId = indentIds; // Populates the Select field for indent IDs
-        formData.lineItems = uniqueMaterials.map(formatMaterial);
+        // Remove the de-duplication filter
+        formData.indentId = indentIds;
+        formData.lineItems = allMaterials.map(formatMaterial); // Directly assign all materials
       }
 
       // Set the fetched data into the form
@@ -293,20 +333,19 @@ const Form4 = () => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      
+
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Tender",
+        "/astro-service/file/upload?fileType=Tender",
         {
           method: "POST",
           body: formData,
         }
       );
-  
+
       if (!response.ok) throw new Error("File upload failed");
-      
+
       const data = await response.json();
       return data.responseData.fileName; // Return the uploaded filename
-  
     } catch (error) {
       console.error("File upload error:", error);
       throw error;
@@ -317,7 +356,7 @@ const Form4 = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-  
+
       // Validate project consistency
       if (values.indentId?.length > 0) {
         const projects = values.indentId.map((id) => {
@@ -326,16 +365,18 @@ const Form4 = () => {
           );
           return indent?.projectName;
         });
-  
+
         const firstProject = projects[0];
         const allSame = projects.every((project) => project === firstProject);
-  
+
         if (!allSame) {
-          message.error("Submission failed: Indents must belong to the same project");
+          message.error(
+            "Submission failed: Indents must belong to the same project"
+          );
           return;
         }
       }
-  
+
       // Upload files and get their names
       const uploadFiles = async (fileList) => {
         if (!fileList || fileList.length === 0) return "";
@@ -346,18 +387,18 @@ const Form4 = () => {
           throw error;
         }
       };
-  
+
       // Upload all files in parallel
       const [
-        tenderUploadFileName,
-        generalTermsFileName,
-        specificTermsFileName
+        uploadTenderDocuments,
+        uploadGeneralTermsAndConditions,
+        uploadSpecificTermsAndConditions,
       ] = await Promise.all([
         uploadFiles(values.tenderUpload),
         uploadFiles(values["generalTerms&Conditions"]),
         uploadFiles(values["specificTerms&Conditions"]),
       ]);
-  
+
       // Prepare the payload with uploaded file names
       const formatDate = (date) => (date ? date.format("DD/MM/YYYY") : null);
 
@@ -371,6 +412,7 @@ const Form4 = () => {
         bidType: values.bidType || null,
         lastDateOfSubmission: formatDate(values.lastDate),
         applicableTaxes: values.applicableTaxes || null,
+        fileType: "Tender",
         consignesAndBillinngAddress:
           values.consignesAndBillinngAddress?.trim() || null,
         incoTerms: values.incoTerms?.trim() || null,
@@ -385,6 +427,11 @@ const Form4 = () => {
         totalTenderValue: values.totalTenderValue
           ? parseFloat(values.totalTenderValue)
           : 0,
+        uploadTenderDocuments: uploadTenderDocuments || null,
+        uploadGeneralTermsAndConditions:
+          uploadGeneralTermsAndConditions || null,
+        uploadSpecificTermsAndConditions:
+          uploadSpecificTermsAndConditions || null,
         updatedBy: null,
         createdBy: actionPerformer,
         indentIds: Array.isArray(values.indentId) ? values.indentId : [],
@@ -403,27 +450,24 @@ const Form4 = () => {
       };
 
       // Create FormData
-      const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/tender-requests",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-  
+      const response = await fetch("/astro-service/api/tender-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Submission failed: ${errorText}`);
       }
-  
+
       const result = await response.json();
       message.success("Tender submitted successfully");
       console.log("API Response:", result);
       form.resetFields();
-  
+      setSearchTenderId("");
     } catch (error) {
       console.error("Submission Error:", error);
       message.error(`Error: ${error.message}`);
@@ -516,10 +560,18 @@ const Form4 = () => {
             mode="multiple"
             allowClear
             onChange={handleIndentChange}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().includes(input.toLowerCase())
+            }
           >
             {indentData.map((indent) => (
-              <Option key={indent.indentId} value={indent.indentId}>
-                {indent.indentId}
+              <Option
+                key={indent.indentId}
+                value={indent.indentId}
+                disabled={usedIndentIds.has(indent.indentId?.toString())}
+              >
+                {indent.indentId} - {indent.projectName}
               </Option>
             ))}
           </Select>

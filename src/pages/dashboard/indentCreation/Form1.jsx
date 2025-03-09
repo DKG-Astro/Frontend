@@ -12,13 +12,7 @@ import {
   Col,
   message,
 } from "antd";
-import {
-  PlusOutlined,
-  UploadOutlined,
-  SearchOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
-// import { Option } from "antd/es/mentions";
+import { UploadOutlined, SearchOutlined } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -43,9 +37,7 @@ const Form1 = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/project-master"
-        );
+        const response = await fetch("/astro-service/api/project-master");
         const data = await response.json();
 
         if (
@@ -74,9 +66,7 @@ const Form1 = () => {
     }
 
     try {
-      const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
-      );
+      const response = await fetch(`/astro-service/api/indents/${indentorId}`);
 
       if (!response.ok)
         throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -174,7 +164,7 @@ const Form1 = () => {
       formData.append("file", file);
 
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Indent",
+        "/astro-service/file/upload?fileType=Indent",
         {
           method: "POST",
           headers: {
@@ -236,7 +226,7 @@ const Form1 = () => {
           materialDescription: String(item.materialDescription) || null,
           quantity: quantity,
           unitPrice: unitPrice,
-          uom: String(item.uom )|| null,
+          uom: String(item.uom) || null,
           totalPrize: totalPrice,
           budgetCode: String(item.budgetCode) || null,
           materialCategory: String(item.materialCategory) || null,
@@ -247,7 +237,7 @@ const Form1 = () => {
 
       // Build payload with proper type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation) || "Banglore",
+        consignesLocation: String(values.consigneeLocation) || "Bangalore",
         createdBy: Number(actionPerformer) || 0,
         estimatedRate: Number(values.estimatedRate) || 0,
         fileType: "Indent",
@@ -275,17 +265,14 @@ const Form1 = () => {
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
       // Submit request with authentication headers
-      const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/indents",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch("/astro-service/api/indents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
+        },
+        body: JSON.stringify(payload),
+      });
 
       const responseData = await response.json();
 
@@ -340,27 +327,29 @@ const Form1 = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/material-master"
-        );
-        if (!response.ok) throw new Error("Failed to fetch materials");
-
+        const response = await fetch("/astro-service/api/material-master");
         const data = await response.json();
-        if (!data.responseData)
-          throw new Error("Invalid material master response");
 
-        // ✅ Extract material codes and details
-        const materials = data.responseData;
-        setMaterialList(materials.map((mat) => mat.materialCode));
+        if (!data.responseData) throw new Error("Invalid material data");
 
-        // ✅ Create a lookup object for quick access
-        const materialMap = {};
-        materials.forEach((mat) => {
-          materialMap[mat.materialCode] = mat;
-        });
+        // Create a proper material map
+        const materialMap = data.responseData.reduce(
+          (acc, material) => ({
+            ...acc,
+            [material.materialCode]: {
+              ...material,
+              materialDescription: material.description,
+              materialCategory: material.category,
+              materialSubCategory: material.subCategory,
+            },
+          }),
+          {}
+        );
+
         setMaterialDetailsMap(materialMap);
+        setMaterialList(Object.keys(materialMap));
       } catch (error) {
-        message.error("Error fetching material master data.");
+        message.error("Failed to load materials");
         console.error("Material fetch error:", error);
       }
     };
@@ -373,22 +362,24 @@ const Form1 = () => {
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
     const updatedItems = [...lineItems];
+
     updatedItems[index] = {
       ...updatedItems[index],
-      materialCode: materialCode, // Fixed syntax error here
-      materialDescription: materialData.description || "",
-      materialCategory: materialData.category || "",
-      materialSubcategory: materialData.subCategory || "",
+      materialCode: materialCode,
+      materialDescription: materialData.description || "", // Match API field
+      materialCategory: materialData.category || "", // Match API field
+      materialSubcategory: materialData.subCategory || "", // Match API field
       uom: materialData.uom || "",
     };
 
     form.setFieldsValue({ lineItems: updatedItems });
 
+    // Category validation
     const categories = updatedItems
       .map((item) => item?.materialCategory)
-      .filter((cat) => cat);
+      .filter(Boolean);
 
-    if (categories.length === 0) return; // No categories selected yet
+    if (categories.length === 0) return;
 
     const firstCategory = categories[0];
     const allSame = categories.every((cat) => cat === firstCategory);
@@ -397,16 +388,14 @@ const Form1 = () => {
       message.error("All materials must be of the same category.");
       updatedItems[index] = {
         ...updatedItems[index],
-        materialCode: undefined,
-        materialCategory: undefined,
-        materialDescription: undefined,
-        materialSubcategory: undefined,
-        uom: undefined,
+        materialCode: "", // Fixed syntax error
+        materialDescription: "",
+        materialCategory: "",
+        materialSubcategory: "",
+        uom: "",
       };
 
       form.setFieldsValue({ lineItems: updatedItems });
-
-      // Show field error
       form.setFields([
         {
           name: ["lineItems", index, "materialCode"],
@@ -414,6 +403,11 @@ const Form1 = () => {
         },
       ]);
     }
+  };
+
+  // Add this handler in Form1
+const handleMaterialDescriptionSelect = (index, materialCode) => {
+    handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
   return (
@@ -486,7 +480,7 @@ const Form1 = () => {
             name="consigneeLocation"
             // rules={[{ required: true, message: "Indentor name is required" }]}
           >
-            <TextArea rows={1} defaultValue="Banglore" />
+            <TextArea rows={1} defaultValue="Bangalore" />
           </Form.Item>
 
           <Form.Item
@@ -512,6 +506,7 @@ const Form1 = () => {
           calculateTotalPrice={calculateTotalPrice}
           handleMaterialSelect={handleMaterialSelect}
           handlePriceCalculation={handlePriceCalculation}
+          handleMaterialDescriptionSelect={handleMaterialDescriptionSelect}
         />
 
         <div className="form-section">
@@ -527,19 +522,6 @@ const Form1 = () => {
               ))}
             </Select>
           </Form.Item>
-          {/* <Form.Item
-            label="Upload Tender Documents"
-            name="uploadTenderDocuments"
-            valuePropName="fileList"
-            getValueFromEvent={normFile} // <--- added
-            rules={[
-              { required: true, message: "Tender documents are required" },
-            ]}
-          >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
-            </Upload>
-          </Form.Item> */}
           <Form.Item
             label="Upload Tender Documents"
             name="uploadTenderDocuments"
@@ -566,7 +548,7 @@ const Form1 = () => {
               <Col span={12}>
                 <Form.Item
                   name="preBidMeetingDetails"
-                  label="Meeting Details"
+                  label="Meeting Date"
                   rules={[
                     {
                       required: preBidRequired,
@@ -664,17 +646,6 @@ const Form1 = () => {
           )}
         </div>
         <div className="form-section">
-          {/* <Form.Item
-            label="Upload GOI or RFP"
-            name="uploadGOIOrRFP"
-            valuePropName="fileList"
-            getValueFromEvent={normFile} // <--- added
-            rules={[{ required: true, message: "GOI or RFP is required" }]}
-          >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Upload GOI/RFP</Button>
-            </Upload>
-          </Form.Item> */}
           <Form.Item
             label="Upload GOI or RFP"
             name="uploadGOIOrRFP"
@@ -686,20 +657,6 @@ const Form1 = () => {
               <Button icon={<UploadOutlined />}>Upload GOI or RFP</Button>
             </Upload>
           </Form.Item>
-
-          {/* <Form.Item
-            label="Upload PAC or Brand PAC"
-            name="uploadPACOrBrandPAC"
-            valuePropName="fileList"
-            getValueFromEvent={normFile} // <--- added
-            rules={[
-              { required: true, message: "PAC or Brand PAC is required" },
-            ]}
-          >
-            <Upload beforeUpload={() => false}>
-              <Button icon={<UploadOutlined />}>Upload PAC/Brand PAC</Button>
-            </Upload>
-          </Form.Item> */}
           <Form.Item
             label="Upload PAC or Brand PAC"
             name="uploadPACOrBrandPAC"
