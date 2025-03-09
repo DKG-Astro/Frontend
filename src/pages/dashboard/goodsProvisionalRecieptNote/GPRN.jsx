@@ -7,7 +7,7 @@ import { generalDtls } from './InputFields';
 import ButtonContainer from '../../../components/ButtonContainer';
 import { useReactToPrint } from 'react-to-print';
 
-const Temp = () => {
+const GPRN = () => {
     const printRef = useRef();
     const handlePrint = useReactToPrint({
       content: () => printRef.current,
@@ -104,4 +104,4 @@ const Temp = () => {
   )
 }
 
-export default Temp
+export default GPRN

@@ -11,8 +11,6 @@ import {
   Space,
 } from "antd";
 import {
-  MinusCircleOutlined,
-  PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
@@ -27,34 +25,137 @@ const Form7a = () => {
   const [tenders, setTenders] = useState([]); // Store Tender IDs
   const [selectedIndentId, setSelectedIndentId] = useState(""); // Store Indent ID
   const [serviceDetails, setServiceDetails] = useState([]); // Store Service Details
+  const [vendors, setVendors] = useState([]);
+  const [showLineItems, setShowLineItems] = useState(false);
+  //   const [selectedIndentId, setSelectedIndentId] = useState("");
+  //   const [serviceDetails, setServiceDetails] = useState([]);
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
 
-  // Fetch All Tender IDs on component mount
+  // Fetch approved tenders and vendors
   useEffect(() => {
-    const fetchTenderIds = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await fetch(
+        // Fetch approved tender IDs
+        const approvedResponse = await fetch(
+          "http://103.181.158.220:8081/astro-service/getApprovedTenderIdForPOAndSO"
+        );
+        const approvedData = await approvedResponse.json();
+        const approvedIds = approvedData.responseData || [];
+
+        // Fetch all tenders
+        const tendersResponse = await fetch(
           "http://103.181.158.220:8081/astro-service/api/tender-requests"
         );
-        const data = await response.json();
+        const tendersData = await tendersResponse.json();
+        const allTenders = tendersData.responseData || [];
 
-        if (data.responseData) {
-          setTenders(data.responseData);
-        } else {
-          message.error("Failed to fetch Tender IDs");
-        }
+        // Filter approved tenders
+        const approvedTenders = allTenders.filter((t) =>
+          approvedIds.includes(t.tenderId)
+        );
+        setTenders(approvedTenders);
+
+        // Fetch vendors
+        const vendorsResponse = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/vendor-master"
+        );
+        const vendorsData = await vendorsResponse.json();
+        setVendors(vendorsData.responseData || []);
       } catch (error) {
-        console.error("Error fetching Tender IDs:", error);
-        message.error("Error fetching Tender IDs");
+        console.error("Initial data fetch error:", error);
+        message.error("Failed to load initial data");
       }
     };
 
-    fetchTenderIds();
+    fetchInitialData();
   }, []);
+
+  // Handle vendor selection
+  const handleVendorSelect = (vendorId) => {
+    const selectedVendor = vendors.find((v) => v.vendorId === vendorId);
+    if (!selectedVendor) return;
+
+    form.setFieldsValue({
+      vendorName: selectedVendor.vendorName,
+      vendorAddress: selectedVendor.address,
+      vendorAccountNo: selectedVendor.accountNo,
+      vendorIFSCCode: selectedVendor.ifscCode,
+      vendorAccountName: selectedVendor.vendorName,
+    });
+  };
+
+  // Modified tender selection handler
+  const handleTenderSelect = async (tenderId) => {
+    setSelectedIndentId("");
+    setServiceDetails([]);
+    setShowLineItems(false);
+    form.resetFields(["lineItems"]);
+
+    try {
+      const response = await fetch(
+        `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
+      );
+      const data = await response.json();
+
+      if (!data.responseData) {
+        message.error("No Tender data found");
+        return;
+      }
+
+      const tenderData = data.responseData;
+      const indents = tenderData.indentResponseDTO || [];
+
+      if (indents.length === 0) {
+        message.error("No Indents found for this Tender");
+        return;
+      }
+
+      // Fetch materials for all indents
+      const allServices = await Promise.all(
+        indents.map(async (indent) => {
+          try {
+            const response = await fetch(
+              `http://103.181.158.220:8081/astro-service/api/indents/${indent.indentId}`
+            );
+            const data = await response.json();
+
+            return (data.responseData?.materialDetails || []).map((item) => ({
+              materialCode: item.materialCode,
+              materialDescription: item.materialDescription,
+              quantity: item.quantity,
+              unitRate: item.unitPrice,
+              uom: item.uom,
+              budgetCode: item.budgetCode || "",
+            }));
+          } catch (error) {
+            console.error(`Error fetching indent ${indent.indentId}:`, error);
+            return [];
+          }
+        })
+      );
+
+      const combinedServices = allServices.flat();
+      setServiceDetails(combinedServices);
+      form.setFieldsValue({ lineItems: combinedServices });
+      setShowLineItems(true);
+
+      // Set tender-related fields
+      form.setFieldsValue({
+        incoTerms: tenderData.incoTerms,
+        paymentTerms: tenderData.paymentTerms,
+        ifLDClauseApplicable: tenderData.ldClause,
+        applicablePBG: tenderData.applicablePerformance,
+      });
+    } catch (error) {
+      console.error("Error fetching Tender details:", error);
+      message.error("Error fetching Tender details");
+    }
+  };
 
   // Handle SO search - similar to PO search
   const handleSOSearch = async (soId) => {
+    setShowLineItems(false);
     if (!soId) {
       message.warning("Please enter an SO ID");
       return;
@@ -107,7 +208,7 @@ const Form7a = () => {
           exchangeRate: item.exchangeRate || 1,
           gst: item.gst,
           duties: item.duties,
-          budgetCode: item.budgetCode
+          budgetCode: item.budgetCode,
         }));
 
         setServiceDetails(formattedMaterials);
@@ -118,7 +219,7 @@ const Form7a = () => {
       if (soDetails.indentId) {
         fetchServiceDetails(soDetails.indentId);
       }
-      
+      setShowLineItems(true);
       message.success("Service Order details loaded successfully");
     } catch (error) {
       message.error("Failed to fetch SO data");
@@ -129,46 +230,46 @@ const Form7a = () => {
   };
 
   // Handle Tender Selection - similar to PO form
-  const handleTenderSelect = async (tenderId) => {
-    setSelectedIndentId("");
-    setServiceDetails([]);
-    form.resetFields(["lineItems"]);
+  //   const handleTenderSelect = async (tenderId) => {
+  //     setSelectedIndentId("");
+  //     setServiceDetails([]);
+  //     form.resetFields(["lineItems"]);
 
-    try {
-      const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
-      );
-      const data = await response.json();
+  //     try {
+  //       const response = await fetch(
+  //         `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
+  //       );
+  //       const data = await response.json();
 
-      if (!data.responseData) {
-        message.error("No Tender data found");
-        return;
-      }
+  //       if (!data.responseData) {
+  //         message.error("No Tender data found");
+  //         return;
+  //       }
 
-      // Extract First Indent ID
-      const indentData = data.responseData.indentResponseDTO[0];
-      if (!indentData) {
-        message.error("No Indent ID found for this Tender");
-        return;
-      }
+  //       // Extract First Indent ID
+  //       const indentData = data.responseData.indentResponseDTO[0];
+  //       if (!indentData) {
+  //         message.error("No Indent ID found for this Tender");
+  //         return;
+  //       }
 
-      setSelectedIndentId(indentData.indentId); // Store Indent ID
+  //       setSelectedIndentId(indentData.indentId); // Store Indent ID
 
-      // Pre-fill form fields with Tender Data
-      form.setFieldsValue({
-        incoTerms: data.responseData.incoTerms,
-        paymentTerms: data.responseData.paymentTerms,
-        ifLDClauseApplicable: data.responseData.ldClause,
-        applicablePBG: data.responseData.applicablePerformance,
-      });
+  //       // Pre-fill form fields with Tender Data
+  //       form.setFieldsValue({
+  //         incoTerms: data.responseData.incoTerms,
+  //         paymentTerms: data.responseData.paymentTerms,
+  //         ifLDClauseApplicable: data.responseData.ldClause,
+  //         applicablePBG: data.responseData.applicablePerformance,
+  //       });
 
-      // Fetch Service Details using Indent ID
-      fetchServiceDetails(indentData.indentId);
-    } catch (error) {
-      console.error("Error fetching Tender details:", error);
-      message.error("Error fetching Tender details");
-    }
-  };
+  //       // Fetch Service Details using Indent ID
+  //       fetchServiceDetails(indentData.indentId);
+  //     } catch (error) {
+  //       console.error("Error fetching Tender details:", error);
+  //       message.error("Error fetching Tender details");
+  //     }
+  //   };
 
   // Fetch Service Details from Indent API
   const fetchServiceDetails = async (indentId) => {
@@ -184,18 +285,20 @@ const Form7a = () => {
       }
 
       // Format materials as service line items
-      const formattedServices = data.responseData.materialDetails.map((item, index) => ({
-        key: index,
-        materialCode: item.materialCode,
-        materialDescription: item.materialDescription,
-        quantity: item.quantity,
-        unitRate: item.unitPrice,
-        currency: "INR", // Default value
-        exchangeRate: 1, // Default value
-        gst: 18, // Default GST value
-        duties: 0, // Default duties value
-        budgetCode: item.budgetCode || "",
-      }));
+      const formattedServices = data.responseData.materialDetails.map(
+        (item, index) => ({
+          key: index,
+          materialCode: item.materialCode,
+          materialDescription: item.materialDescription,
+          quantity: item.quantity,
+          unitRate: item.unitPrice,
+          currency: "INR", // Default value
+          exchangeRate: 1, // Default value
+          gst: 18, // Default GST value
+          duties: 0, // Default duties value
+          budgetCode: item.budgetCode || "",
+        })
+      );
 
       setServiceDetails(formattedServices); // Store Service Data
       form.setFieldsValue({ lineItems: formattedServices });
@@ -222,7 +325,7 @@ const Form7a = () => {
         duties: parseFloat(item.duties) || 0,
         budgetCode: item.budgetCode || "",
       }));
-  
+
       const payload = {
         soId: values.soId,
         tenderId: values.tenderID,
@@ -243,29 +346,29 @@ const Form7a = () => {
         createdBy: actionPerformer,
         updatedBy: null,
       };
-  
-      const response = await fetch(
-        "/astro-service/api/service-orders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-  
+
+      const response = await fetch("/astro-service/api/service-orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.responseStatus?.message || "Submission failed");
+        throw new Error(
+          errorData.responseStatus?.message || "Submission failed"
+        );
       }
-  
+
       message.success("Service Order submitted successfully");
       form.resetFields();
     } catch (error) {
       message.error(`Failed to submit Service Order: ${error.message}`);
       console.error("Submission Error:", error);
     } finally {
+        setShowLineItems(false);
       setLoading(false);
     }
   };
@@ -279,40 +382,40 @@ const Form7a = () => {
         onFinish={submitSOData}
         initialValues={{ date: null }}
       >
-      <Row justify="end">
-        <Col>
-          <Form.Item
-            label="SO ID"
-            name="soId"
-            rules={[{ required: true, message: "Please enter SO ID" }]}
+        <Row justify="end">
+          <Col>
+            <Form.Item
+              label="SO ID"
+              name="soId"
+              rules={[{ required: true, message: "Please enter SO ID" }]}
             >
-            <Input.Search
+              <Input.Search
                 placeholder="Enter SO ID"
                 onSearch={handleSOSearch}
                 enterButton={<SearchOutlined />}
                 loading={searching}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-        <div className="form-section">
-            <Form.Item
-              label="Tender ID"
-              name="tenderID"
-              rules={[{ required: true, message: "Please select a Tender ID" }]}
-            >
-              <Select
-                placeholder="Select a Tender ID"
-                onChange={handleTenderSelect}
-                showSearch
-              >
-                {tenders.map((tender) => (
-                  <Option key={tender.tenderId} value={tender.tenderId}>
-                    {tender.tenderId} - {tender.titleOfTender}
-                  </Option>
-                ))}
-              </Select>
+              />
             </Form.Item>
+          </Col>
+        </Row>
+        <div className="form-section">
+          <Form.Item
+            label="Tender ID"
+            name="tenderID"
+            rules={[{ required: true, message: "Please select a Tender ID" }]}
+          >
+            <Select
+              placeholder="Select a Tender ID"
+              onChange={handleTenderSelect}
+              showSearch
+            >
+              {tenders.map((tender) => (
+                <Option key={tender.tenderId} value={tender.tenderId}>
+                  {tender.tenderId} - {tender.titleOfTender}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
           {/* Consignee Address */}
           <Form.Item label="Consignee Address" name="consigneeAddress">
@@ -323,7 +426,9 @@ const Form7a = () => {
           <Form.Item
             label="Billing Address"
             name="billingAddress"
-            rules={[{ required: true, message: "Please enter billing address" }]}
+            rules={[
+              { required: true, message: "Please enter billing address" },
+            ]}
           >
             <TextArea rows={1} placeholder="Enter billing address" />
           </Form.Item>
@@ -332,197 +437,211 @@ const Form7a = () => {
           <Form.Item
             label="Job Completion Period"
             name="deliveryPeriod"
-            rules={[{ required: true, message: "Please specify the job completion period" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please specify the job completion period",
+              },
+            ]}
           >
             <Input type="number" placeholder="Enter job completion period" />
           </Form.Item>
         </div>
-        <div>
-          <Form.List name="lineItems" initialValue={[{}]}>
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, fieldKey, ...restField }) => (
-                  <div
-                    key={key}
-                    style={{
-                      border: "1px solid #ccc",
-                      padding: "20px",
-                      marginBottom: "5px",
-                    }}
-                  >
-                    <Space
-                      style={{
-                        display: "flex",
-                        marginBottom: 20,
-                        flexWrap: "wrap",
-                      }}
-                      align="start"
+        {showLineItems && (
+            <div>
+            <Form.List name="lineItems" initialValue={[{}]}>
+                {(fields, { add, remove }) => (
+                <>
+                    {fields.map(({ key, name, fieldKey, ...restField }) => (
+                    <div
+                        key={key}
+                        style={{
+                        border: "1px solid #ccc",
+                        padding: "20px",
+                        marginBottom: "5px",
+                        }}
                     >
-                      <Row gutter={16}>
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialCode"]}
-                            label="Service Code"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter a service code!",
-                              },
-                            ]}
-                          >
-                            <Input placeholder="Enter Service Code" />
-                          </Form.Item>
-                        </Col>
+                        <Space
+                        style={{
+                            display: "flex",
+                            marginBottom: 20,
+                            flexWrap: "wrap",
+                        }}
+                        align="start"
+                        >
+                        <Row gutter={16}>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "materialCode"]}
+                                label="Service Code"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please enter a service code!",
+                                },
+                                ]}
+                            >
+                                <Input placeholder="Enter Service Code" />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "materialDescription"]}
-                            label="Service Description"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please enter a service description!",
-                              },
-                            ]}
-                          >
-                            <Input placeholder="Enter Service Description" />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "materialDescription"]}
+                                label="Service Description"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please enter a service description!",
+                                },
+                                ]}
+                            >
+                                <Input placeholder="Enter Service Description" />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "quantity"]}
-                            label="Quantity"
-                            rules={[
-                              { required: true, message: "Please enter quantity!" },
-                            ]}
-                          >
-                            <Input type="number" placeholder="Enter Quantity" />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "quantity"]}
+                                label="Quantity"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please enter quantity!",
+                                },
+                                ]}
+                            >
+                                <Input type="number" placeholder="Enter Quantity" />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "unitRate"]}
-                            label="Unit Rate"
-                            rules={[
-                              { required: true, message: "Please enter the unit rate" },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Enter unit rate"
-                            />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "unitRate"]}
+                                label="Unit Rate"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please enter the unit rate",
+                                },
+                                ]}
+                            >
+                                <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Enter unit rate"
+                                />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "currency"]}
-                            label="Currency"
-                            rules={[
-                              { required: true, message: "Please select a currency" },
-                            ]}
-                          >
-                            <Select placeholder="Select currency">
-                              <Option value="USD">USD</Option>
-                              <Option value="INR">INR</Option>
-                              <Option value="EUR">EUR</Option>
-                              <Option value="GBP">GBP</Option>
-                            </Select>
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "currency"]}
+                                label="Currency"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please select a currency",
+                                },
+                                ]}
+                            >
+                                <Select placeholder="Select currency">
+                                <Option value="USD">USD</Option>
+                                <Option value="INR">INR</Option>
+                                <Option value="EUR">EUR</Option>
+                                <Option value="GBP">GBP</Option>
+                                </Select>
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "exchangeRate"]}
-                            label="Exchange Rate"
-                          >
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Enter exchange rate"
-                            />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "exchangeRate"]}
+                                label="Exchange Rate"
+                            >
+                                <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Enter exchange rate"
+                                />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "gst"]}
-                            label="GST (%)"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please specify GST percentage",
-                              },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Enter GST percentage"
-                            />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "gst"]}
+                                label="GST (%)"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please specify GST percentage",
+                                },
+                                ]}
+                            >
+                                <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Enter GST percentage"
+                                />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "duties"]}
-                            label="Duties (%)"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Please specify duties",
-                              },
-                            ]}
-                          >
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder="Enter duties percentage"
-                            />
-                          </Form.Item>
-                        </Col>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "duties"]}
+                                label="Duties (%)"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Please specify duties",
+                                },
+                                ]}
+                            >
+                                <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Enter duties percentage"
+                                />
+                            </Form.Item>
+                            </Col>
 
-                        <Col span={8}>
-                          <Form.Item
-                            {...restField}
-                            name={[name, "budgetCode"]}
-                            label="Budget Code"
-                          >
-                            <Input
-                              placeholder="Enter budget code"
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
-                    </Space>
-                  </div>
-                ))}
-                {/* <Form.Item>
-                  <Button
-                    type="dashed"
-                    onClick={() => add()}
-                    icon={<PlusOutlined />}
-                    style={{ width: "32%" }}
-                  >
-                    Add Service Item
-                  </Button>
-                </Form.Item> */}
-              </>
-            )}
-          </Form.List>
-        </div>
+                            <Col span={8}>
+                            <Form.Item
+                                {...restField}
+                                name={[name, "budgetCode"]}
+                                label="Budget Code"
+                            >
+                                <Input placeholder="Enter budget code" />
+                            </Form.Item>
+                            </Col>
+                        </Row>
+                        {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
+                        </Space>
+                    </div>
+                    ))}
+                    {/* <Form.Item>
+                    <Button
+                        type="dashed"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                        style={{ width: "32%" }}
+                    >
+                        Add Service Item
+                    </Button>
+                    </Form.Item> */}
+                </>
+                )}
+            </Form.List>
+            </div>
+        )}
 
         <div className="form-section">
           {/* If LD clause applicable */}
@@ -537,16 +656,36 @@ const Form7a = () => {
           <Form.Item label="Payment Terms" name="paymentTerms">
             <Input.TextArea rows={1} placeholder="Enter Payment Terms" />
           </Form.Item>
+          <Form.Item
+            label="Applicable PBG to be submitted"
+            name="applicablePBG"
+          >
+            <TextArea rows={1} />
+          </Form.Item>
         </div>
 
         <div className="form-section">
           {/* Vendor Name */}
           <Form.Item
-            label="Vendor Name"
-            name="vendorName"
-            rules={[{ required: true, message: "Please enter vendor name" }]}
+            label="Vendor"
+            name="vendorId"
+            rules={[{ required: true, message: "Please select a vendor" }]}
           >
-            <Input placeholder="Enter vendor name" />
+            <Select
+              showSearch
+              placeholder="Select vendor"
+              optionFilterProp="children"
+              onSelect={handleVendorSelect}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {vendors.map((vendor) => (
+                <Option key={vendor.vendorId} value={vendor.vendorId}>
+                  {vendor.vendorName}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           {/* Vendor Address */}
@@ -559,9 +698,6 @@ const Form7a = () => {
           </Form.Item>
 
           {/* Applicable PBG to be submitted */}
-          <Form.Item label="Applicable PBG to be submitted" name="applicablePBG">
-            <TextArea rows={1} />
-          </Form.Item>
         </div>
 
         <div className="form-section">
@@ -583,7 +719,9 @@ const Form7a = () => {
           <Form.Item
             label="Vendor's IFSC code"
             name="vendorIFSCCode"
-            rules={[{ required: true, message: "Please enter vendor's IFSC code" }]}
+            rules={[
+              { required: true, message: "Please enter vendor's IFSC code" },
+            ]}
           >
             <Input placeholder="Enter vendor's IFSC code" />
           </Form.Item>
@@ -592,7 +730,9 @@ const Form7a = () => {
           <Form.Item
             label="Vendor's A/C Name"
             name="vendorAccountName"
-            rules={[{ required: true, message: "Please enter vendor's account name" }]}
+            rules={[
+              { required: true, message: "Please enter vendor's account name" },
+            ]}
           >
             <Input placeholder="Enter vendor's account name" />
           </Form.Item>
