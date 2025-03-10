@@ -60,7 +60,7 @@ const Form4 = () => {
       setLoading(true);
       try {
         // 1. Fetch approved indent IDs
-        const responseApproved = await fetch("/astro-service/approved-indents");
+        const responseApproved = await fetch("http://103.181.158.220:8081/astro-service/approved-indents");
 
         if (!responseApproved.ok) {
           throw new Error(`HTTP error! status: ${responseApproved.status}`);
@@ -76,7 +76,7 @@ const Form4 = () => {
         const approvedIndentIds = dataApproved.responseData;
 
         // 2. Fetch all indents
-        const responseIndents = await fetch("/astro-service/api/indents");
+        const responseIndents = await fetch("http://103.181.158.220:8081/astro-service/api/indents");
 
         if (!responseIndents.ok) {
           throw new Error(`HTTP error! status: ${responseIndents.status}`);
@@ -193,7 +193,7 @@ const Form4 = () => {
       try {
         // 1. Fetch all tenders to get used indent IDs
         const tenderResponse = await fetch(
-          "/astro-service/api/tender-requests"
+          "http://103.181.158.220:8081/astro-service/api/tender-requests"
         );
         const tenderData = await tenderResponse.json();
 
@@ -210,7 +210,7 @@ const Form4 = () => {
         const approvedData = await approvedResponse.json();
 
         // 3. Fetch all indents
-        const indentsResponse = await fetch("/astro-service/api/indents");
+        const indentsResponse = await fetch("http://103.181.158.220:8081/astro-service/api/indents");
         const indentsData = await indentsResponse.json();
 
         // 4. Filter indents
@@ -247,7 +247,7 @@ const Form4 = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `/astro-service/api/tender-requests/${tenderId}`
+        `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
       );
       if (!response.ok) {
         throw new Error(`Failed to fetch tender: ${response.statusText}`);
@@ -335,7 +335,7 @@ const Form4 = () => {
       formData.append("file", file);
 
       const response = await fetch(
-        "/astro-service/file/upload?fileType=Tender",
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Tender",
         {
           method: "POST",
           body: formData,
@@ -450,7 +450,7 @@ const Form4 = () => {
       };
 
       // Create FormData
-      const response = await fetch("/astro-service/api/tender-requests", {
+      const response = await fetch("http://103.181.158.220:8081/astro-service/api/tender-requests", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -175,7 +175,7 @@ const Form7 = () => {
     setSearching(true);
     try {
       const response = await fetch(
-        `/astro-service/api/purchase-orders/${poId}`
+        `http://103.181.158.220:8081/astro-service/api/purchase-orders/${poId}`
       );
       const data = await response.json();
 
@@ -224,7 +224,7 @@ const Form7 = () => {
   // **3. Fetch Material Details from Indent API**
   const fetchMaterialDetails = async (indentId) => {
     try {
-      const response = await fetch(`/astro-service/api/indents/${indentId}`);
+      const response = await fetch(`http://103.181.158.220:8081/astro-service/api/indents/${indentId}`);
       const data = await response.json();
 
       if (!data.responseData?.materialDetails) {

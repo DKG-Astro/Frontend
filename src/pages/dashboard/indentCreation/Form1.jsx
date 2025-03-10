@@ -37,7 +37,7 @@ const Form1 = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const response = await fetch("/astro-service/api/project-master");
+        const response = await fetch("http://103.181.158.220:8081/astro-service/api/project-master");
         const data = await response.json();
 
         if (
@@ -66,7 +66,7 @@ const Form1 = () => {
     }
 
     try {
-      const response = await fetch(`/astro-service/api/indents/${indentorId}`);
+      const response = await fetch(`http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`);
 
       if (!response.ok)
         throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -164,7 +164,7 @@ const Form1 = () => {
       formData.append("file", file);
 
       const response = await fetch(
-        "/astro-service/file/upload?fileType=Indent",
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Indent",
         {
           method: "POST",
           headers: {
@@ -265,7 +265,7 @@ const Form1 = () => {
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
       // Submit request with authentication headers
-      const response = await fetch("/astro-service/api/indents", {
+      const response = await fetch("http://103.181.158.220:8081/astro-service/api/indents", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -327,7 +327,7 @@ const Form1 = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await fetch("/astro-service/api/material-master");
+        const response = await fetch("http://103.181.158.220:8081/astro-service/api/material-master");
         const data = await response.json();
 
         if (!data.responseData) throw new Error("Invalid material data");
