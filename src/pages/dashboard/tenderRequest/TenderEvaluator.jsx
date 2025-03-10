@@ -10,16 +10,31 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const TenderEvaluator = ({bidType, tenderId}) => {
-
     const {userId} = useSelector(state => state.auth)
 
     const [uploadedDocs, setUploadedDocs] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
+    // Add the missing formData state
     const [formData, setFormData] = useState(null);
-    const [fileNameMapping, setFileNameMapping] = useState([]);  // Add this state
-
-
-    console.log("Uploaded docs: ", uploadedDocs)
+    
+    // Add mapping for different bid types
+    const bidTypeDocMapping = {
+      "Single": {
+        docName: "vendorUploadSingle",
+        fileName: "uploadQualifiedVendorsFileName",
+        displayName: "Upload Qualified Vendors"
+      },
+      "Two": {
+        docName: "vendorUploadTwo",
+        fileName: "uploadTechnicallyQualifiedVendorsFileName",
+        displayName: "Upload Technically Qualified Vendors"
+      },
+      "Three": {
+        docName: "vendorUploadThree",
+        fileName: "uploadCommeriallyQualifiedVendorsFileName",
+        displayName: "Upload Commercially Qualified Vendors"
+      }
+    };
 
     const handleDocChange = (docName, fileData) => {
       if (fileData === null) {
@@ -112,14 +127,20 @@ const TenderEvaluator = ({bidType, tenderId}) => {
 
         // Second API: Tender Evaluation
         const tenderEvaluationBody = {
-            tenderId: tenderId,
-            uploadQualifiedVendorsFileName: serverFileNames.vendorUploadSingle,
-            uploadTechnicallyQualifiedVendorsFileName: serverFileNames.vendorUploadTechnical,
-            uploadCommeriallyQualifiedVendorsFileName: serverFileNames.vendorUploadCommercial,
-            fileType: "Tender",
-            createdBy: userId,
-            updatedBy: userId
+          tenderId: tenderId,
+          fileType: "Tender",
+          createdBy: userId,
+          updatedBy: userId
         };
+        
+        // Add the appropriate file name based on bid type
+        if (bidType === "Single") {
+          tenderEvaluationBody.uploadQualifiedVendorsFileName = serverFileNames.vendorUploadSingle;
+        } else if (bidType === "Two") {
+          tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileName = serverFileNames.vendorUploadTwo;
+        } else if (bidType === "Three") {
+          tenderEvaluationBody.uploadCommeriallyQualifiedVendorsFileName = serverFileNames.vendorUploadThree;
+        }
 
         const evaluationResponse = await axios.post(
           '/api/tender-evaluation',
@@ -153,41 +174,18 @@ const TenderEvaluator = ({bidType, tenderId}) => {
     <FormContainer>
       <Btn onClick={() => navigate("/queue")} className="mb-4">Back</Btn>
       <Heading title={`Tender Evaluation for Tender ID: ${tenderId} and Bid Type: ${bidType}`} />
-        <div>
-            {
-        bidType === "Single" && (
+      
+      <div>
+        {bidType && bidTypeDocMapping[bidType] && (
           <FileUpload
-            documentName="Upload Qualified Vendors"
+            documentName={bidTypeDocMapping[bidType].displayName}
             fileType="image"
-            value={getDocData("vendorUploadSingle")}
-            onChange={(fileData) => handleDocChange("vendorUploadSingle", fileData)}
-            fileName="uploadQualifiedVendorsFileName"
+            value={getDocData(bidTypeDocMapping[bidType].docName)}
+            onChange={(fileData) => handleDocChange(bidTypeDocMapping[bidType].docName, fileData)}
+            fileName={bidTypeDocMapping[bidType].fileName}
           />
-        )
-      }
-      {bidType === "Double" && (
-        <>
-          <FileUpload
-            documentName="Upload Technically Qualified Vendors"
-            fileType="image"
-            value={getDocData("vendorUploadTechnical")}
-            onChange={(fileData) => handleDocChange("vendorUploadTechnical", fileData)}
-            fileName="uploadTechnicallyQualifiedVendorsFileName"
-          />
-          
-          {/* Check formData existence before accessing properties */}
-          {formData?.responseForTechnicallyQualifiedVendorsFileName && (
-            <FileUpload
-              documentName="Upload Commercially Qualified Vendors"
-              fileType="image"
-              value={getDocData("vendorUploadCommercial")}
-              onChange={(fileData) => handleDocChange("vendorUploadCommercial", fileData)}
-              fileName="uploadCommeriallyQualifiedVendorsFileName"
-            />
-          )}
-        </>
-      )}
-    </div>
+        )}
+      </div>
 
       <div className="custom-btn" style={{ display: 'flex', gap: '10px' }}>
         <Btn onClick={handleSubmit} loading={isUploading}>Upload All Documents And Approve</Btn>

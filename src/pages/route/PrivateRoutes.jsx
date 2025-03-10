@@ -6,9 +6,10 @@ const PrivateRoutes = () => {
   const {token} = useSelector(state => state.auth)
   
   return (
-    <> 
-    {token ? <Outlet /> : <Navigate to='/login' />}
-    </>
+    // <> 
+    // {token ? <Outlet /> : <Navigate to='/login' />}
+    // </>
+    <Outlet />
   )
   
 }

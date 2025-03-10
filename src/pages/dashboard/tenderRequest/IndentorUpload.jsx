@@ -19,7 +19,8 @@ const IndentorUpload = ({ requestId }) => {
 
   const [showDocs, setShowDocs] = useState({});
 
-  const [docFileType, setDocFileType] = useState([])
+  // Change this line from array to object initialization
+  const [docFileType, setDocFileType] = useState({})
 
   const fileDisplayNames = {
     uploadQualifiedVendorsFileName: "Qualified Vendors",
@@ -51,63 +52,59 @@ const IndentorUpload = ({ requestId }) => {
         setTotalValue(parseInt(responseData.totalValueOfTender));
         setFormData(responseData);
 
+        // Create a local docFileType object that we'll use immediately
+        let localDocFileType = {};
+
         if (responseData.bidType === "Single" && parseInt(responseData.totalValueOfTender || 0) < 1000000) {
-          console.log("IF CASE")
           setShowDocs({
             uploadQualifiedVendorsFileName: true,
             responseFileName: true
-          })
-          setDocFileType({
+          });
+          
+          localDocFileType = {
             uploadQualifiedVendorsFileName: "Tender",
             responseFileName: "Indent"
-          })
+          };
         }
         else if (responseData.bidType === "Single" && parseInt(responseData.totalValueOfTender || 0) > 1000000) {
-
-          console.log("ELSE CASE:")
           setShowDocs({
-
             uploadQualifiedVendorsFileName: true,
             responseFileName: true,
+          });
 
-          })
-
-          setDocFileType({
+          localDocFileType = {
             uploadQualifiedVendorsFileName: "Tender",
             responseFileName: "Indent"
-          })
+          };
+        }
+        else if (responseData.bidType === "Two") {
+          setShowDocs({
+            uploadTechnicallyQualifiedVendorsFileName: true,
+            responseForTechnicallyQualifiedVendorsFileName: true
+          });
+          
+          localDocFileType = {
+            uploadTechnicallyQualifiedVendorsFileName: "Tender",
+            responseForTechnicallyQualifiedVendorsFileName: "Indent"
+          };
         }
 
-        if (responseData.bidType === "Double") {
-            const showDocsConfig = {
-              uploadTechnicallyQualifiedVendorsFileName: true,
-              responseForTechnicallyQualifiedVendorsFileName: true,
-            };
-      
-            if (responseData.uploadCommeriallyQualifiedVendorsFileName) {
-              showDocsConfig.uploadCommeriallyQualifiedVendorsFileName = true;
-              showDocsConfig.responseForCommeriallyQualifiedVendorsFileName = true;
-            }
-      
-            setShowDocs(showDocsConfig);
-            setDocFileType({
-              uploadTechnicallyQualifiedVendorsFileName: "Tender",
-              responseForTechnicallyQualifiedVendorsFileName: "Indent",
-              uploadCommeriallyQualifiedVendorsFileName: "Tender",
-              responseForCommeriallyQualifiedVendorsFileName: "Indent"
-            });
-          }
-
-
+        // Update the state with our local object
+        setDocFileType(localDocFileType);
 
         const fileKeys = Object.keys(fileDisplayNames);
 
+        // Use the local docFileType object instead of the state
         const filePromises = fileKeys.map(async (key) => {
-          console.log("KEY: ", key, docFileType[key])
+          console.log("Processing key:", key, "File type:", localDocFileType[key]);
           if (responseData[key]) {
             try {
+              // Use the correct file type from our local object
+              const fileType = localDocFileType[key] || "Tender";
+              console.log("Using file type for download:", fileType, "for key:", key);
+              
               const fileResponse = await axios.get(
-                `/file/download/${"Tender"}/${responseData[key]}`,
+                `/file/download/${fileType}/${responseData[key]}`,
                 {
                   responseType: 'blob',
                   headers: {
@@ -153,6 +150,20 @@ const IndentorUpload = ({ requestId }) => {
       ...prev,
       [fileKey]: file
     }));
+    
+    // Create a preview URL for the uploaded file
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      setDocuments((prev) => ({
+        ...prev,
+        [fileKey]: {
+          key: fileKey,
+          url: fileUrl,
+          fileName: file.name,
+          isNewUpload: true
+        }
+      }));
+    }
   };
 
   const navigate = useNavigate();
@@ -165,7 +176,11 @@ const IndentorUpload = ({ requestId }) => {
         if (file) {
           const formData = new FormData();
           formData.append('file', file);
-          formData.append('fileType', 'Indent'); // Add fileType to the form data
+          // Use the correct file type from docFileType or default to 'Indent'
+          const fileType = docFileType[fileKey] || 'Indent';
+          formData.append('fileType', fileType);
+          
+          console.log(`Uploading ${fileKey} with fileType: ${fileType}`);
 
           const uploadResponse = await axios.post('/file/upload', formData, {
             headers: {
@@ -200,6 +215,37 @@ const IndentorUpload = ({ requestId }) => {
   };
 
   const renderDocumentPreview = (fileKey, fileData) => {
+    // Check if there's a new uploaded file for this key
+    const uploadedFile = uploadedFiles[fileKey];
+    
+    if (uploadedFile) {
+      // For newly uploaded files
+      const fileExtension = uploadedFile.name.split('.').pop().toLowerCase();
+      
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+        return <img src={fileData.url} alt={fileDisplayNames[fileKey]} style={{ maxWidth: '100%' }} />;
+      } else if (fileExtension === 'pdf') {
+        return (
+          <div className="text-center p-4">
+            <Text>File selected: {uploadedFile.name}</Text>
+            <div className="mt-2">
+              <Button type="primary">Preview will be available after upload</Button>
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div className="text-center p-4">
+            <Text>File selected: {uploadedFile.name}</Text>
+            <div className="mt-2">
+              <Button type="primary">Preview will be available after upload</Button>
+            </div>
+          </div>
+        );
+      }
+    }
+    
+    // For existing files or no files
     if (!fileData || fileData.error || !fileData.url) {
       return (
         <Upload
