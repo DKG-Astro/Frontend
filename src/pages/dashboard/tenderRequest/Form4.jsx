@@ -60,7 +60,9 @@ const Form4 = () => {
       setLoading(true);
       try {
         // 1. Fetch approved indent IDs
-        const responseApproved = await fetch("http://103.181.158.220:8081/astro-service/approved-indents");
+        const responseApproved = await fetch(
+          "http://103.181.158.220:8081/astro-service/approved-indents"
+        );
 
         if (!responseApproved.ok) {
           throw new Error(`HTTP error! status: ${responseApproved.status}`);
@@ -76,7 +78,9 @@ const Form4 = () => {
         const approvedIndentIds = dataApproved.responseData;
 
         // 2. Fetch all indents
-        const responseIndents = await fetch("http://103.181.158.220:8081/astro-service/api/indents");
+        const responseIndents = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/indents"
+        );
 
         if (!responseIndents.ok) {
           throw new Error(`HTTP error! status: ${responseIndents.status}`);
@@ -210,7 +214,9 @@ const Form4 = () => {
         const approvedData = await approvedResponse.json();
 
         // 3. Fetch all indents
-        const indentsResponse = await fetch("http://103.181.158.220:8081/astro-service/api/indents");
+        const indentsResponse = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/indents"
+        );
         const indentsData = await indentsResponse.json();
 
         // 4. Filter indents
@@ -450,13 +456,16 @@ const Form4 = () => {
       };
 
       // Create FormData
-      const response = await fetch("http://103.181.158.220:8081/astro-service/api/tender-requests", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/tender-requests",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -546,7 +555,20 @@ const Form4 = () => {
           <Form.Item
             name="closingDate"
             label="Closing Date"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: "Please select the closing date" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const openingDate = getFieldValue("openingDate");
+                  if (value && openingDate && value.isBefore(openingDate)) {
+                    return Promise.reject(
+                      new Error("Closing date must be after opening date")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <DatePicker />
           </Form.Item>

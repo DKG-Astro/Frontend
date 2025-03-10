@@ -347,7 +347,7 @@ const Form7a = () => {
         updatedBy: null,
       };
 
-      const response = await fetch("/astro-service/api/service-orders", {
+      const response = await fetch("http://103.181.158.220:8081/astro-service/api/service-orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
