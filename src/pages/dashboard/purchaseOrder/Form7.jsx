@@ -39,7 +39,7 @@ const Form7 = () => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        const response = await fetch("/astro-service/api/vendor-master");
+        const response = await fetch("http://103.181.158.220:8081/astro-service/api/vendor-master");
         const data = await response.json();
 
         if (data.responseData) {
@@ -82,7 +82,7 @@ const Form7 = () => {
       try {
         // Get approved tender IDs
         const approvedResponse = await fetch(
-          "/astro-service/getApprovedTenderIdForPOAndSO"
+          "http://103.181.158.220:8081/astro-service/getApprovedTenderIdForPOAndSO"
         );
         const approvedData = await approvedResponse.json();
         const approvedIds = approvedData.responseData || [];

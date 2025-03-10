@@ -570,7 +570,15 @@ const Form4 = () => {
               }),
             ]}
           >
-            <DatePicker />
+            <DatePicker
+              disabledDate={(current) => {
+                const openingDate = form.getFieldValue("openingDate");
+                // If an opening date is selected, disable dates before it.
+                return (
+                  openingDate && current && current.isBefore(openingDate, "day")
+                );
+              }}
+            />
           </Form.Item>
         </div>
 
