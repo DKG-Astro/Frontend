@@ -776,7 +776,7 @@ const Form4 = () => {
           >
             <Select>
               <Option value="Single">Single</Option>
-              <Option value="Two">Double</Option>
+              <Option value="Double">Double</Option>
             </Select>
           </Form.Item>
           <Form.Item
