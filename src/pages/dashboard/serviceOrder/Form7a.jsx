@@ -668,7 +668,7 @@ const Form7a = () => {
           {/* Vendor Name */}
           <Form.Item
             label="Vendor"
-            name="vendorId"
+            name="vendorName"
             rules={[{ required: true, message: "Please select a vendor" }]}
           >
             <Select
@@ -681,7 +681,7 @@ const Form7a = () => {
               }
             >
               {vendors.map((vendor) => (
-                <Option key={vendor.vendorId} value={vendor.vendorId}>
+                <Option key={vendor.vendorId} value={vendor.vendorName}>
                   {vendor.vendorName}
                 </Option>
               ))}
