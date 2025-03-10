@@ -28,7 +28,11 @@ const IndentorUpload = ({ requestId }) => {
     formationOfTechnoCommerialComitee: "Techno-Commercial Committee",
     responseFileName: "Response",
     responseForTechnicallyQualifiedVendorsFileName: "Response for Technically Qualified Vendors",
-    responseForCommeriallyQualifiedVendorsFileName: "Response for Commercially Qualified Vendors"
+    responseForCommeriallyQualifiedVendorsFileName: "Response for Commercially Qualified Vendors",
+    // uploadTechnicallyQualifiedVendorsFileName: "Technically Qualified Vendors",
+//   uploadCommeriallyQualifiedVendorsFileName: "Commercially Qualified Vendors",
+//   responseForTechnicallyQualifiedVendorsFileName: "Response for Technical Evaluation",
+//   responseForCommeriallyQualifiedVendorsFileName: "Response for Commercial Evaluation"
   };
 
   useEffect(() => {
@@ -74,6 +78,25 @@ const IndentorUpload = ({ requestId }) => {
           })
         }
 
+        if (responseData.bidType === "Double") {
+            const showDocsConfig = {
+              uploadTechnicallyQualifiedVendorsFileName: true,
+              responseForTechnicallyQualifiedVendorsFileName: true,
+            };
+      
+            if (responseData.uploadCommeriallyQualifiedVendorsFileName) {
+              showDocsConfig.uploadCommeriallyQualifiedVendorsFileName = true;
+              showDocsConfig.responseForCommeriallyQualifiedVendorsFileName = true;
+            }
+      
+            setShowDocs(showDocsConfig);
+            setDocFileType({
+              uploadTechnicallyQualifiedVendorsFileName: "Tender",
+              responseForTechnicallyQualifiedVendorsFileName: "Indent",
+              uploadCommeriallyQualifiedVendorsFileName: "Tender",
+              responseForCommeriallyQualifiedVendorsFileName: "Indent"
+            });
+          }
 
 
 

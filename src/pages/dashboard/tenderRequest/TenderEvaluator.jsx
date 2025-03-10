@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import FileUpload from '../../../components/DKG_FileUpload';
 import FormContainer from '../../../components/DKG_FormContainer';
@@ -15,6 +15,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
 
     const [uploadedDocs, setUploadedDocs] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [formData, setFormData] = useState(null);
     const [fileNameMapping, setFileNameMapping] = useState([]);  // Add this state
 
 
@@ -47,6 +48,21 @@ const TenderEvaluator = ({bidType, tenderId}) => {
         });
       }
     };
+
+    useEffect(() => {
+        const fetchTenderData = async () => {
+          try {
+            const response = await axios.get(`/api/tender-evaluation/${tenderId}`);
+            setFormData(response.data.responseData);
+          } catch (error) {
+            console.error('Error fetching tender data:', error);
+          }
+        };
+        
+        if (tenderId) {
+          fetchTenderData();
+        }
+      }, [tenderId]);
   
     // Get document data
     const getDocData = (docName) => {
@@ -96,11 +112,13 @@ const TenderEvaluator = ({bidType, tenderId}) => {
 
         // Second API: Tender Evaluation
         const tenderEvaluationBody = {
-          tenderId: tenderId,
-          uploadQualifiedVendorsFileName: serverFileNames.vendorUploadSingle,
-          fileType: "Tender",
-          createdBy: userId, // Replace with actual userId
-          updatedBy: userId // Replace with actual username
+            tenderId: tenderId,
+            uploadQualifiedVendorsFileName: serverFileNames.vendorUploadSingle,
+            uploadTechnicallyQualifiedVendorsFileName: serverFileNames.vendorUploadTechnical,
+            uploadCommeriallyQualifiedVendorsFileName: serverFileNames.vendorUploadCommercial,
+            fileType: "Tender",
+            createdBy: userId,
+            updatedBy: userId
         };
 
         const evaluationResponse = await axios.post(
@@ -112,6 +130,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
             }
           }
         );
+        setFormData(evaluationResponse.data.responseData);
 
         if (evaluationResponse.data.responseStatus.statusCode === 0) {
           message.success('Documents uploaded and evaluation submitted successfully');
@@ -146,6 +165,28 @@ const TenderEvaluator = ({bidType, tenderId}) => {
           />
         )
       }
+      {bidType === "Double" && (
+        <>
+          <FileUpload
+            documentName="Upload Technically Qualified Vendors"
+            fileType="image"
+            value={getDocData("vendorUploadTechnical")}
+            onChange={(fileData) => handleDocChange("vendorUploadTechnical", fileData)}
+            fileName="uploadTechnicallyQualifiedVendorsFileName"
+          />
+          
+          {/* Check formData existence before accessing properties */}
+          {formData?.responseForTechnicallyQualifiedVendorsFileName && (
+            <FileUpload
+              documentName="Upload Commercially Qualified Vendors"
+              fileType="image"
+              value={getDocData("vendorUploadCommercial")}
+              onChange={(fileData) => handleDocChange("vendorUploadCommercial", fileData)}
+              fileName="uploadCommeriallyQualifiedVendorsFileName"
+            />
+          )}
+        </>
+      )}
     </div>
 
       <div className="custom-btn" style={{ display: 'flex', gap: '10px' }}>
