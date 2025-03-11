@@ -24,7 +24,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
         fileName: "uploadQualifiedVendorsFileName",
         displayName: "Upload Qualified Vendors"
       },
-      "Two": {
+      "Double": {
         docName: "vendorUploadTwo",
         fileName: "uploadTechnicallyQualifiedVendorsFileName",
         displayName: "Upload Technically Qualified Vendors"
@@ -136,7 +136,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
         // Add the appropriate file name based on bid type
         if (bidType === "Single") {
           tenderEvaluationBody.uploadQualifiedVendorsFileName = serverFileNames.vendorUploadSingle;
-        } else if (bidType === "Two") {
+        } else if (bidType === "Double") {
           tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileName = serverFileNames.vendorUploadTwo;
         } else if (bidType === "Three") {
           tenderEvaluationBody.uploadCommeriallyQualifiedVendorsFileName = serverFileNames.vendorUploadThree;

@@ -77,7 +77,7 @@ const IndentorUpload = ({ requestId }) => {
             responseFileName: "Indent"
           };
         }
-        else if (responseData.bidType === "Two") {
+        else if (responseData.bidType === "Double") {
           setShowDocs({
             uploadTechnicallyQualifiedVendorsFileName: true,
             responseForTechnicallyQualifiedVendorsFileName: true
