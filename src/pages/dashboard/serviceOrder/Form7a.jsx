@@ -623,20 +623,9 @@ const Form7a = () => {
                             </Form.Item>
                             </Col>
                         </Row>
-                        {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                         </Space>
                     </div>
                     ))}
-                    {/* <Form.Item>
-                    <Button
-                        type="dashed"
-                        onClick={() => add()}
-                        icon={<PlusOutlined />}
-                        style={{ width: "32%" }}
-                    >
-                        Add Service Item
-                    </Button>
-                    </Form.Item> */}
                 </>
                 )}
             </Form.List>
@@ -657,7 +646,7 @@ const Form7a = () => {
             <Input.TextArea rows={1} placeholder="Enter Payment Terms" />
           </Form.Item>
           <Form.Item
-            label="Applicable PBG to be submitted"
+            label="Applicable PBG"
             name="applicablePBG"
           >
             <TextArea rows={1} />
@@ -681,7 +670,7 @@ const Form7a = () => {
               }
             >
               {vendors.map((vendor) => (
-                <Option key={vendor.vendorId} value={vendor.vendorName}>
+                <Option key={vendor.vendorId} value={vendor.Id}>
                   {vendor.vendorName}
                 </Option>
               ))}
@@ -694,7 +683,7 @@ const Form7a = () => {
             name="vendorAddress"
             rules={[{ required: true, message: "Please enter vendor address" }]}
           >
-            <TextArea rows={1} placeholder="Enter vendor address" />
+            <TextArea rows={1} placeholder="Enter vendor address" disabled />
           </Form.Item>
 
           {/* Applicable PBG to be submitted */}
@@ -712,7 +701,7 @@ const Form7a = () => {
               },
             ]}
           >
-            <Input placeholder="Enter vendor's account number" />
+            <Input placeholder="Enter vendor's account number" disabled />
           </Form.Item>
 
           {/* Vendor's IFSC Code */}
@@ -723,7 +712,7 @@ const Form7a = () => {
               { required: true, message: "Please enter vendor's IFSC code" },
             ]}
           >
-            <Input placeholder="Enter vendor's IFSC code" />
+            <Input placeholder="Enter vendor's IFSC code" disabled />
           </Form.Item>
 
           {/* Vendor's A/C Name */}
@@ -734,7 +723,7 @@ const Form7a = () => {
               { required: true, message: "Please enter vendor's account name" },
             ]}
           >
-            <Input placeholder="Enter vendor's account name" />
+            <Input placeholder="Enter vendor's account name" disabled />
           </Form.Item>
         </div>
 

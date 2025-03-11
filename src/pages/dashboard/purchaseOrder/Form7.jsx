@@ -39,7 +39,9 @@ const Form7 = () => {
     const fetchVendors = async () => {
       setLoadingVendors(true);
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/vendor-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/vendor-master"
+        );
         const data = await response.json();
 
         if (data.responseData) {
@@ -67,7 +69,7 @@ const Form7 = () => {
       vendorName: selectedVendor.vendorName,
       vendorAddress: selectedVendor.address,
       vendorAccountNo: selectedVendor.accountNo,
-      vendorIFSCCode: selectedVendor.ifscCode,
+      vendorsIFSCCode: selectedVendor.ifscCode,
       vendorAccountName: selectedVendor.vendorName,
       vendorId: selectedVendor.vendorId,
       vendorGST: selectedVendor.gstNo,
@@ -185,11 +187,26 @@ const Form7 = () => {
         return;
       }
 
-      // **Extract PO Data & Related Indent ID**
       const poDetails = data.responseData;
-      setSelectedIndentId(poDetails.indentId);
 
-      // **Pre-fill PO form fields**
+      // 1. Extract all material details from indents
+      const allMaterials =
+        poDetails.tenderDetails?.indentResponseDTO?.flatMap((indent) =>
+          indent.materialDetails.map((material) => ({
+            materialCode: material.materialCode,
+            materialDescription: material.materialDescription,
+            quantity: material.quantity,
+            unitRate: material.unitPrice, // Map unitPrice to unitRate
+            uom: material.uom,
+            currency: "INR", // Default value
+            exchangeRate: 1, // Default value
+            gst: 0, // Default value
+            duties: 0, // Default value
+            freightCharges: 0, // Default value
+          }))
+        ) || [];
+
+      // 2. Set form values
       form.setFieldsValue({
         tenderID: poDetails.tenderId,
         indentID: poDetails.indentId,
@@ -205,12 +222,13 @@ const Form7 = () => {
         applicablePBG: poDetails.applicablePbgToBeSubmitted,
         transporterDetails: poDetails.transporterAndFreightForWarderDetails,
         vendorAccountNo: poDetails.vendorAccountNumber,
-        vendorIFSCCode: poDetails.vendorsZfscCode,
+        vendorsIFSCCode: poDetails.vendorsIfscCode,
         vendorAccountName: poDetails.vendorAccountName,
+        lineItems: allMaterials, // Set the material details directly
       });
 
-      // **Fetch Material Details from Indent ID**
-      fetchMaterialDetails(poDetails.indentId);
+      // 3. Update state
+      setMaterialDetails(allMaterials);
       setShowLineItems(true);
     } catch (error) {
       message.error("Failed to fetch PO data");
@@ -220,11 +238,12 @@ const Form7 = () => {
     }
   };
 
-
   // **3. Fetch Material Details from Indent API**
   const fetchMaterialDetails = async (indentId) => {
     try {
-      const response = await fetch(`http://103.181.158.220:8081/astro-service/api/indents/${indentId}`);
+      const response = await fetch(
+        `http://103.181.158.220:8081/astro-service/api/indents/${indentId}`
+      );
       const data = await response.json();
 
       if (!data.responseData?.materialDetails) {
@@ -271,8 +290,8 @@ const Form7 = () => {
         poId: values.poId,
         tenderId: values.tenderID,
         indentId: selectedIndentId,
-        consignesAddress: values.consigneeAddress,
-        billingAddress: values.billingAddress,
+        consignesAddress: values.consigneeAddress || "Banglore",
+        billingAddress: values.billingAddress || "Koramangala, Bangalore - 560034",
         deliveryPeriod: parseFloat(values.deliveryPeriod) || 0,
         warranty: parseFloat(values.warranty) || 0,
         ifLdClauseApplicable: !!values.ifLDClauseApplicable, // Ensure boolean
@@ -283,7 +302,7 @@ const Form7 = () => {
         applicablePbgToBeSubmitted: values.applicablePBG,
         transposterAndFreightForWarderDetails: values.transporterDetails,
         vendorAccountNumber: values.vendorAccountNo,
-        vendorsZfscCode: values.vendorZFSCCode,
+        vendorsIfscCode: values.vendorsIFSCCode,
         vendorAccountName: values.vendorAccountName,
         purchaseOrderAttributes: updatedLineItems,
         createdBy: actionPerformer,
@@ -368,7 +387,7 @@ const Form7 = () => {
 
           {/* Consignee Address */}
           <Form.Item label="Consignee Address" name="consigneeAddress">
-            <TextArea rows={1} placeholder="Enter consignee address" />
+            <TextArea rows={1} placeholder="Enter consignee address" defaultValue={"Bangalore"} />
           </Form.Item>
 
           {/* Billing Address */}
@@ -379,7 +398,7 @@ const Form7 = () => {
               { required: true, message: "Please enter billing address" },
             ]}
           >
-            <TextArea rows={1} placeholder="Enter billing address" />
+            <TextArea rows={1} placeholder="Enter billing address" defaultValue={"Koramangala, Bangalore - 560034"} />
           </Form.Item>
 
           {/* Delivery Period */}
@@ -394,189 +413,193 @@ const Form7 = () => {
           </Form.Item>
         </div>
         {showLineItems && (
-            <div>
+          <div>
             <Form.List name="lineItems" initialValue={[{}]}>
-                {(fields, { add, remove }) => (
+              {(fields, { add, remove }) => (
                 <>
-                    {fields.map(({ key, name, fieldKey, ...restField }) => (
+                  {fields.map(({ key, name, fieldKey, ...restField }) => (
                     <div
-                        key={key}
-                        style={{
+                      key={key}
+                      style={{
                         border: "1px solid #ccc",
                         padding: "20px",
                         marginBottom: "5px",
-                        }}
+                      }}
                     >
-                        <Space
+                      <Space
                         style={{
-                            display: "flex",
-                            marginBottom: 5,
-                            flexWrap: "wrap",
+                          display: "flex",
+                          marginBottom: 5,
+                          flexWrap: "wrap",
                         }}
                         align="start"
-                        >
+                      >
                         <Row gutter={16}>
-                            <Col span={8}>
+                          <Col span={8}>
                             {/* Note: When using Form.List, use an array for the name */}
                             <Form.Item
-                                {...restField}
-                                name={[name, "materialCode"]}
-                                label="Material Code"
-                                rules={[
+                              {...restField}
+                              name={[name, "materialCode"]}
+                              label="Material Code"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please select a material code!",
+                                  required: true,
+                                  message: "Please select a material code!",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input placeholder="Enter Material Code" />
+                              <Input placeholder="Enter Material Code" />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "materialDescription"]}
-                                label="Material Description"
-                                rules={[
+                              {...restField}
+                              name={[name, "materialDescription"]}
+                              label="Material Description"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please enter a material description!",
+                                  required: true,
+                                  message:
+                                    "Please enter a material description!",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input placeholder="Enter Material Description" />
+                              <Input placeholder="Enter Material Description" />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "quantity"]}
-                                label="Quantity"
-                                rules={[
+                              {...restField}
+                              name={[name, "quantity"]}
+                              label="Quantity"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please enter quantity!",
+                                  required: true,
+                                  message: "Please enter quantity!",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input type="number" placeholder="Enter Quantity" />
+                              <Input
+                                type="number"
+                                placeholder="Enter Quantity"
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "unitRate"]}
-                                label="Unit Rate"
-                                rules={[
+                              {...restField}
+                              name={[name, "unitRate"]}
+                              label="Unit Rate"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please enter the unit rate",
+                                  required: true,
+                                  message: "Please enter the unit rate",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input
+                              <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="Enter unit rate"
-                                />
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "currency"]}
-                                label="Currency"
-                                rules={[
+                              {...restField}
+                              name={[name, "currency"]}
+                              label="Currency"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please select a currency",
+                                  required: true,
+                                  message: "Please select a currency",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Select placeholder="Select currency">
+                              <Select placeholder="Select currency">
                                 <Option value="USD">USD</Option>
                                 <Option value="INR">INR</Option>
-                                </Select>
+                              </Select>
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "exchangeRate"]}
-                                label="Exchange Rate"
+                              {...restField}
+                              name={[name, "exchangeRate"]}
+                              label="Exchange Rate"
                             >
-                                <Input
+                              <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="Enter exchange rate"
-                                />
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "gst"]}
-                                label="GST (%)"
-                                rules={[
+                              {...restField}
+                              name={[name, "gst"]}
+                              label="GST (%)"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please specify GST percentage",
+                                  required: true,
+                                  message: "Please specify GST percentage",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input
+                              <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="Enter GST percentage"
-                                />
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "duties"]}
-                                label="Duties (%)"
-                                rules={[
+                              {...restField}
+                              name={[name, "duties"]}
+                              label="Duties (%)"
+                              rules={[
                                 {
-                                    required: true,
-                                    message: "Please specify duties",
+                                  required: true,
+                                  message: "Please specify duties",
                                 },
-                                ]}
+                              ]}
                             >
-                                <Input
+                              <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="Enter duties percentage"
-                                />
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
 
-                            <Col span={8}>
+                          <Col span={8}>
                             <Form.Item
-                                {...restField}
-                                name={[name, "freightCharges"]}
-                                label="Freight Charges"
+                              {...restField}
+                              name={[name, "freightCharges"]}
+                              label="Freight Charges"
                             >
-                                <Input
+                              <Input
                                 type="number"
                                 step="0.01"
                                 placeholder="Enter freight charges"
-                                />
+                              />
                             </Form.Item>
-                            </Col>
+                          </Col>
                         </Row>
                         {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
-                        </Space>
+                      </Space>
                     </div>
-                    ))}
-                    {/* <Form.Item>
+                  ))}
+                  {/* <Form.Item>
                     <Button
                         type="dashed"
                         onClick={() => add()}
@@ -587,9 +610,9 @@ const Form7 = () => {
                     </Button>
                     </Form.Item> */}
                 </>
-                )}
+              )}
             </Form.List>
-            </div>
+          </div>
         )}
 
         <div className="form-section">
@@ -639,7 +662,7 @@ const Form7 = () => {
               }
             >
               {vendors.map((vendor) => (
-                <Option key={vendor.vendorId} value={vendor.vendorName}>
+                <Option key={vendor.vendorId} value={vendor.vendorId}>
                   {vendor.vendorName}
                 </Option>
               ))}
@@ -652,7 +675,7 @@ const Form7 = () => {
             name="vendorAddress"
             rules={[{ required: true, message: "Please enter vendor address" }]}
           >
-            <TextArea rows={1} placeholder="Enter vendor address" />
+            <TextArea rows={1} placeholder="Enter vendor address" disabled />
           </Form.Item>
 
           {/* Applicable PBG to be submitted */}
@@ -670,18 +693,18 @@ const Form7 = () => {
               },
             ]}
           >
-            <Input placeholder="Enter vendor's account number" />
+            <Input placeholder="Enter vendor's account number" disabled />
           </Form.Item>
 
           {/* Vendor's IFSC Code */}
           <Form.Item
             label="Vendor's IFSC code"
-            name="vendorZFSCCode"
+            name="vendorsIFSCCode"
             rules={[
               { required: true, message: "Please enter vendor's IFSC code" },
             ]}
           >
-            <Input placeholder="Enter vendor's IFSC code" />
+            <Input placeholder="Enter vendor's IFSC code" disabled />
           </Form.Item>
 
           {/* Vendor's A/C Name */}
@@ -692,7 +715,7 @@ const Form7 = () => {
               { required: true, message: "Please enter vendor's account name" },
             ]}
           >
-            <Input placeholder="Enter vendor's account name" />
+            <Input placeholder="Enter vendor's account name" disabled />
           </Form.Item>
         </div>
 

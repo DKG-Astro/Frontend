@@ -216,7 +216,7 @@ const LineItem = ({
                           },
                         ]}
                       >
-                        <Input placeholder="Enter Material Category" />
+                        <Input placeholder="Enter Material Category" disabled/>
                       </Form.Item>
                     </Col>
 
@@ -232,7 +232,7 @@ const LineItem = ({
                           },
                         ]}
                       >
-                        <Input placeholder="Enter Material Subcategory" />
+                        <Input placeholder="Enter Material Subcategory" disabled/>
                       </Form.Item>
                     </Col>
 
@@ -243,7 +243,7 @@ const LineItem = ({
                         label="Total Price"
                         shouldUpdate
                       >
-                        <Input placeholder="Auto-calculated" />
+                        <Input placeholder="Auto-calculated" disabled />
                       </Form.Item>
                     </Col>
                     <Col span={8}>

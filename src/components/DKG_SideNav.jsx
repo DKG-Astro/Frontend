@@ -76,13 +76,13 @@ const items = [
                 //     activeTab: 4,
                 //     path: "/",
                 // },
-                {
-                    key: "3.1.3",
-                    icon: <EditOutlined />,
-                    label: "Indent Modification",
-                    activeTab: 5,
-                    path: "/procurement/indent/modification",
-                },
+                // {
+                //     key: "3.1.3",
+                //     icon: <EditOutlined />,
+                //     label: "Indent Modification",
+                //     activeTab: 5,
+                //     path: "/procurement/indent/modification",
+                // },
             ]
         },
         {
@@ -126,13 +126,13 @@ const items = [
             activeTab: 24,
             path: "/procurement/contingencyPurchase",
         },
-        {
-            key: "3.6",
-            icon: <UserOutlined />,
-            label: "Committee Formation",
-            activeTab: 8,
-            path: "/procurement/committeeFormation",
-          },
+        // {
+        //     key: "3.6",
+        //     icon: <UserOutlined />,
+        //     label: "Committee Formation",
+        //     activeTab: 8,
+        //     path: "/procurement/committeeFormation",
+        //   },
           
         //   {
         //     key: "3.7",
@@ -141,20 +141,20 @@ const items = [
         //     activeTab: 10,
         //     path: "/",
         //   },
-          {
-            key: "3.8",
-            icon: <SafetyCertificateOutlined />,
-            label: "Performance & Warranty Security",
-            activeTab: 11,
-            path: "/procurement/performanceWarranty",
-          },
-          {
-            key: "3.9",
-            icon: <CodeSandboxOutlined />,
-            label: "Delivery Tracking",
-            activeTab: 12,
-            path: "/procurement/deliveryTracking",
-          },
+        //   {
+        //     key: "3.8",
+        //     icon: <SafetyCertificateOutlined />,
+        //     label: "Performance & Warranty Security",
+        //     activeTab: 11,
+        //     path: "/procurement/performanceWarranty",
+        //   },
+        //   {
+        //     key: "3.9",
+        //     icon: <CodeSandboxOutlined />,
+        //     label: "Delivery Tracking",
+        //     activeTab: 12,
+        //     path: "/procurement/deliveryTracking",
+        //   },
     ]
   },
   {

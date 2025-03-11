@@ -420,7 +420,7 @@ const Form4 = () => {
         applicableTaxes: values.applicableTaxes || null,
         fileType: "Tender",
         consignesAndBillinngAddress:
-          values.consignesAndBillinngAddress?.trim() || null,
+          values.consignesAndBillinngAddress?.trim() || "Koramangala, Bangalore - 560034",
         incoTerms: values.incoTerms?.trim() || null,
         paymentTerms: values.paymentTerms?.trim() || null,
         ldClause: values.ldClause?.trim() || null,
@@ -583,7 +583,9 @@ const Form4 = () => {
         </div>
 
         {/* Indent dropdown with onChange to fetch line items */}
-        <Form.Item name="indentId" label="Indent ID">
+        <Form.Item name="indentId" label="Indent ID"
+        rules={[{ required: true }]}
+        >
           <Select
             placeholder="Select Indent"
             loading={loading}
@@ -803,7 +805,7 @@ const Form4 = () => {
             label="Consignees and Billing Address"
             rules={[{ required: true }]}
           >
-            <Input.TextArea rows={1} />
+            <Input.TextArea rows={1} defaultValue={"Koramangala, Bangalore - 560034"} />
           </Form.Item>
         </div>
 

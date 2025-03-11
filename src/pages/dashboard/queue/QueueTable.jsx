@@ -1,14 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, Typography, Row, Col } from "antd";
 import { useSelector } from "react-redux";
 import QueueRequest from "./QueueRequest";
 import QueueAction from "./QueueAction";
 
 const { Text } = Typography;
+const RESTRICTED_USER_IDS = new Set([18, 25, 31, 34, 36]);
 
 const QueueTable = () => {
   const auth = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("request");
+  const userId = auth.userId
+
+  // Check if user is restricted
+  const isRestricted = RESTRICTED_USER_IDS.has(userId);
+
+  // Handle tab switching for restricted users
+  useEffect(() => {
+    if (isRestricted && activeTab === "request") {
+      setActiveTab("action");
+    }
+  }, [isRestricted, activeTab]);
 
   return (
     <div style={{ padding: 24 }}>
@@ -25,9 +37,11 @@ const QueueTable = () => {
       </Row>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <Tabs.TabPane tab="Queue1" key="request">
-          <QueueRequest />
-        </Tabs.TabPane>
+      {!isRestricted && (
+          <Tabs.TabPane tab="Queue1" key="request">
+            <QueueRequest />
+          </Tabs.TabPane>
+        )}
         <Tabs.TabPane tab="Queue2" key="action">
           <QueueAction />
         </Tabs.TabPane>
