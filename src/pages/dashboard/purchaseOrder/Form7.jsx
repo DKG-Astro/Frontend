@@ -89,7 +89,7 @@ const Form7 = () => {
 
         // Get all tender details
         const tendersResponse = await fetch(
-          "/astro-service/api/tender-requests"
+          "http://103.181.158.220:8081/astro-service/api/tender-requests"
         );
         const tendersData = await tendersResponse.json();
 
@@ -128,7 +128,7 @@ const Form7 = () => {
         selectedTender.indentIds.map(async (indentId) => {
           try {
             const response = await fetch(
-              `/astro-service/api/indents/${indentId}`
+              `http://103.181.158.220:8081/astro-service/api/indents/${indentId}`
             );
             const data = await response.json();
 
@@ -625,7 +625,7 @@ const Form7 = () => {
           {/* Vendor Name */}
           <Form.Item
             label="Vendor Name"
-            name="vendorId"
+            name="vendorName"
             rules={[{ required: true, message: "Please select a vendor" }]}
           >
             <Select
@@ -639,7 +639,7 @@ const Form7 = () => {
               }
             >
               {vendors.map((vendor) => (
-                <Option key={vendor.vendorId} value={vendor.vendorId}>
+                <Option key={vendor.vendorId} value={vendor.vendorName}>
                   {vendor.vendorName}
                 </Option>
               ))}
