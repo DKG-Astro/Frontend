@@ -22,6 +22,7 @@ import { Option } from "antd/es/mentions";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
 import { values } from "lodash";
+import LineItem from "../LineItem";
 
 const Form7b = () => {
   const [form] = Form.useForm();
@@ -121,7 +122,7 @@ const Form7b = () => {
               materialCode: purchase.materialCode,
               materialDescription: purchase.materialDescription,
               quantity: purchase.quantity,
-              unitRate: purchase.unitPrice,
+              unitPrice: purchase.unitPrice,
               totalPrice: purchase.quantity * purchase.unitPrice,
             },
           ],
@@ -186,35 +187,52 @@ const Form7b = () => {
     setLoading(true);
     try {
       const hasInvalidTotal = values.lineItems?.some((item) => {
-        const total = item.quantity * item.unitRate;
+        const total = item.quantity * item.unitPrice;
         return total > 50000;
       });
-  
+
       if (hasInvalidTotal) {
         message.error("One or more items exceed the ₹50,000 limit");
         return;
       }
       const lineItem = values.lineItems[0];
-  
+
+      const totalAmount = values.lineItems.reduce(
+        (sum, item) => sum + (item.totalPrice || 0),
+        0
+      );
+      const amountToBePaid = parseFloat(values.amountToBePaid) || 0;
+
+      if (amountToBePaid > totalAmount) {
+        message.error("Amount to be paid cannot exceed total amount");
+        return;
+      }
+
       // Handle file upload first
       const uploadFile = async (fileList, fieldName) => {
         if (!fileList || fileList.length === 0) return "";
         return uploadFileToServer(fileList[0].originFileObj, fieldName);
       };
-  
+
       const [uploadedFileName] = await Promise.all([
         uploadFile(values.uploadCopyOfInvoice, "Invoice Copy"),
       ]);
-  
+
       // Build payload with file name
       const payload = {
         contigencyId: contingencyId || null,
         vendorsName: values.vendorName,
         vendorsInvoiceNo: values.vendorInvoiceNo,
-        materialCode: lineItem.materialCode,
-        materialDescription: lineItem.materialDescription,
-        quantity: parseFloat(lineItem.quantity) || 0,
-        unitPrice: parseFloat(lineItem.unitRate) || 0,
+        lineItems: values.lineItems.map((item) => ({
+          materialCode: item.materialCode,
+          materialDescription: item.materialDescription,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          uom: item.uom,
+          budgetCode: item.budgetCode,
+          materialCategory: item.materialCategory,
+          totalPrice: item.totalPrice,
+        })),
         remarksForPurchase: values.remarks,
         amountToBePaid: parseFloat(values.amountToBePaid) || 0,
         predifinedPurchaseStatement: values.predefinedPurchaseStatement || null,
@@ -223,29 +241,29 @@ const Form7b = () => {
         createdBy: actionPerformer,
         updatedBy: null,
         uploadCopyOfInvoice: uploadedFileName || "", // Changed field name to match DTO
-        fileType: "CP" // Add fileType as per DTO
+        fileType: "CP", // Add fileType as per DTO
       };
-  
+
       // Submit as JSON
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/contigency-purchase",
         {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(payload),
         }
       );
-  
+
       const responseData = await response.json();
-  
+
       if (!response.ok || responseData.responseStatus.statusCode !== 0) {
         throw new Error(
           responseData.responseStatus?.message || "Submission failed"
         );
       }
-  
+
       message.success("Contingency submitted successfully!");
       form.resetFields();
     } catch (error) {
@@ -287,47 +305,42 @@ const Form7b = () => {
     fetchMaterials();
   }, []);
 
-const handleMaterialSelect = (index, materialCode) => {
+  const handleMaterialSelect = (index, materialCode) => {
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
     const updatedItems = [...lineItems];
+
     updatedItems[index] = {
       ...updatedItems[index],
-      materialCode: materialCode,
+      materialCode,
       materialDescription: materialData.description || "",
       materialCategory: materialData.category || "",
+      uom: materialData.uom || "",
+      unitPrice: materialData.unitPrice || 0, // Auto-fill unit rate if available
     };
 
     form.setFieldsValue({ lineItems: updatedItems });
 
+    // Category validation
     const categories = updatedItems
       .map((item) => item?.materialCategory)
-      .filter((cat) => cat);
+      .filter(Boolean);
 
-    if (categories.length === 0) return; // No categories selected yet
+    if (categories.length > 0) {
+      const firstCategory = categories[0];
+      const allSame = categories.every((cat) => cat === firstCategory);
 
-    const firstCategory = categories[0];
-    const allSame = categories.every((cat) => cat === firstCategory);
-
-    if (!allSame) {
-      message.error("All materials must be of the same category.");
-      updatedItems[index] = {
-        ...updatedItems[index],
-        materialCode: undefined,
-        materialCategory: undefined,
-      };
-
-      form.setFieldsValue({ lineItems: updatedItems });
-
-      // Show field error
-      form.setFields([
-        {
-          name: ["lineItems", index, "materialCode"],
-          errors: ["Category must match first material"],
-        },
-      ]);
+      if (!allSame) {
+        message.error("All materials must be of the same category");
+        form.setFields([
+          {
+            name: ["lineItems", index, "materialCode"],
+            errors: ["Category must match first item"],
+          },
+        ]);
+      }
     }
-};
+  };
 
   // Calculate total price dynamically
   const updateTotalPrice = (name) => {
@@ -363,28 +376,78 @@ const handleMaterialSelect = (index, materialCode) => {
       <div className="form-section" style={{ marginBottom: "20px" }}>
         <Row justify="end">
           <Col>
-          <Form form={form} layout="inline" style={{marginBottom:16}}>
-                <Form.Item label="Contingency ID">
+            <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
+              <Form.Item label="Contingency ID">
                 <Input
-                    placeholder="Enter Contingency ID"
-                    value={contingencyId}
-                    onChange={(e) => setContingencyId(e.target.value)}
-                    style={{ width: "200px", marginRight: "10px" }}
+                  placeholder="Enter Contingency ID"
+                  value={contingencyId}
+                  onChange={(e) => setContingencyId(e.target.value)}
+                  style={{ width: "200px", marginRight: "10px" }}
                 />
                 <Button
-                    type="primary"
-                    onClick={() => fetchContingencyData(contingencyId)}
-                    disabled={!contingencyId}
+                  type="primary"
+                  onClick={() => fetchContingencyData(contingencyId)}
+                  disabled={!contingencyId}
                 >
-                    <SearchOutlined />
+                  <SearchOutlined />
                 </Button>
-                </Form.Item>
-          </Form>
+              </Form.Item>
+            </Form>
           </Col>
         </Row>
       </div>
 
       <Form form={form} layout="vertical" onFinish={submitContingencyData}>
+        <Form.Item
+          label="Date"
+          name="date"
+          rules={[{ required: true, message: "Please select date" }]}
+        >
+          <DatePicker format="DD/MM/YYYY" />
+        </Form.Item>
+
+        <LineItem
+          form={form}
+          materialList={materialList}
+          projects={projects}
+          materialDetailsMap={materialDetailsMap}
+          handleMaterialSelect={handleMaterialSelect}
+          // Update the handlePriceCalculation prop in Form7b's LineItem usage:
+          handlePriceCalculation={(index, field, value) => {
+            // Immediately update the changed field
+            form.setFieldValue(["lineItems", index, field], value);
+
+            // Get current values directly from form instance
+            const quantity = parseFloat(
+              form.getFieldValue(["lineItems", index, "quantity"]) || 0
+            );
+            const unitPrice = parseFloat(
+              form.getFieldValue(["lineItems", index, "unitPrice"]) || 0
+            );
+            const total = quantity * unitPrice;
+
+            // Update total price
+            form.setFieldValue(["lineItems", index, "totalPrice"], total);
+
+            // Validation
+            if (total > 50000) {
+              form.setFields([
+                {
+                  name: ["lineItems", index, "totalPrice"],
+                  errors: ["Total price cannot exceed ₹50,000"],
+                },
+              ]);
+            } else {
+              form.setFields([
+                {
+                  name: ["lineItems", index, "totalPrice"],
+                  errors: [],
+                },
+              ]);
+            }
+          }}
+        />
+
         <div className="form-section">
           <Form.Item
             label="Vendor Name"
@@ -419,168 +482,6 @@ const handleMaterialSelect = (index, materialCode) => {
           </Form.Item>
         </div>
 
-        <Form.Item
-          label="Date"
-          name="date"
-          rules={[{ required: true, message: "Please select date" }]}
-        >
-          <DatePicker format="DD/MM/YYYY" />
-        </Form.Item>
-
-        <Form.List name="lineItems" initialValue={[{}]}>
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map(({ key, name, ...restField }) => (
-                <div
-                  key={key}
-                  style={{
-                    border: "1px solid #ccc",
-                    padding: "20px",
-                    paddingBottom: "5px",
-                    marginBottom: "20px",
-                    position: "relative",
-                  }}
-                >
-                  <DeleteOutlined
-                    onClick={() => remove(name)}
-                    style={{
-                      position: "absolute",
-                      top: "10px",
-                      right: "10px",
-                      fontSize: "18px",
-                      cursor: "pointer",
-                    }}
-                  />
-                  <Space
-                    style={{
-                      display: "flex",
-                      marginBottom: "10px",
-                      flexWrap: "wrap",
-                    }}
-                    align="start"
-                  >
-                    <Row gutter={16}>
-                      <Col span={8}>
-                        <Form.Item
-                          name={[name, "materialCode"]}
-                          label="Material Code"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please select a material code!",
-                            },
-                          ]}
-                        >
-                          <Select
-                            placeholder="Select Material Code"
-                            onChange={(value) =>
-                              handleMaterialSelect(name, value)
-                            }
-                          >
-                            {materialList.map((code) => (
-                              <Option key={code} value={code}>
-                                {code}
-                              </Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "materialDescription"]}
-                          label="Material Description"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter material description",
-                            },
-                          ]}
-                        >
-                          <Input placeholder="Enter Material Description" />
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "quantity"]}
-                          label="Quantity"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter quantity",
-                            },
-                          ]}
-                        >
-                          <Input
-                            type="number"
-                            placeholder="Enter Quantity"
-                            onChange={() => updateTotalPrice(name)}
-                          />
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "unitRate"]}
-                          label="Unit Rate"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please enter unit rate",
-                            },
-                          ]}
-                        >
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="Enter unit rate"
-                            onChange={() => updateTotalPrice(name)}
-                          />
-                        </Form.Item>
-                      </Col>
-
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "totalPrice"]}
-                          label="Total Price"
-                          validateStatus={
-                            values?.totalPrice > 50000 ? "error" : ""
-                          }
-                          help={
-                            values?.totalPrice > 50000
-                              ? "Exceeds ₹50,000 limit"
-                              : ""
-                          }
-                        >
-                          <Input disabled />
-                        </Form.Item>
-                      </Col>
-                    </Row>
-                    {fields.length > 1 && (
-                      <MinusCircleOutlined onClick={() => remove(name)} />
-                    )}
-                  </Space>
-                </div>
-              ))}
-              <Form.Item>
-                <Button
-                  type="dashed"
-                  onClick={() => add()}
-                  icon={<PlusOutlined />}
-                  style={{ width: "32%" }}
-                >
-                  Add Item
-                </Button>
-              </Form.Item>
-            </>
-          )}
-        </Form.List>
-
         <div className="form-section">
           <Form.Item
             label="Remarks for purchase"
@@ -595,6 +496,21 @@ const handleMaterialSelect = (index, materialCode) => {
             name="amountToBePaid"
             rules={[
               { required: true, message: "Please enter amount to be paid" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const lineItems = getFieldValue("lineItems") || [];
+                  const totalAmount = lineItems.reduce(
+                    (sum, item) => sum + (item.totalPrice || 0),
+                    0
+                  );
+                  if (value && parseFloat(value) > totalAmount) {
+                    return Promise.reject(
+                      "Amount to be paid cannot exceed total amount"
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              }),
             ]}
           >
             <Input
@@ -617,22 +533,9 @@ const handleMaterialSelect = (index, materialCode) => {
               <Button icon={<UploadOutlined />}>Upload Invoice Copy</Button>
             </Upload>
           </Form.Item>
-          {/* <Form.Item
-                      label="Upload Prior Approvals"
-                      name="uploadingPriorApprovals"
-                      valuePropName="fileList"
-                      getValueFromEvent={normFile} // <--- added
-                      rules={[
-                        { required: true, message: "Prior approvals are required" },
-                      ]}
-                    >
-                      <Upload beforeUpload={() => false}>
-                        <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
-                      </Upload>
-                    </Form.Item> */}
 
           <Form.Item
-            label="Predefined purchase statement"
+            label="Purchase statement"
             name="predefinedPurchaseStatement"
           >
             <Input.TextArea rows={1} />
@@ -643,7 +546,7 @@ const handleMaterialSelect = (index, materialCode) => {
           name="projectName"
           label="Project Name"
           style={{ width: "32%" }}
-        //   rules={[{ required: true, message: "Please enter project detail" }]}
+          //   rules={[{ required: true, message: "Please enter project detail" }]}
         >
           <Select placeholder="Select project" loading={loading} allowClear>
             {projects.map((project) => (

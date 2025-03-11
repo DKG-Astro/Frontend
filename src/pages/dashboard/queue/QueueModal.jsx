@@ -342,8 +342,8 @@ const QueueModal = ({
                   </Col>
                   <Col span={12}>
                     <div className="detail-item">
-                      <strong>ZFSC Code:</strong>{" "}
-                      {detailsData.vendorsZfscCode || "N/A"}
+                      <strong>IFSC Code:</strong>{" "}
+                      {detailsData.vendorsIfscCode || "N/A"}
                     </div>
                     <div className="detail-item">
                       <strong>Account Name:</strong>{" "}
