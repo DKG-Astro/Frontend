@@ -5,6 +5,7 @@ import axios from 'axios';
 import { apiCall } from '../../../utils/CommonFunctions';
 import { useNavigate } from 'react-router-dom';
 import Btn from '../../../components/DKG_Btn';
+import { useSelector } from 'react-redux';
 
 const { Title, Text } = Typography;
 
@@ -156,6 +157,8 @@ const IndentorUpload = ({ requestId }) => {
     }
   }, [requestId]);
 
+  const {userId} = useSelector(state => state.auth)
+
   const handleFileChange = (fileKey, file) => {
     setUploadedFiles((prev) => ({
       ...prev,
@@ -202,6 +205,7 @@ const IndentorUpload = ({ requestId }) => {
 
           const uploadedFileName = uploadResponse.data.responseData.fileName;
           updatedFormData[fileKey] = uploadedFileName;
+          updatedFormData[fileKey + "CreatedBy"] = userId;
         }
       }
 
