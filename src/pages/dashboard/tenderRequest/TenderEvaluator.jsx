@@ -133,7 +133,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
           const updateBody = {
             ...formData,
             uploadCommeriallyQualifiedVendorsFileName: serverFileNames.vendorUploadThree,
-            updatedBy: userId
+            uploadCommeriallyQualifiedVendorsFileNameCreatedBy: userId
           };
           
           evaluationResponse = await axios.put(
@@ -157,8 +157,11 @@ const TenderEvaluator = ({bidType, tenderId}) => {
           // Add the appropriate file name based on bid type
           if (bidType === "Single") {
             tenderEvaluationBody.uploadQualifiedVendorsFileName = serverFileNames.vendorUploadSingle;
+            tenderEvaluationBody.uploadQualifiedVendorsFileNameCreatedBy = userId;
           } else if (bidType === "Double") {
             tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileName = serverFileNames.vendorUploadTwo;
+            tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileNameCreatedBy = userId;
+
           }
 
           evaluationResponse = await axios.post(
