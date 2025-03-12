@@ -78,7 +78,7 @@ const TenderEvaluator = ({bidType, tenderId}) => {
           fetchTenderData();
         }
       }, [tenderId]);
-  
+
     // Get document data
     const getDocData = (docName) => {
       return uploadedDocs.find(doc => doc.name === docName) || null;
@@ -125,32 +125,53 @@ const TenderEvaluator = ({bidType, tenderId}) => {
           serverFileNames[result.docName] = result.response.responseData.fileName;
         });
 
-        // Second API: Tender Evaluation
-        const tenderEvaluationBody = {
-          tenderId: tenderId,
-          fileType: "Tender",
-          createdBy: userId,
-          updatedBy: userId
-        };
+        let evaluationResponse;
         
-        // Add the appropriate file name based on bid type
-        if (bidType === "Single") {
-          tenderEvaluationBody.uploadQualifiedVendorsFileName = serverFileNames.vendorUploadSingle;
-        } else if (bidType === "Double") {
-          tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileName = serverFileNames.vendorUploadTwo;
-        } else if (bidType === "Three") {
-          tenderEvaluationBody.uploadCommeriallyQualifiedVendorsFileName = serverFileNames.vendorUploadThree;
-        }
-
-        const evaluationResponse = await axios.post(
-          '/api/tender-evaluation',
-          tenderEvaluationBody,
-          {
-            headers: {
-              'Content-Type': 'application/json'
+        // Check if we're updating an existing evaluation with commercial qualification
+        if (bidType === "Double" && formData && formData.responseForTechnicallyQualifiedVendorsFileName) {
+          // Use PUT to update with commercial qualification
+          const updateBody = {
+            ...formData,
+            uploadCommeriallyQualifiedVendorsFileName: serverFileNames.vendorUploadThree,
+            updatedBy: userId
+          };
+          
+          evaluationResponse = await axios.put(
+            `/api/tender-evaluation/${tenderId}`,
+            updateBody,
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
             }
+          );
+        } else {
+          // Original POST for new evaluation
+          const tenderEvaluationBody = {
+            tenderId: tenderId,
+            fileType: "Tender",
+            createdBy: userId,
+            updatedBy: userId
+          };
+          
+          // Add the appropriate file name based on bid type
+          if (bidType === "Single") {
+            tenderEvaluationBody.uploadQualifiedVendorsFileName = serverFileNames.vendorUploadSingle;
+          } else if (bidType === "Double") {
+            tenderEvaluationBody.uploadTechnicallyQualifiedVendorsFileName = serverFileNames.vendorUploadTwo;
           }
-        );
+
+          evaluationResponse = await axios.post(
+            '/api/tender-evaluation',
+            tenderEvaluationBody,
+            {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        }
+        
         setFormData(evaluationResponse.data.responseData);
 
         if (evaluationResponse.data.responseStatus.statusCode === 0) {
@@ -176,13 +197,36 @@ const TenderEvaluator = ({bidType, tenderId}) => {
       <Heading title={`Tender Evaluation for Tender ID: ${tenderId} and Bid Type: ${bidType}`} />
       
       <div>
-        {bidType && bidTypeDocMapping[bidType] && (
+        {/* For Single bid type */}
+        {bidType === "Single" && (
           <FileUpload
             documentName={bidTypeDocMapping[bidType].displayName}
             fileType="image"
             value={getDocData(bidTypeDocMapping[bidType].docName)}
             onChange={(fileData) => handleDocChange(bidTypeDocMapping[bidType].docName, fileData)}
             fileName={bidTypeDocMapping[bidType].fileName}
+          />
+        )}
+        
+        {/* For Double bid type - Technical evaluation */}
+        {bidType === "Double" && (!formData || !formData.responseForTechnicallyQualifiedVendorsFileName) && (
+          <FileUpload
+            documentName={bidTypeDocMapping[bidType].displayName}
+            fileType="image"
+            value={getDocData(bidTypeDocMapping[bidType].docName)}
+            onChange={(fileData) => handleDocChange(bidTypeDocMapping[bidType].docName, fileData)}
+            fileName={bidTypeDocMapping[bidType].fileName}
+          />
+        )}
+        
+        {/* For Double bid type - Commercial evaluation (when technical is already done) */}
+        {bidType === "Double" && formData && formData.responseForTechnicallyQualifiedVendorsFileName && (
+          <FileUpload
+            documentName="Upload Commercially Qualified Vendors"
+            fileType="image"
+            value={getDocData("vendorUploadThree")}
+            onChange={(fileData) => handleDocChange("vendorUploadThree", fileData)}
+            fileName="uploadCommeriallyQualifiedVendorsFileName"
           />
         )}
       </div>

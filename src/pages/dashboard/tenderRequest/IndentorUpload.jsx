@@ -78,15 +78,27 @@ const IndentorUpload = ({ requestId }) => {
           };
         }
         else if (responseData.bidType === "Double") {
-          setShowDocs({
+          // Base configuration for Double bid type
+          const showDocsConfig = {
             uploadTechnicallyQualifiedVendorsFileName: true,
             responseForTechnicallyQualifiedVendorsFileName: true
-          });
+          };
           
           localDocFileType = {
             uploadTechnicallyQualifiedVendorsFileName: "Tender",
             responseForTechnicallyQualifiedVendorsFileName: "Indent"
           };
+          
+          // If commercial qualification is present, show option to upload response
+          if (responseData.uploadCommeriallyQualifiedVendorsFileName) {
+            showDocsConfig.uploadCommeriallyQualifiedVendorsFileName = true;
+            showDocsConfig.responseForCommeriallyQualifiedVendorsFileName = true;
+            
+            localDocFileType.uploadCommeriallyQualifiedVendorsFileName = "Tender";
+            localDocFileType.responseForCommeriallyQualifiedVendorsFileName = "Indent";
+          }
+          
+          setShowDocs(showDocsConfig);
         }
 
         // Update the state with our local object
@@ -96,7 +108,6 @@ const IndentorUpload = ({ requestId }) => {
 
         // Use the local docFileType object instead of the state
         const filePromises = fileKeys.map(async (key) => {
-          console.log("Processing key:", key, "File type:", localDocFileType[key]);
           if (responseData[key]) {
             try {
               // Use the correct file type from our local object
