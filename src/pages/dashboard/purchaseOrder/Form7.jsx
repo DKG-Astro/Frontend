@@ -345,7 +345,7 @@ const Form7 = () => {
         form={form}
         layout="vertical"
         onFinish={submitPOData}
-        initialValues={{ date: null }}
+        initialValues={{ date: null, billingAddress: "Koramangala, Bangalore - 560034" }}
       >
         <Row justify="end">
           <Col>
@@ -398,7 +398,7 @@ const Form7 = () => {
               { required: true, message: "Please enter billing address" },
             ]}
           >
-            <TextArea rows={1} placeholder="Enter billing address" defaultValue={"Koramangala, Bangalore - 560034"} />
+            <TextArea rows={2} placeholder="Enter billing address" defaultValue={"Koramangala, Bangalore - 560034"} />
           </Form.Item>
 
           {/* Delivery Period */}

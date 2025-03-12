@@ -267,6 +267,8 @@ const Form4 = () => {
 
       const responseData = data.responseData;
 
+      console.log("RESPINSDDTAA: ", responseData)
+
       // Updated mapping: keys here match the form field names
       const formData = {
         tenderId: responseData.tenderId || "",
@@ -289,7 +291,7 @@ const Form4 = () => {
           : null,
         applicableTaxes: responseData.applicableTaxes || "",
         consignesAndBillinngAddress:
-          responseData.consignesAndBillinngAddress || "",
+          responseData.consignesAndBillinngAddress || "Koramangala, Bangalore - 560034",
         incoTerms: responseData.incoTerms || "",
         paymentTerms: responseData.paymentTerms || "",
         ldClause: responseData.ldClause || "",
@@ -362,6 +364,8 @@ const Form4 = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
+
+      console.log("Value", values)
 
       // Validate project consistency
       if (values.indentId?.length > 0) {
@@ -514,6 +518,7 @@ const Form4 = () => {
       <h2>Tender Request</h2>
       <Form
         form={form}
+        initialValues={{consignesAndBillinngAddress: "Koramangala, Bangalore - 560034"}}
         onFinish={handleSubmit}
         onFinishFailed={(errorInfo) => {
           console.log("Validation Failed:", errorInfo);
@@ -805,7 +810,11 @@ const Form4 = () => {
             label="Consignees and Billing Address"
             rules={[{ required: true }]}
           >
-            <Input.TextArea rows={1} defaultValue={"Koramangala, Bangalore - 560034"} />
+            <Input.TextArea rows={2}
+            
+              
+            //  defaultValue={"Koramangala, Bangalore - 560034"} 
+             />
           </Form.Item>
         </div>
 
