@@ -315,6 +315,7 @@ const Form7b = () => {
       materialCode,
       materialDescription: materialData.description || "",
       materialCategory: materialData.category || "",
+      materialSubcategory: materialData.subCategory || "",
       uom: materialData.uom || "",
       unitPrice: materialData.unitPrice || 0, // Auto-fill unit rate if available
     };
