@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { apiCall } from '../../../utils/CommonFunctions'
 import { useSelector } from 'react-redux'
-import { Button, message, Table } from 'antd'
+import { Button, Input, message, Table } from 'antd'
 import dayjs from 'dayjs'
 import Btn from '../../../components/DKG_Btn'
 import { useNavigate } from 'react-router-dom'
@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom'
 const SubworkflowTransition = () => {
     const {userId} = useSelector(state => state.auth)
     const [queueData, setQueueData] = useState([])
+    const [searchTerm, setSearchTerm] = useState('')
+    const [appliedSearchTerm, setAppliedSearchTerm] = useState('')
     const navigate = useNavigate();
 
     const handleRowClick = (record) => {
@@ -100,15 +102,45 @@ const SubworkflowTransition = () => {
         }
     }, [userId])
 
+    const handleSearch = () => {
+        setAppliedSearchTerm(searchTerm.trim())
+    }
+
+    const handleClear = () => {
+        setSearchTerm('')
+        setAppliedSearchTerm('')
+    }
+
+    const filteredData = appliedSearchTerm 
+        ? queueData.filter(item => 
+            item.indentId?.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+            item.requestId?.toLowerCase().includes(appliedSearchTerm.toLowerCase())
+          )
+        : queueData
+
     useEffect(() => {
         populateData()
     }, [populateData])
 
     return (
         <div className="p-4">
+            <div className="flex gap-2 mb-4">
+                <Input
+                    placeholder="Search by Indent ID or Request ID"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-xs"
+                />
+                <Button type="primary" onClick={handleSearch}>
+                    Search
+                </Button>
+                <Button onClick={handleClear}>
+                    Clear
+                </Button>
+            </div>
             <Table 
                 columns={columns} 
-                dataSource={queueData}
+                dataSource={filteredData}
                 rowKey="subWorkflowTransitionId"
                 scroll={{ x: 'max-content' }}
             />
