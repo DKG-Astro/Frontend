@@ -128,6 +128,7 @@ const Form1 = () => {
               uom: item.uom || "",
               totalPrice: parseFloat(item.totalPrize) || 0,
               budgetCode: item.budgetCode || "",
+              modeOfProcurement: item.modeOfProcurement || "",
               materialCategory: item.materialCategory || "",
               materialSubcategory: item.materialSubCategory || "",
               materialOrJobCodeUsedByDept: item.materialAndJob || "",
@@ -236,6 +237,7 @@ const Form1 = () => {
           materialCategory: String(item.materialCategory) || null,
           materialSubCategory: String(item.materialSubcategory) || null,
           materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
+          modeOfProcurement: String(item.modeOfProcurement) || null
         };
       });
 
@@ -352,6 +354,7 @@ const Form1 = () => {
               materialDescription: material.description,
               materialCategory: material.category,
               materialSubCategory: material.subCategory,
+              modeOfProcurement: material.modeOfProcurement
             },
           }),
           {}
@@ -380,6 +383,7 @@ const Form1 = () => {
       materialDescription: materialData.description || "", // Match API field
       materialCategory: materialData.category || "", // Match API field
       materialSubcategory: materialData.subCategory || "", // Match API field
+      modeOfProcurement: materialData.modeOfProcurement || "",
       uom: materialData.uom || "",
     };
 
@@ -403,6 +407,7 @@ const Form1 = () => {
         materialDescription: "",
         materialCategory: "",
         materialSubcategory: "",
+        modeOfProcurement: "",
         uom: "",
       };
 
@@ -534,7 +539,7 @@ const Form1 = () => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="Upload Tender Documents"
+            label="Upload Technical Specifications"
             name="uploadTenderDocuments"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -658,7 +663,7 @@ const Form1 = () => {
         </div>
         <div className="form-section">
           <Form.Item
-            label="Upload GOI or RFP"
+            label="Upload Draft EOI or RFP"
             name="uploadGOIOrRFP"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -669,7 +674,7 @@ const Form1 = () => {
             </Upload>
           </Form.Item>
           <Form.Item
-            label="Upload PAC or Brand PAC"
+            label="Upload Brand PAC Approval"
             name="uploadPACOrBrandPAC"
             valuePropName="fileList"
             getValueFromEvent={normFile}

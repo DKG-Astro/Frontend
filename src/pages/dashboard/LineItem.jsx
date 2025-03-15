@@ -220,6 +220,16 @@ const LineItem = ({
                       </Form.Item>
                     </Col>
 
+                    <Col span = {8}>
+                        <Form.Item
+                        {...restField}
+                        name={[name,"modeOfProcurement"]}
+                        label="Mode Of Procurement"
+                        >
+                            <Input placeholder="Enter Mode of Procurement" disabled/>
+                        </Form.Item>
+                    </Col>
+
                     <Col span={8}>
                       <Form.Item
                         {...restField}
@@ -269,7 +279,7 @@ const LineItem = ({
                   icon={<PlusOutlined />}
                   style={{ width: "32%" }}
                 >
-                  Add Item
+                  Add Material
                 </Button>
               </Form.Item>
             )}

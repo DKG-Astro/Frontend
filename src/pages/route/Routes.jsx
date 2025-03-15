@@ -89,6 +89,8 @@ import Temp from "../dashboard/goodsProvisionalRecieptNote/GPRN";
 import MainDashboard from "../dashboard/newDashboard/MainDashboard";
 import GPRN from "../dashboard/goodsProvisionalRecieptNote/GPRN";
 import GoodsInspection from "../dashboard/goodsInspection/GoodsInspection";
+import JobCreation from "../dashboard/jobCreation/JobCreation";
+import WorkCreation from "../dashboard/workCreation/WorkCreation";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -116,8 +118,8 @@ const RoutesComponent = () => {
                 <Route path="purchaseOrder" element={<Form7 />} />
                 <Route path="serviceOrder" element={<Form7a />} />
                 <Route path="contingencyPurchase" element={<Form7b />} />
-                <Route path="committeeFormation" element={<Form6 />} />
-                <Route path="performanceWarranty" element={<Form9 />} />
+                <Route path="jobCreation" element={<JobCreation />} />
+                <Route path="workCreation" element={<WorkCreation />} />
                 <Route path="deliveryTracking" element={<Form10 />} />
             </Route>
 

@@ -39,6 +39,8 @@ import MaterialForm from './materialDetails/MaterialForm';
 import Temp from './goodsProvisionalRecieptNote/GPRN';
 import GPRN from './goodsProvisionalRecieptNote/GPRN';
 import GoodsInspection from './goodsInspection/GoodsInspection';
+import JobCreation from './jobCreation/JobCreation';
+import WorkCreation from './workCreation/WorkCreation';
 // import Form21 from './lineItems/Form21';
 
 // const { Search } = Input;
@@ -156,6 +158,10 @@ const Dashboard = () => {
             return <Form7b />
         case 25:
             return <MaterialForm />
+        case 26:
+            return <JobCreation />
+        case 27:
+            return <WorkCreation />
         default:
           break
       }
