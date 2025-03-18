@@ -91,6 +91,7 @@ import GPRN from "../dashboard/goodsProvisionalRecieptNote/GPRN";
 import GoodsInspection from "../dashboard/goodsInspection/GoodsInspection";
 import JobCreation from "../dashboard/jobCreation/JobCreation";
 import WorkCreation from "../dashboard/workCreation/WorkCreation";
+import Master from "../masters/Master";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -104,7 +105,7 @@ const RoutesComponent = () => {
 
             <Route path="/dashboard" element={<MainDashboard/>} />
             <Route path="/queue" element={<QueueTable/>}/>
-            <Route path="/materialForm" element={<MaterialForm />} />
+            <Route path="/masters" element={<Master />} />
 
             <Route path="/procurement">
                 <Route path="indent">

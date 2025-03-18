@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
-import FormContainer from "../../../components/DKG_FormContainer";
-import FormBody from "../../../components/DKG_FormBody";
-import FormInputItem from "../../../components/DKG_FormInputItem";
-import Heading from "../../../components/DKG_Heading";
-import FormDropdownItem from "../../../components/DKG_FormDropdownItem";
+import FormContainer from "../../components/DKG_FormContainer";
+import FormInputItem from "../../components/DKG_FormInputItem";
+import Heading from "../../components/DKG_Heading";
+import CustomSelect from "../../components/CustomSelect";
 import { Option } from "antd/es/mentions";
 import {
   Button,
-  Checkbox,
   DatePicker,
   Form,
   Input,
@@ -23,6 +21,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
+import { modeOfProcurementList } from '../../utils/Constants'
 
 const MaterialForm = () => {
   const auth = useSelector((state) => state.auth);
@@ -95,75 +94,114 @@ const MaterialForm = () => {
     fetchInitialData();
   }, []);
 
+  // Add new state
+  const [procurementMode, setProcurementMode] = useState('')
+  const { vendorMaster } = useSelector(state => state.masters)
+  
+  // Add vendor options mapping
+  const vendorMasterMod = vendorMaster?.map(vendor => ({
+  label: vendor.vendorName,
+  value: vendor.vendorName
+  }))
+
+  // Modify handleSubmit to include validations
   const handleSubmit = async (values) => {
-    setLoading(true);
-    try {
-      let uploadedFileName = "";
-      if (fileList.length > 0) {
-        const formData = new FormData();
-        formData.append("file", fileList[0].originFileObj);
-
-        const uploadResponse = await fetch(
-          "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-
-        const uploadResult = await uploadResponse.json();
-        uploadedFileName = uploadResult.fileName; // Adjust based on actual API response
+  setLoading(true);
+  try {
+    if(values.modeOfProcurement === "Proprietary/Single Tender"){
+      if(!values?.vendorNames){
+        message.error("Please select vendor name")
+        return
       }
+    }
+    else if(values.modeOfProcurement === "Limited Pre Approved Vendor Tender"){
+      if(values?.vendorNames?.length !== 4){
+        message.error("Please select 4 vendor names")
+        return;
+      }
+    }
+      
+    let vendorNames = null;
+    if (values.modeOfProcurement === "Proprietary/Single Tender") {
+      vendorNames = [values.vendorNames];
+    } else if (values.modeOfProcurement === "Limited Pre Approved Vendor Tender") {
+      vendorNames = values.vendorNames;
+    }
 
-      // Prepare payload according to DTO structure
-      const payload = {
-        ...values,
-        endOfLife: values.endOfLife?.format("YYYY-MM-DD") || "",
-        uploadImageFileName: uploadedFileName,
-        createdBy: actionPerformer, // Replace with actual user ID from your auth system
-        updatedBy: "0", // Replace with actual user ID from your auth system
-      };
+    let uploadedFileName = "";
+    if (fileList.length > 0) {
+      const formData = new FormData();
+      formData.append("file", fileList[0].originFileObj);
 
-      const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/material-master",
+      const uploadResponse = await fetch(
+        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+          body: formData,
         }
       );
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || "Submission failed");
-      }
-
-      message.success("Material submitted successfully!");
-      form.resetFields();
-      setFileList([]);
-    } catch (error) {
-      message.error(`Submission failed: ${error.message}`);
-      console.error("Submission error:", error);
-    } finally {
-      setLoading(false);
+      const uploadResult = await uploadResponse.json();
+      uploadedFileName = uploadResult.fileName; // Adjust based on actual API response
     }
+
+    // Prepare payload according to DTO structure
+    const payload = {
+      ...values,
+      vendorNames,
+      endOfLife: values.endOfLife?.format("YYYY-MM-DD") || "",
+      uploadImageFileName: uploadedFileName,
+      createdBy: actionPerformer,
+      updatedBy: "0",
+    };
+
+    const response = await fetch(
+      "http://103.181.158.220:8081/astro-service/api/material-master",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "Submission failed");
+    }
+
+    message.success("Material submitted successfully!");
+    form.resetFields();
+    setFileList([]);
+  } catch (error) {
+    message.error(`Submission failed: ${error.message}`);
+    console.error("Submission error:", error);
+  } finally {
+    setLoading(false);
+  }
   };
 
   return (
     <FormContainer>
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form 
+        form={form} 
+        layout="vertical" 
+        onFinish={handleSubmit}
+        onValuesChange={(changedValues) => {
+          if (changedValues.modeOfProcurement) {
+            setProcurementMode(changedValues.modeOfProcurement)
+          }
+        }}
+      >
         <Heading title={"Material Details"} />
         <div className="form-section">
           <FormInputItem label="Material Code" name="materialCode" placeholder="auto generated" disabled />
           <Form.Item
             name="category"
             label="Category"
-            rules={[
-              { required: true, message: "Please select material category!" },
-            ]}
+            rules={[{ required: true, message: "Please select material category!" }]}
           >
             <Select placeholder="Select Material Category">
               {materialCategories.map((category) => (
@@ -174,16 +212,10 @@ const MaterialForm = () => {
             </Select>
           </Form.Item>
 
-          {/* Material Subcategory Dropdown */}
           <Form.Item
             name="subCategory"
             label="Subcategory"
-            rules={[
-              {
-                required: true,
-                message: "Please select material subcategory!",
-              },
-            ]}
+            rules={[{ required: true, message: "Please select material subcategory!" }]}
           >
             <Select placeholder="Select Material Subcategory">
               {materialSubcategories.map((subCat) => (
@@ -194,8 +226,8 @@ const MaterialForm = () => {
             </Select>
           </Form.Item>
         </div>
+
         <div className="form-section">
-          {/* <FormInputItem label="Material Name" name="materialName" /> */}
           <Form.Item label="Description" name="description" required>
             <Input />
           </Form.Item>
@@ -219,12 +251,25 @@ const MaterialForm = () => {
               ))}
             </Select>
           </Form.Item>
-          <FormInputItem
-            label="Mode of Procurement"
-            name="modeOfProcurement"
-            required
+          <CustomSelect 
+            name="modeOfProcurement" 
+            label="Mode Of Procurement" 
+            options={modeOfProcurementList} 
+            required 
           />
         </div>
+
+        {procurementMode === "Proprietary/Single Tender" && (
+          <div className="form-section">
+            <CustomSelect name="vendorNames" label="Vendor Name" options={vendorMasterMod} />
+          </div>
+        )}
+        {procurementMode === "Limited Pre Approved Vendor Tender" && (
+          <div className="form-section">
+            <CustomSelect name="vendorNames" label="Vendor Names" options={vendorMasterMod} multiselect />
+          </div>
+        )}
+
         <div className="form-section">
           <Form.Item label="End of Life" name="endOfLife">
             <DatePicker format="YYYY-MM-DD" />
@@ -240,6 +285,7 @@ const MaterialForm = () => {
             name="stockLevels"
           />
         </div>
+
         <div className="form-section">
           <FormInputItem label="Condition of Goods" name="conditionOfGoods" />
           <FormInputItem label="Shelf Life" name="shelfLife" />
@@ -249,18 +295,17 @@ const MaterialForm = () => {
             required
           />
         </div>
+
         <div className="form-section">
-          <Form.Item
-          label = "Upload Image"
-          >
+          <Form.Item label="Upload Image">
             <Upload
-                beforeUpload={() => false}
-                maxCount={1}
-                accept="image/*"
-                fileList={fileList}
-                onChange={({ fileList }) => setFileList(fileList)}
+              beforeUpload={() => false}
+              maxCount={1}
+              accept="image/*"
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
             >
-                <Button icon={<UploadOutlined />}>Select File</Button>
+              <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
           </Form.Item>
 
@@ -268,7 +313,7 @@ const MaterialForm = () => {
             name="indigenousOrImported"
             label="Origin"
             rules={[{ required: true }]}
-            valuePropName="checked" // Add this for proper boolean handling
+            valuePropName="checked"
           >
             <Radio.Group>
               <Radio value={true}>Indigenous</Radio>
@@ -276,13 +321,8 @@ const MaterialForm = () => {
             </Radio.Group>
           </Form.Item>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            margin: "20px",
-          }}
-        >
+
+        <div style={{ display: "flex", justifyContent: "space-between", margin: "20px" }}>
           <Button type="default" htmlType="reset">
             <ReloadOutlined />
             Reset
@@ -301,3 +341,5 @@ const MaterialForm = () => {
 };
 
 export default MaterialForm;
+
+

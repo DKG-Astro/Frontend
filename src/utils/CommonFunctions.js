@@ -1,8 +1,12 @@
-import { message } from "antd";
+import { Form, message, Select } from "antd";
+import { DeleteOutlined } from '@ant-design/icons';
 import FormItemInput from "antd/es/form/FormItemInput";
 import axios from "axios";
 import CustomDatePicker from "../components/DKG_CustomDatePicker";
-import FormInputItem from "../components/DKG_FormInputItem";
+import CustomInput from "../components/CustomInput";
+import CustomSearch from "../components/CustomSearch";
+import ImageUploadBase64 from "../components/ImageUploadBas64";
+import InputDatePicker from "../components/DatePicker";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -163,9 +167,7 @@ export const apiCall = async (method, url, token, payload = null) => {
     });
   };  
 
-  const conditonalRender = (field, handleChange, formData) => {
-    console.log("CONDITIONAL RENDER");
-  
+  const conditonalRender = (field, handleChange, formData, handleSearch) => {
     if (!field || !field.type) {
       throw new Error("Provided field type is missing.");
     }
@@ -175,7 +177,7 @@ export const apiCall = async (method, url, token, payload = null) => {
     switch (type) {
       case "text":
         return (
-          <FormInputItem
+          <CustomInput
             label={field?.label}
             name={field?.name}
             required={field?.required}
@@ -187,7 +189,7 @@ export const apiCall = async (method, url, token, payload = null) => {
   
       case "date":
         return (
-          <CustomDatePicker
+          <InputDatePicker
           required={field?.required}
             label={field?.label}
             name={field?.name}
@@ -196,6 +198,42 @@ export const apiCall = async (method, url, token, payload = null) => {
             defaultValue={formData[field.name]}
           />
         );
+
+        case "image":
+        return (
+          <ImageUploadBase64
+            label={field?.label}
+            name={field?.name}
+            required={field?.required}
+            disabled={field?.disabled}
+            onChange={handleChange}
+            value={formData[field.name]}
+          />
+        );
+
+        case "search":
+        return (
+          <CustomSearch
+            label={field?.label}
+            name={field?.name}
+            required={field?.required}
+            disabled={field?.disabled}
+            onChange={handleChange}
+            onSearch={handleSearch}
+            className="w-full"
+          />
+        );
+
+        case "select":
+          return (
+            <Form.Item 
+              name={field?.name}
+              label={field?.label}
+              required={field?.required}
+            >
+              <Select options={[]} disabled={field?.disabled} onChange={handleChange} />
+            </Form.Item>
+          )
   
       default:
         throw new Error("Provided field type doesn't exist.");
@@ -214,7 +252,24 @@ export const apiCall = async (method, url, token, payload = null) => {
     10: "md:grid-cols-10",
   };
  
-export const renderFormFields = (detail, handleChange, formData, parentName = "", index = null) => {
+export const renderFormFields = (detail, handleChange, formData, parentName = "", index = null, setFormData, handleSearch = null) => {
+  const handleDeleteChild = (sectionName, childIndex) => {
+    if (!setFormData) {
+      console.error('setFormData is required for deletion');
+      return;
+    }
+    
+    setFormData(prev => {
+      const updatedSection = [...prev[sectionName]];
+      updatedSection.splice(childIndex, 1);
+      
+      return {
+        ...prev,
+        [sectionName]: updatedSection
+      };
+    });
+  };
+
   return (
     <>
       {detail.map((section, sectionIndex) => (
@@ -230,10 +285,11 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
                       ...field,
                       name: parentName && index !== null 
                         ? `${parentName}[${index}].${field.name}` 
-                        : field.name
+                        : field.name,
                     }, 
                     handleChange, 
-                    formData
+                    formData,
+                    handleSearch
                   )}
                 </div>
               ))}
@@ -243,7 +299,11 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
             <div className="border-gray-200 my-2">
               {Array.isArray(formData[section.name]) ? 
                 formData[section.name].map((childData, childIndex) => (
-                  <div key={childIndex} className="mb-4 p-3 border border-black rounded">
+                  <div key={childIndex} className="mb-4 p-3 border border-black rounded relative">
+                    <DeleteOutlined 
+                      onClick={() => handleDeleteChild(section.name, childIndex)}
+                      className="absolute top-0 right-0 text-red-500 hover:text-red-700 cursor-pointer text-lg bg-gray-100 p-2"
+                    />
                     <div className={`grid md:gap-x-4 md:gap-y-2 ${section.colCnt ? colClasses[section.colCnt] : "md:grid-cols-3"}`}>
                       {section.children.map((child, subIndex) => (
                         <div key={subIndex} className={`col-span-${child?.span || 1}`}>

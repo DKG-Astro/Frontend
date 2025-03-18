@@ -1,0 +1,55 @@
+import React, { useState } from 'react'
+import FormContainer from '../../components/DKG_FormContainer'
+import { Select } from 'antd'
+import JobForm from './JobForm'
+import WorkForm from './WorkForm'
+import MaterialForm from './MaterialForm'
+
+const masterDropDown = [
+    {
+        value: "Job",
+        label: "Job"
+    },
+    {
+        value: "Work",
+        label: "Work"
+    },
+    {
+        value: "Material",
+        label: "Material"
+    },
+]
+
+const Master = () => {
+    const [selectedMaster, setSelectedMaster] = useState("");
+    const handleChange = (value) => {
+        setSelectedMaster(value);
+    };
+
+    const renderMasterForm = () => {
+        switch (selectedMaster) {
+            case "Job":
+                return <JobForm />
+            case "Work":
+                return <WorkForm />
+            case "Material":
+                return <MaterialForm />
+            default:
+                return <div className='text-gray-400'>Select a master</div>
+        }
+    }
+  return (
+    <FormContainer>
+        <h1 className="font-semibold text-center text-xl mb-4">Masters</h1>
+        <div>
+            <h2 className='font-semibold mb-1'>Select a master</h2>
+        <Select options={masterDropDown} onChange={handleChange} className='w-32' />
+        </div>
+        <div className="mt-4">
+        {renderMasterForm()}
+        </div>
+    </FormContainer>
+  )
+}
+
+export default Master
