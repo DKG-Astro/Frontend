@@ -71,21 +71,21 @@ export const generalDtls = [
         colCnt: 5,
         fieldList: [
             {
-                name: "deliveryChallanNo",
+                name: "challanNo",
                 label: "Challan/Invoice No.",
                 type: "text",
                 required: true,
                 span: 2
             },
             {
-                name: "deliveryChallanDate",
+                name: "deliveryDate",
                 label: "Delivery Date",
                 type: "date",
                 required: true,
                 span: 1
             },
             {
-                name: "expectedSupplyDate",
+                name: "supplyExpectedDate",
                 label: "Date of Supply",
                 type: "date",
                 required: true,
@@ -109,7 +109,7 @@ export const generalDtls = [
     },
     {
         heading: "Material Details",
-        name: "gprnMaterials",
+        name: "materialDtlList",
         colCnt: 8,
         children: [
             {
@@ -117,21 +117,23 @@ export const generalDtls = [
                 label: "Material Code",
                 type: "text",
                 span: 2,
-                required: true
+                required: true,
+                disabled: true
             },
             {
-                name: "description",
+                name: "materialDesc",
                 label: "Description",
                 type: "text",
                 span: 3,
                 required: true
             },
             {
-                name: "uom",
+                name: "uomId",
                 label: "UOM",
                 type: "text",
                 span: 1,
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "warranty",
@@ -144,7 +146,8 @@ export const generalDtls = [
                 name: "orderedQuantity",
                 label: "Ordered Quantity",
                 type: "text",
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "quantityDelivered",
@@ -162,36 +165,48 @@ export const generalDtls = [
                 name: "unitPrice",
                 label: "Unit Price",
                 type: "text",
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "makeNo",
                 label: "Make No.",
                 type: "text",
                 span: 2,
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "modelNo",
                 label: "Model No.",
                 type: "text",
                 span: 2,
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "serialNo",
                 label: "Serial No.",
                 type: "text",
                 span: 2,
-                required: true
+                required: true,
+                disabled: true
             },
             {
                 name: "note",
                 label: "Note",
                 type: "text",
                 span: 5,
-                required: true
+                required: true,
             },
+            {
+                name: "imageBase64",
+                label: "Material Photograph",
+                type: "image",
+                span: 3,
+                required: true,
+                accept: "image/*"
+            }
             // {
             //     name: "photographPath",
             //     label: "Photograph",
@@ -220,27 +235,27 @@ export const generalDtls = [
         ]
     },
     {
-        heading: "Quantity & Acceptance Details",
+        heading: "Acceptance Details",
         colCnt: 4,
         fieldList: [
-            {
-                name: "receivedQty",
-                label: "Received Quantity",
-                type: "text",
-                required: true
-            },
-            {
-                name: "pendingQty",
-                label: "Pending Quantity",
-                type: "text",
-                required: true
-            },
-            {
-                name: "acceptedQty",
-                label: "Accepted Quantity",
-                type: "text",
-                required: true
-            },
+            // {
+            //     name: "receivedQty",
+            //     label: "Received Quantity",
+            //     type: "text",
+            //     required: true
+            // },
+            // {
+            //     name: "pendingQty",
+            //     label: "Pending Quantity",
+            //     type: "text",
+            //     required: true
+            // },
+            // {
+            //     name: "acceptedQty",
+            //     label: "Accepted Quantity",
+            //     type: "text",
+            //     required: true
+            // },
             {
                 name: "receivedBy",
                 label: "Received By",

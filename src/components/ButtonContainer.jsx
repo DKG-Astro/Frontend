@@ -9,6 +9,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 
 const ButtonContainer = ({
+  submitBtnLoading,
   submitBtnEnabled,
   onFinish,
   printBtnEnabled,
@@ -65,6 +66,7 @@ const ButtonContainer = ({
           }}
           icon={<SaveOutlined />}
           disabled={disabled ? true : (submitBtnEnabled ? false : true)}
+          loading={submitBtnLoading}
         >
           Submit
         </Button>

@@ -236,9 +236,9 @@ const items = [
   {
     key: "5",
     icon: <MdOutlineSettings />,
-    label: "Material",
+    label: "Masters",
     activeTab: 25,
-    path: "/materialForm",
+    path: "/masters",
   },
 ];
 
