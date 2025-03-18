@@ -936,6 +936,10 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
     handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
+  useEffect(() => {
+    form.setFieldsValue({indentorEmail: email, indentorMobileNo: mobileNumber, indentorName: userName})
+  }, [])
+
   return (
     <div className="form-container">
       <h2>Indent Creation</h2>
@@ -948,7 +952,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
               rules={[{ required: true, message: "Indentor ID is required" }]}
             >
               <Space>
-                <Input placeholder="Enter Indent ID" />
+                <Input placeholder="Enter Indent ID" disabled />
                 <Button type="primary" onClick={handleSearch}>
                   <SearchOutlined />
                 </Button>
