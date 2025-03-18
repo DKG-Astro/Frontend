@@ -126,21 +126,21 @@ const items = [
             activeTab: 24,
             path: "/procurement/contingencyPurchase",
         },
-        // {
-        //     key: "3.6",
-        //     icon: <UserOutlined />,
-        //     label: "Committee Formation",
-        //     activeTab: 8,
-        //     path: "/procurement/committeeFormation",
-        //   },
+        {
+            key: "3.6",
+            icon: <UserOutlined />,
+            label: "Job Creation",
+            activeTab: 26,
+            path: "/procurement/jobCreation",
+          },
           
-        //   {
-        //     key: "3.7",
-        //     icon: <CheckOutlined />,
-        //     label: "Approval Workflow",
-        //     activeTab: 10,
-        //     path: "/",
-        //   },
+          {
+            key: "3.7",
+            icon: <CheckOutlined />,
+            label: "Work Creation",
+            activeTab: 27,
+            path: "/procurement/workCreation",
+          },
         //   {
         //     key: "3.8",
         //     icon: <SafetyCertificateOutlined />,

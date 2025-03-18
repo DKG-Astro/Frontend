@@ -37,7 +37,9 @@ const Form1 = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/project-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/project-master"
+        );
         const data = await response.json();
 
         if (
@@ -66,7 +68,9 @@ const Form1 = () => {
     }
 
     try {
-      const response = await fetch(`http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`);
+      const response = await fetch(
+        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
+      );
 
       if (!response.ok)
         throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -124,6 +128,7 @@ const Form1 = () => {
               uom: item.uom || "",
               totalPrice: parseFloat(item.totalPrize) || 0,
               budgetCode: item.budgetCode || "",
+              modeOfProcurement: item.modeOfProcurement || "",
               materialCategory: item.materialCategory || "",
               materialSubcategory: item.materialSubCategory || "",
               materialOrJobCodeUsedByDept: item.materialAndJob || "",
@@ -232,12 +237,15 @@ const Form1 = () => {
           materialCategory: String(item.materialCategory) || null,
           materialSubCategory: String(item.materialSubcategory) || null,
           materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
+          modeOfProcurement: String(item.modeOfProcurement) || null
         };
       });
 
       // Build payload with proper type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation) || "Bangalore",
+        consignesLocation: values.consigneeLocation
+          ? String(values.consigneeLocation)
+          : "Bangalore",
         createdBy: Number(actionPerformer) || 0,
         estimatedRate: Number(values.estimatedRate) || 0,
         fileType: "Indent",
@@ -265,14 +273,17 @@ const Form1 = () => {
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
       // Submit request with authentication headers
-      const response = await fetch("http://103.181.158.220:8081/astro-service/api/indents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/indents",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const responseData = await response.json();
 
@@ -327,7 +338,9 @@ const Form1 = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/material-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/material-master"
+        );
         const data = await response.json();
 
         if (!data.responseData) throw new Error("Invalid material data");
@@ -341,6 +354,7 @@ const Form1 = () => {
               materialDescription: material.description,
               materialCategory: material.category,
               materialSubCategory: material.subCategory,
+              modeOfProcurement: material.modeOfProcurement
             },
           }),
           {}
@@ -369,6 +383,7 @@ const Form1 = () => {
       materialDescription: materialData.description || "", // Match API field
       materialCategory: materialData.category || "", // Match API field
       materialSubcategory: materialData.subCategory || "", // Match API field
+      modeOfProcurement: materialData.modeOfProcurement || "",
       uom: materialData.uom || "",
     };
 
@@ -392,6 +407,7 @@ const Form1 = () => {
         materialDescription: "",
         materialCategory: "",
         materialSubcategory: "",
+        modeOfProcurement: "",
         uom: "",
       };
 
@@ -406,7 +422,7 @@ const Form1 = () => {
   };
 
   // Add this handler in Form1
-const handleMaterialDescriptionSelect = (index, materialCode) => {
+  const handleMaterialDescriptionSelect = (index, materialCode) => {
     handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
@@ -440,10 +456,10 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
           message.error("Please fill all required fields");
         }}
         initialValues={{
-          // Provide default values to prevent undefined issues
           lineItems: [{}],
           preBidMeetingRequired: false,
           rateContractIndent: false,
+          consigneeLocation: "Bangalore", // Add default value here
         }}
       >
         <div className="form-section">
@@ -480,7 +496,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
             name="consigneeLocation"
             // rules={[{ required: true, message: "Indentor name is required" }]}
           >
-            <TextArea rows={1} defaultValue="Bangalore" />
+            <TextArea rows={1} />
           </Form.Item>
 
           <Form.Item
@@ -523,7 +539,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="Upload Tender Documents"
+            label="Upload Technical Specifications"
             name="uploadTenderDocuments"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -647,7 +663,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
         </div>
         <div className="form-section">
           <Form.Item
-            label="Upload GOI or RFP"
+            label="Upload Draft EOI or RFP"
             name="uploadGOIOrRFP"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -658,7 +674,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
             </Upload>
           </Form.Item>
           <Form.Item
-            label="Upload PAC or Brand PAC"
+            label="Upload Brand PAC Approval"
             name="uploadPACOrBrandPAC"
             valuePropName="fileList"
             getValueFromEvent={normFile}
