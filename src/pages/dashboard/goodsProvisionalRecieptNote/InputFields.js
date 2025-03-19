@@ -7,7 +7,7 @@ export const generalDtls = [
                 name: "gprnNo", // required
                 label: "GPRN No", // optional
                 type:"text", // required
-                disabled: true, //optional
+                // disabled: true, //optional
                 required: true // option
             },
             {
@@ -118,7 +118,7 @@ export const generalDtls = [
                 type: "text",
                 span: 2,
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "materialDesc",
@@ -133,7 +133,7 @@ export const generalDtls = [
                 type: "text",
                 span: 1,
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "warranty",
@@ -147,7 +147,7 @@ export const generalDtls = [
                 label: "Ordered Quantity",
                 type: "text",
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "quantityDelivered",
@@ -166,7 +166,7 @@ export const generalDtls = [
                 label: "Unit Price",
                 type: "text",
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "makeNo",
@@ -174,7 +174,7 @@ export const generalDtls = [
                 type: "text",
                 span: 2,
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "modelNo",
@@ -182,7 +182,7 @@ export const generalDtls = [
                 type: "text",
                 span: 2,
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "serialNo",
@@ -190,7 +190,7 @@ export const generalDtls = [
                 type: "text",
                 span: 2,
                 required: true,
-                disabled: true
+                // disabled: true
             },
             {
                 name: "note",
