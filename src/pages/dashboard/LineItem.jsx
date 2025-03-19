@@ -292,7 +292,6 @@
 
 // export default LineItem;
 
-
 import React from "react";
 import { Form, Input, Select, Button, Space, Row, Col } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
@@ -388,7 +387,9 @@ const LineItem = ({
                         <Select
                           placeholder="Select Material Description"
                           showSearch
-                          onChange={(value)=>handleMaterialDescriptionSelect(index,value)}
+                          onChange={(value) =>
+                            handleMaterialDescriptionSelect(index, value)
+                          }
                           optionFilterProp="children"
                           filterOption={(input, option) =>
                             option.children
@@ -470,7 +471,7 @@ const LineItem = ({
                           { required: true, message: "Please select UOM!" },
                         ]}
                       >
-                        <Input placeholder="Enter UOM" disabled/>
+                        <Input placeholder="Enter UOM" disabled />
                       </Form.Item>
                     </Col>
 
@@ -534,6 +535,16 @@ const LineItem = ({
                     <Col span={8}>
                       <Form.Item
                         {...restField}
+                        name={[name, "modeOfProcurement"]}
+                        label="Mode of Procurement"
+                      >
+                        <Input placeholder="Enter Mode of Procurement" />
+                      </Form.Item>
+                    </Col>
+
+                    <Col span={8}>
+                      <Form.Item
+                        {...restField}
                         name={[name, "totalPrice"]}
                         label="Total Price"
                         shouldUpdate
@@ -551,6 +562,18 @@ const LineItem = ({
                         <Input />
                       </Form.Item>
                     </Col>
+                    <Col span={8}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, "vendorNames"]}
+                        label="Vendor Names"
+                      >
+                        <Input.TextArea
+                          disabled
+                          placeholder="Vendors from material master"
+                        />
+                      </Form.Item>
+                    </Col>
                   </Row>
                   {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
                 </Space>
@@ -564,7 +587,7 @@ const LineItem = ({
                   icon={<PlusOutlined />}
                   style={{ width: "32%" }}
                 >
-                  Add Item
+                  Add Material
                 </Button>
               </Form.Item>
             )}

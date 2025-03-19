@@ -196,7 +196,6 @@
 
 //   const {userName, email, mobileNumber} = useSelector(state => state.auth)
 
-
 //   // Update the handleSubmit function with these changes
 //   // Add this function to check if any material has Brand PAC mode of procurement
 //   const hasBrandPACMaterial = () => {
@@ -218,7 +217,7 @@
 //         if (!fileList || fileList.length === 0) return "";
 //         return uploadFileToServer(fileList[0].originFileObj, fieldName);
 //       };
-      
+
 //       const [
 //         priorApprovalsFile,
 //         tenderDocumentsFile,
@@ -363,13 +362,13 @@
 //         fetch("http://103.181.158.220:8081/astro-service/api/project-master"),
 //         fetch("http://103.181.158.220:8081/astro-service/api/location-master")
 //       ]);
-  
+
 //       const [materialsData, projectsData, locationsData] = await Promise.all([
 //         materialsResponse.json(),
 //         projectsResponse.json(),
 //         locationsResponse.json()
 //       ]);
-  
+
 //       // Handle materials data
 //       if (materialsData.responseData) {
 //         const materialMap = materialsData.responseData.reduce(
@@ -391,14 +390,14 @@
 //       } else {
 //         throw new Error("Invalid material data");
 //       }
-  
+
 //       // Handle projects data
 //       if (projectsData.responseStatus.statusCode === 0 && Array.isArray(projectsData.responseData)) {
 //         setProjects(projectsData.responseData);
 //       } else {
 //         throw new Error("Invalid project data");
 //       }
-  
+
 //       // Handle locations data
 //       if (Array.isArray(locationsData.responseData)) {
 //         const formattedLocations = locationsData.responseData.map(location => ({
@@ -409,7 +408,7 @@
 //       } else {
 //         throw new Error("Invalid location data");
 //       }
-  
+
 //     } catch (error) {
 //       console.error("Data fetch error:", error);
 //       message.error("Failed to load required data");
@@ -417,13 +416,13 @@
 //       setLoading(false);
 //     }
 //   };
-  
+
 //   // Define handleMaterialSelect as a separate function
 //   const handleMaterialSelect = (index, materialCode) => {
 //     const materialData = materialDetailsMap[materialCode] || {};
 //     const lineItems = form.getFieldValue("lineItems") || [];
 //     const updatedItems = [...lineItems];
-  
+
 //     updatedItems[index] = {
 //       ...updatedItems[index],
 //       materialCode: materialCode,
@@ -433,16 +432,16 @@
 //       modeOfProcurement: materialData.modeOfProcurement || "",
 //       uom: materialData.uom || "",
 //     };
-  
+
 //     form.setFieldsValue({ lineItems: updatedItems });
-  
+
 //     // Filter materials based on first selected item
 //     const nonEmptyItems = updatedItems.filter(item => item.materialCode);
 //     if (nonEmptyItems.length > 0) {
 //       const firstItem = nonEmptyItems[0];
 //       const filteredMaterials = Object.keys(materialDetailsMap).filter(code => {
 //         const material = materialDetailsMap[code];
-//         return material.category === firstItem.materialCategory && 
+//         return material.category === firstItem.materialCategory &&
 //                material.modeOfProcurement === firstItem.modeOfProcurement;
 //       });
 //       setFilteredMaterialList(filteredMaterials);
@@ -451,7 +450,7 @@
 //       setFilteredMaterialList(Object.keys(materialDetailsMap));
 //     }
 //   };
-  
+
 //   useEffect(() => {
 //     populateData();
 //   }, []);
@@ -468,7 +467,7 @@
 //         handleMaterialSelect={handleMaterialSelect}
 //         handlePriceCalculation={handlePriceCalculation}
 //       />
-  
+
 //       <div className="form-section">
 //         <Form.Item name="projectName" label="Project Name">
 //           <Select placeholder="Select project" loading={loading} allowClear>
@@ -484,9 +483,9 @@
 //         </Form.Item>
 //         {/* Rest of your form items */}
 //       </div>
-  
+
 //       {/* Rest of your form sections */}
-      
+
 //       <Form.Item>
 //         <div style={{ display: "flex", justifyContent: "space-between" }}>
 //           <Button type="default" htmlType="reset">
@@ -556,14 +555,41 @@ const Form1 = () => {
   const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
   const [projects, setProjects] = useState([]);
+  const [locations, setLocations] = useState([]);
 
-  const {userName, email, mobileNumber} = useSelector(state => state.auth)
+  const { userName, email, mobileNumber } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/location-master"
+        );
+        const data = await response.json();
+
+        if (
+          data.responseStatus.statusCode === 0 &&
+          Array.isArray(data.responseData)
+        ) {
+          setLocations(data.responseData);
+        } else {
+          message.error("Failed to load locations");
+        }
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        message.error("Failed to fetch locations");
+      }
+    };
+    fetchLocations();
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/project-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/project-master"
+        );
         const data = await response.json();
 
         if (
@@ -584,6 +610,11 @@ const Form1 = () => {
     fetchProjects();
   }, []);
 
+  const hasPacMaterial = () => {
+    const lineItems = form.getFieldValue("lineItems") || [];
+    return lineItems.some((item) => item?.modeOfProcurement === "Brand PAC");
+  };
+
   const handleSearch = async () => {
     const indentorId = form.getFieldValue("indentId");
     if (!indentorId) {
@@ -592,7 +623,9 @@ const Form1 = () => {
     }
 
     try {
-      const response = await fetch(`http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`);
+      const response = await fetch(
+        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
+      );
 
       if (!response.ok)
         throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -629,13 +662,13 @@ const Form1 = () => {
         singleOrMultipleJob: responseData.singleAndMultipleJob || "",
 
         // ✅ Fix file uploads - Ensure they are arrays
-        uploadingPriorApprovals: getFileList(
+        uploadingPriorApprovalsFileName: getFileList(
           responseData.uploadingPriorApprovalsFileName
         ),
-        uploadTenderDocuments: getFileList(
-          responseData.uploadTenderDocumentsFileName
+        technicalSpecificationsFileName: getFileList(
+          responseData.technicalSpecificationsFileName
         ),
-        uploadGOIOrRFP: getFileList(responseData.uploadGOIOrRFPFileName),
+        draftEOIOrRFPFileName: getFileList(responseData.draftEOIOrRFPFileName),
         uploadPACOrBrandPAC: getFileList(
           responseData.uploadPACOrBrandPACFileName
         ),
@@ -653,6 +686,7 @@ const Form1 = () => {
               materialCategory: item.materialCategory || "",
               materialSubcategory: item.materialSubCategory || "",
               materialOrJobCodeUsedByDept: item.materialAndJob || "",
+              modeOfProcurement: item.modeOfProcurement || "",
             }))
           : [],
       };
@@ -727,14 +761,14 @@ const Form1 = () => {
 
       const [
         priorApprovalsFile,
-        tenderDocumentsFile,
-        goiOrRfpFile,
-        pacOrBrandFile,
+        technicalSpecifications,
+        draftEOIOrRFP,
+        uploadPACOrBrandPAC,
       ] = await Promise.all([
-        uploadFiles(values.uploadingPriorApprovals, "Prior Approvals"),
-        uploadFiles(values.uploadTenderDocuments, "Tender Documents"),
-        uploadFiles(values.uploadGOIOrRFP, "GOI/RFP"),
-        uploadFiles(values.uploadPACOrBrandPAC, "PAC/Brand PAC"),
+        uploadFiles(values.uploadingPriorApprovalsFileName, "Prior Approvals"),
+        uploadFiles(values.technicalSpecificationsFileName, "Tender Documents"),
+        uploadFiles(values.draftEOIOrRFPFileName, "GOI/RFP"),
+        uploadFiles(values.uploadPACOrBrandPACFileName, "PAC/Brand PAC"),
       ]);
 
       // Process material details with enhanced validation
@@ -758,6 +792,8 @@ const Form1 = () => {
           materialCategory: String(item.materialCategory) || null,
           materialSubCategory: String(item.materialSubcategory) || null,
           materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
+          modeOfProcurement: String(item.modeOfProcurement) || null,
+          vendorNames: String(item.vendorNames) || null
         };
       });
 
@@ -782,23 +818,27 @@ const Form1 = () => {
         projectName: values.projectName || null,
         singleAndMultipleJob: String(values.singleOrMultipleJob) || null,
         updatedBy: null,
-        uploadGOIOrRFPFileName: String(goiOrRfpFile) || null,
-        uploadPACOrBrandPACFileName: String(pacOrBrandFile) || null,
-        uploadTenderDocumentsFileName: String(tenderDocumentsFile) || null,
+        draftEOIOrRFPFileName: String(draftEOIOrRFP) || null,
+        uploadPACOrBrandPACFileName: String(uploadPACOrBrandPAC) || null,
+        technicalSpecificationsFileName:
+          String(technicalSpecifications) || null,
         uploadingPriorApprovalsFileName: String(priorApprovalsFile) || null,
       };
 
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
       // Submit request with authentication headers
-      const response = await fetch("http://103.181.158.220:8081/astro-service/api/indents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/indents",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const responseData = await response.json();
 
@@ -853,7 +893,9 @@ const Form1 = () => {
   useEffect(() => {
     const fetchMaterials = async () => {
       try {
-        const response = await fetch("http://103.181.158.220:8081/astro-service/api/material-master");
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/material-master"
+        );
         const data = await response.json();
 
         if (!data.responseData) throw new Error("Invalid material data");
@@ -867,6 +909,8 @@ const Form1 = () => {
               materialDescription: material.description,
               materialCategory: material.category,
               materialSubCategory: material.subCategory,
+              modeOfProcurement: material.modeOfProcurement,
+              vendorNames: material.vendorNames
             },
           }),
           {}
@@ -896,6 +940,8 @@ const Form1 = () => {
       materialCategory: materialData.category || "", // Match API field
       materialSubcategory: materialData.subCategory || "", // Match API field
       uom: materialData.uom || "",
+      modeOfProcurement: materialData.modeOfProcurement || "",
+      vendorNames: (materialData.vendorNames || []).join(", ")
     };
 
     form.setFieldsValue({ lineItems: updatedItems });
@@ -919,6 +965,7 @@ const Form1 = () => {
         materialCategory: "",
         materialSubcategory: "",
         uom: "",
+        modeOfProcurement: "",
       };
 
       form.setFieldsValue({ lineItems: updatedItems });
@@ -932,13 +979,17 @@ const Form1 = () => {
   };
 
   // Add this handler in Form1
-const handleMaterialDescriptionSelect = (index, materialCode) => {
+  const handleMaterialDescriptionSelect = (index, materialCode) => {
     handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
   useEffect(() => {
-    form.setFieldsValue({indentorEmail: email, indentorMobileNo: mobileNumber, indentorName: userName})
-  }, [])
+    form.setFieldsValue({
+      indentorEmail: email,
+      indentorMobileNo: mobileNumber,
+      indentorName: userName,
+    });
+  }, []);
 
   return (
     <div className="form-container">
@@ -949,7 +1000,7 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
             <Form.Item
               label="Indent ID"
               name="indentId"
-              rules={[{ required: true, message: "Indentor ID is required" }]}
+            //   rules={[{ required: true, message: "Indentor ID is required" }]}
             >
               <Space>
                 <Input placeholder="Enter Indent ID" disabled />
@@ -970,10 +1021,10 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
           message.error("Please fill all required fields");
         }}
         initialValues={{
-          // Provide default values to prevent undefined issues
           lineItems: [{}],
           preBidMeetingRequired: false,
           rateContractIndent: false,
+          consigneeLocation: "Bangalore", // Default value that matches one of the options
         }}
       >
         <div className="form-section">
@@ -1008,14 +1059,25 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
           <Form.Item
             label="Consignee Location"
             name="consigneeLocation"
-            // rules={[{ required: true, message: "Indentor name is required" }]}
+            rules={[
+              { required: true, message: "Consignee location is required" },
+            ]}
           >
-            <TextArea rows={1} defaultValue="Bangalore" />
+            <Select placeholder="Select location">
+              {locations.map((location) => (
+                <Option
+                  key={location.locationCode}
+                  value={location.locationName}
+                >
+                  {location.locationName}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
             label="Upload Prior Approvals"
-            name="uploadingPriorApprovals"
+            name="uploadingPriorApprovalsFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
             rules={[
@@ -1053,16 +1115,18 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
             </Select>
           </Form.Item>
           <Form.Item
-            label="Upload Tender Documents"
-            name="uploadTenderDocuments"
+            label="Upload Technical Specifications"
+            name="technicalSpecificationsFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
-            rules={[
-              { required: true, message: "Tender documents are required" },
-            ]}
+            // rules={[
+            //   { required: true, message: "Technical specifications are required" },
+            // ]}
           >
             <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
+              <Button icon={<UploadOutlined />}>
+                Upload Technical Specifications
+              </Button>
             </Upload>
           </Form.Item>
         </div>
@@ -1177,27 +1241,31 @@ const handleMaterialDescriptionSelect = (index, materialCode) => {
         </div>
         <div className="form-section">
           <Form.Item
-            label="Upload GOI or RFP"
-            name="uploadGOIOrRFP"
+            label="Upload EOI or RFP"
+            name="draftEOIOrRFPFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
-            rules={[{ required: true, message: "GOI or RFP is required" }]}
+            // rules={[{ required: true, message: "GOI or RFP is required" }]}
           >
             <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload GOI or RFP</Button>
+              <Button icon={<UploadOutlined />}>Upload EOI or RFP</Button>
             </Upload>
           </Form.Item>
           <Form.Item
-            label="Upload PAC or Brand PAC"
-            name="uploadPACOrBrandPAC"
+            label="Brand PAC Approval"
+            name="uploadPACOrBrandPACFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
             rules={[
-              { required: true, message: "PAC or Brand PAC is required" },
+              {
+                required: hasPacMaterial(),
+                message:
+                  "PAC/Brand PAC document is required when any item uses PAC procurement",
+              },
             ]}
           >
             <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload PAC or Brand</Button>
+              <Button icon={<UploadOutlined />}>Upload Brand PAC</Button>
             </Upload>
           </Form.Item>
         </div>
