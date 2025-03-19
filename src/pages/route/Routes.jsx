@@ -92,6 +92,8 @@ import GoodsInspection from "../dashboard/goodsInspection/GoodsInspection";
 import JobCreation from "../dashboard/jobCreation/JobCreation";
 import WorkCreation from "../dashboard/workCreation/WorkCreation";
 import Master from "../masters/Master";
+import Grv from "../dashboard/grv/Grv";
+import Grn from "../dashboard/grn/Grn";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -127,8 +129,8 @@ const RoutesComponent = () => {
             <Route path="/inventory">
                 <Route path="gprn" element={<GPRN />} />
                 <Route path="goodsInspection" element={<GoodsInspection />} />
-                <Route path="goodsReturn" element={<Form13 />} />
-                <Route path="goodsReceipt" element={<Form14 />} />
+                <Route path="goodsReturn" element={<Grv />} />
+                <Route path="goodsReceipt" element={<Grn />} />
                 <Route path="assetMaster" element={<Form15 />} />
                 <Route path="goodsIssue" element={<Form16/>} />
                 <Route path="goodsTransfer" element={<Form17 />} />

@@ -85,7 +85,7 @@ export const generalDtls = [
                 required: true
             },
             {
-                name: "vendorContactNo",
+                name: "vendorContact",
                 label: "Vendor Contact",
                 type: "text",
                 span: 2,
@@ -160,6 +160,7 @@ export const generalDtls = [
                 span: 1,
                 required: true
             },
+
             // {
             //     name: "warranty",
             //     label: "Warranty",
@@ -196,6 +197,14 @@ export const generalDtls = [
                 label: "Rejected Quantity",
                 type: "text",
                 required: true
+            },
+            {
+                name: "installationRepostBase64",
+                label: "Installation Report",
+                type: "image",
+                span: 3,
+                required: true,
+                accept: "image/*"
             },
             // {
             //     name: "unitPrice",
