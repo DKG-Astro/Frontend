@@ -534,6 +534,7 @@ import {
   Row,
   Col,
   message,
+  Modal,
 } from "antd";
 import { UploadOutlined, SearchOutlined } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
@@ -612,7 +613,9 @@ const Form1 = () => {
 
   const hasPacMaterial = () => {
     const lineItems = form.getFieldValue("lineItems") || [];
-    return lineItems.some((item) => item?.modeOfProcurement === "Brand PAC");
+    return lineItems.some(
+      (item) => String(item?.modeOfProcurement).toLowerCase() === "brand pac"
+    );
   };
 
   const handleSearch = async () => {
@@ -753,12 +756,27 @@ const Form1 = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      // Upload all files in parallel with better error handling
+      // Check if any line item has Brand PAC and the file is missing
+      if (
+        hasPacMaterial() &&
+        (!values.uploadPACOrBrandPACFileName ||
+          values.uploadPACOrBrandPACFileName.length === 0)
+      ) {
+        Modal.error({
+          title: "Missing Brand PAC Document",
+          content:
+            "Brand PAC document is mandatory when any item uses Brand PAC procurement.",
+        });
+        setLoading(false);
+        return;
+      }
+  
+      // Continue with file uploads and payload construction as before
       const uploadFiles = async (fileList, fieldName) => {
         if (!fileList || fileList.length === 0) return "";
         return uploadFileToServer(fileList[0].originFileObj, fieldName);
       };
-
+  
       const [
         priorApprovalsFile,
         technicalSpecifications,
@@ -767,20 +785,22 @@ const Form1 = () => {
       ] = await Promise.all([
         uploadFiles(values.uploadingPriorApprovalsFileName, "Prior Approvals"),
         uploadFiles(values.technicalSpecificationsFileName, "Tender Documents"),
-        uploadFiles(values.draftEOIOrRFPFileName, "GOI/RFP"),
-        uploadFiles(values.uploadPACOrBrandPACFileName, "PAC/Brand PAC"),
+        uploadFiles(values.draftEOIOrRFPFileName, "EOI/RFP"),
+        uploadFiles(values.uploadPACOrBrandPACFileName, "Brand PAC"),
       ]);
-
+  
       // Process material details with enhanced validation
       const materialDetails = (values.lineItems || []).map((item) => {
         const quantity = Number(item.quantity) || 0;
         const unitPrice = Number(item.unitPrice) || 0;
         const totalPrice = quantity * unitPrice;
-
+  
         if (isNaN(quantity) || quantity <= 0) {
-          throw new Error(`Invalid quantity for material ${item.materialCode}`);
+          throw new Error(
+            `Invalid quantity for material ${item.materialCode}`
+          );
         }
-
+  
         return {
           materialCode: String(item.materialCode) || null,
           materialDescription: String(item.materialDescription) || null,
@@ -793,10 +813,10 @@ const Form1 = () => {
           materialSubCategory: String(item.materialSubcategory) || null,
           materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
           modeOfProcurement: String(item.modeOfProcurement) || null,
-          vendorNames: String(item.vendorNames) || null
+          vendorNames: String(item.vendorNames) || null,
         };
       });
-
+  
       // Build payload with proper type conversions
       const payload = {
         consignesLocation: String(values.consigneeLocation) || "Bangalore",
@@ -824,9 +844,9 @@ const Form1 = () => {
           String(technicalSpecifications) || null,
         uploadingPriorApprovalsFileName: String(priorApprovalsFile) || null,
       };
-
+  
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
-
+  
       // Submit request with authentication headers
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/indents",
@@ -834,20 +854,19 @@ const Form1 = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Authorization: `Bearer ${auth.token}`, // Add authentication if needed
           },
           body: JSON.stringify(payload),
         }
       );
-
+  
       const responseData = await response.json();
-
+  
       if (!response.ok || responseData.responseStatus.statusCode !== 0) {
         throw new Error(
           responseData.responseStatus?.message || "Submission failed"
         );
       }
-
+  
       message.success("Indent submitted successfully!");
       form.resetFields();
     } catch (error) {
@@ -910,7 +929,7 @@ const Form1 = () => {
               materialCategory: material.category,
               materialSubCategory: material.subCategory,
               modeOfProcurement: material.modeOfProcurement,
-              vendorNames: material.vendorNames
+              vendorNames: material.vendorNames,
             },
           }),
           {}
@@ -940,8 +959,10 @@ const Form1 = () => {
       materialCategory: materialData.category || "", // Match API field
       materialSubcategory: materialData.subCategory || "", // Match API field
       uom: materialData.uom || "",
-      modeOfProcurement: materialData.modeOfProcurement || "",
-      vendorNames: (materialData.vendorNames || []).join(", ")
+      modeOfProcurement: materialData.modeOfProcurement 
+    ? materialData.modeOfProcurement.trim().toUpperCase() // Normalize to uppercase
+    : "",
+      vendorNames: (materialData.vendorNames || []).join(", "),
     };
 
     form.setFieldsValue({ lineItems: updatedItems });
@@ -991,6 +1012,10 @@ const Form1 = () => {
     });
   }, []);
 
+  const hasBrandPACMaterial = (lineItems) => {
+    return lineItems?.some((item) => item?.modeOfProcurement === "Brand PAC");
+  };
+
   return (
     <div className="form-container">
       <h2>Indent Creation</h2>
@@ -1000,7 +1025,7 @@ const Form1 = () => {
             <Form.Item
               label="Indent ID"
               name="indentId"
-            //   rules={[{ required: true, message: "Indentor ID is required" }]}
+              //   rules={[{ required: true, message: "Indentor ID is required" }]}
             >
               <Space>
                 <Input placeholder="Enter Indent ID" disabled />
@@ -1241,7 +1266,7 @@ const Form1 = () => {
         </div>
         <div className="form-section">
           <Form.Item
-            label="Upload EOI or RFP"
+            label="Upload draft EOI or RFP"
             name="draftEOIOrRFPFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -1254,6 +1279,7 @@ const Form1 = () => {
           <Form.Item
             label="Brand PAC Approval"
             name="uploadPACOrBrandPACFileName"
+            dependencies={["lineItems"]} // Add this line
             valuePropName="fileList"
             getValueFromEvent={normFile}
             rules={[
