@@ -10,6 +10,7 @@ import {
   Form,
   Input,
   message,
+  Modal,
   Radio,
   Select,
   Upload,
@@ -21,7 +22,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
-import { modeOfProcurementList } from '../../utils/Constants'
+import { modeOfProcurementList } from "../../utils/Constants";
 
 const MaterialForm = () => {
   const auth = useSelector((state) => state.auth);
@@ -34,6 +35,8 @@ const MaterialForm = () => {
   const [materialSubcategories, setMaterialSubcategories] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showMaterialCodePopup, setShowMaterialCodePopup] = useState(false);
+  const [generatedMaterialCode, setGeneratedMaterialCode] = useState("");
 
   const fetchInitialData = async () => {
     try {
@@ -95,113 +98,154 @@ const MaterialForm = () => {
   }, []);
 
   // Add new state
-  const [procurementMode, setProcurementMode] = useState('')
-  const { vendorMaster } = useSelector(state => state.masters)
-  
+  const [procurementMode, setProcurementMode] = useState("");
+  const { vendorMaster } = useSelector((state) => state.masters);
+
   // Add vendor options mapping
-  const vendorMasterMod = vendorMaster?.map(vendor => ({
-  label: vendor.vendorName,
-  value: vendor.vendorName
-  }))
+  const vendorMasterMod = vendorMaster?.map((vendor) => ({
+    label: vendor.vendorName,
+    value: vendor.vendorName,
+  }));
 
   // Modify handleSubmit to include validations
   const handleSubmit = async (values) => {
-  setLoading(true);
-  try {
-    if(values.modeOfProcurement === "Proprietary/Single Tender"){
-      if(!values?.vendorNames){
-        message.error("Please select vendor name")
-        return
+    setLoading(true);
+    try {
+      if (values.modeOfProcurement === "Proprietary/Single Tender") {
+        if (!values?.vendorNames) {
+          message.error("Please select vendor name");
+          return;
+        }
+      } else if (
+        values.modeOfProcurement === "Limited Pre Approved Vendor Tender"
+      ) {
+        if (values?.vendorNames?.length !== 4) {
+          message.error("Please select 4 vendor names");
+          return;
+        }
       }
-    }
-    else if(values.modeOfProcurement === "Limited Pre Approved Vendor Tender"){
-      if(values?.vendorNames?.length !== 4){
-        message.error("Please select 4 vendor names")
-        return;
+
+      let vendorNames = null;
+      if (values.modeOfProcurement === "Proprietary/Single Tender") {
+        vendorNames = [values.vendorNames];
+      } else if (
+        values.modeOfProcurement === "Limited Pre Approved Vendor Tender"
+      ) {
+        vendorNames = values.vendorNames;
       }
-    }
-      
-    let vendorNames = null;
-    if (values.modeOfProcurement === "Proprietary/Single Tender") {
-      vendorNames = [values.vendorNames];
-    } else if (values.modeOfProcurement === "Limited Pre Approved Vendor Tender") {
-      vendorNames = values.vendorNames;
-    }
 
-    let uploadedFileName = "";
-    if (fileList.length > 0) {
-      const formData = new FormData();
-      formData.append("file", fileList[0].originFileObj);
+      let uploadedFileName = "";
+      if (fileList.length > 0) {
+        const formData = new FormData();
+        formData.append("file", fileList[0].originFileObj);
 
-      const uploadResponse = await fetch(
-        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
+        const uploadResponse = await fetch(
+          "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadResult = await uploadResponse.json();
+        uploadedFileName = uploadResult.fileName; // Adjust based on actual API response
+      }
+
+      // Prepare payload according to DTO structure
+      const payload = {
+        ...values,
+        vendorNames,
+        endOfLife: values.endOfLife?.format("YYYY-MM-DD") || "",
+        uploadImageFileName: uploadedFileName,
+        createdBy: actionPerformer,
+        updatedBy: "0",
+      };
+
+      const response = await fetch(
+        "http://103.181.158.220:8081/astro-service/api/material-master",
         {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         }
       );
 
-      const uploadResult = await uploadResponse.json();
-      uploadedFileName = uploadResult.fileName; // Adjust based on actual API response
-    }
+      const result = await response.json();
 
-    // Prepare payload according to DTO structure
-    const payload = {
-      ...values,
-      vendorNames,
-      endOfLife: values.endOfLife?.format("YYYY-MM-DD") || "",
-      uploadImageFileName: uploadedFileName,
-      createdBy: actionPerformer,
-      updatedBy: "0",
-    };
-
-    const response = await fetch(
-      "http://103.181.158.220:8081/astro-service/api/material-master",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      if (!response.ok) {
+        throw new Error(result.message || "Submission failed");
       }
-    );
 
-    const result = await response.json();
+      // Check actual API response structure here
+      console.log("API Response:", result);
 
-    if (!response.ok) {
-      throw new Error(result.message || "Submission failed");
+      // Adjust this line based on actual response structure
+      const generatedCode =
+        result.responseData?.materialCode || result.materialCode;
+
+      if (!generatedCode) {
+        throw new Error("Material code not found in response");
+      }
+
+      setGeneratedMaterialCode(generatedCode);
+      setShowMaterialCodePopup(true);
+      message.success("Material submitted successfully!");
+    } catch (error) {
+      message.error(`Submission failed: ${error.message}`);
+      console.error("Submission error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    message.success("Material submitted successfully!");
-    form.resetFields();
-    setFileList([]);
-  } catch (error) {
-    message.error(`Submission failed: ${error.message}`);
-    console.error("Submission error:", error);
-  } finally {
-    setLoading(false);
-  }
   };
 
+  const MaterialCodePopup = () => (
+    <Modal
+      title="Material Created Successfully"
+      visible={showMaterialCodePopup}
+      onOk={() => setShowMaterialCodePopup(false)}
+      onCancel={() => setShowMaterialCodePopup(false)}
+      okText="Continue Editing"
+    >
+      {generatedMaterialCode ? (
+        <p>
+          Generated Material Code: <strong>{generatedMaterialCode}</strong>
+        </p>
+      ) : (
+        <p>
+          Material created successfully! Code will be assigned after approval.
+        </p>
+      )}
+    </Modal>
+  );
   return (
     <FormContainer>
-      <Form 
-        form={form} 
-        layout="vertical" 
+      <MaterialCodePopup />
+      <Form
+        form={form}
+        layout="vertical"
         onFinish={handleSubmit}
         onValuesChange={(changedValues) => {
           if (changedValues.modeOfProcurement) {
-            setProcurementMode(changedValues.modeOfProcurement)
+            setProcurementMode(changedValues.modeOfProcurement);
           }
         }}
       >
         <Heading title={"Material Details"} />
         <div className="form-section">
-          <FormInputItem label="Material Code" name="materialCode" placeholder="auto generated" disabled />
+          <FormInputItem
+            label="Material Code"
+            name="materialCode"
+            placeholder="auto generated"
+            disabled
+          />
           <Form.Item
             name="category"
             label="Category"
-            rules={[{ required: true, message: "Please select material category!" }]}
+            rules={[
+              { required: true, message: "Please select material category!" },
+            ]}
           >
             <Select placeholder="Select Material Category">
               {materialCategories.map((category) => (
@@ -215,7 +259,12 @@ const MaterialForm = () => {
           <Form.Item
             name="subCategory"
             label="Subcategory"
-            rules={[{ required: true, message: "Please select material subcategory!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please select material subcategory!",
+              },
+            ]}
           >
             <Select placeholder="Select Material Subcategory">
               {materialSubcategories.map((subCat) => (
@@ -251,30 +300,45 @@ const MaterialForm = () => {
               ))}
             </Select>
           </Form.Item>
-          <CustomSelect 
+          {/* <CustomSelect 
             name="modeOfProcurement" 
             label="Mode Of Procurement" 
             options={modeOfProcurementList} 
             required 
+          /> */}
+          <FormInputItem
+            type="number"
+            name="unitPrice"
+            label="Unit Price"
+            required
           />
         </div>
 
         {procurementMode === "Proprietary/Single Tender" && (
           <div className="form-section">
-            <CustomSelect name="vendorNames" label="Vendor Name" options={vendorMasterMod} />
+            <CustomSelect
+              name="vendorNames"
+              label="Vendor Name"
+              options={vendorMasterMod}
+            />
           </div>
         )}
         {procurementMode === "Limited Pre Approved Vendor Tender" && (
           <div className="form-section">
-            <CustomSelect name="vendorNames" label="Vendor Names" options={vendorMasterMod} multiselect />
+            <CustomSelect
+              name="vendorNames"
+              label="Vendor Names"
+              options={vendorMasterMod}
+              multiselect
+            />
           </div>
         )}
 
         <div className="form-section">
-          <Form.Item label="End of Life" name="endOfLife">
+          {/* <Form.Item label="End of Life" name="endOfLife">
             <DatePicker format="YYYY-MM-DD" />
-          </Form.Item>
-          <FormInputItem
+          </Form.Item> */}
+          {/* <FormInputItem
             type="number"
             label="Depreciation Rate"
             name="depreciationRate"
@@ -283,12 +347,25 @@ const MaterialForm = () => {
             type="number"
             label="Stock Levels"
             name="stockLevels"
-          />
+          /> */}
         </div>
 
         <div className="form-section">
-          <FormInputItem label="Condition of Goods" name="conditionOfGoods" />
-          <FormInputItem label="Shelf Life" name="shelfLife" />
+          {/* <FormInputItem label="Condition of Goods" name="conditionOfGoods" />
+          <FormInputItem label="Shelf Life" name="shelfLife" /> */}
+          <Form.Item
+            name="currency"
+            label="Currency"
+            rules={[{ required: true }]}
+          >
+            <Select placeholder="Select Currency">
+              <Option value="USD">USD</Option>
+              <Option value="INR">INR</Option>
+              <Option value="EUR">EUR</Option>
+              <Option value="GBP">GBP</Option>
+            </Select>
+          </Form.Item>
+
           <FormInputItem
             label="Estimated Price with CCY"
             name="estimatedPriceWithCcy"
@@ -322,7 +399,13 @@ const MaterialForm = () => {
           </Form.Item>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", margin: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            margin: "20px",
+          }}
+        >
           <Button type="default" htmlType="reset">
             <ReloadOutlined />
             Reset
@@ -341,5 +424,3 @@ const MaterialForm = () => {
 };
 
 export default MaterialForm;
-
-
