@@ -3,14 +3,14 @@ import React, { useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
 import { renderFormFields } from "../../../utils/CommonFunctions";
-import { grvFields, igpGrnFields } from "./InputFields";
 import ButtonContainer from "../../../components/ButtonContainer";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
+import { igpFields } from "./InputFields";
 
-const Grn = () => {
+const Igp = () => {
   const printRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -19,9 +19,9 @@ const Grn = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [formData, setFormData] = useState({
-    giNo: "",
-    materialDtlList: [],
-    grnType: "GI"
+    ogpId: "",
+    igpDate: null,
+    materialDtlList: []
   });
 
   const handleChange = (fieldName, value) => {
@@ -36,24 +36,28 @@ const Grn = () => {
     }
   }
 
+  const {locatorMaster} = useSelector(state => state?.masters);
+
+  const locatorMasterObj = locatorMaster?.reduce((acc, obj) => {
+    const { value, label } = obj;
+    acc[value] = label;
+    return acc;
+  }, {});
+
   const handleSearch = async () => {
     try {
-      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=${formData.grnType}&processNo=${formData.giNo}`);
-      if(formData.grnType === "GI") {
-        console.log("HEREEE")
-        setFormData({...data?.responseData?.giDtls, giNo: data.responseData?.giDtls?.inspectionNo, grnType: "GI"});
-      }
-      else{
-        console.log("HEREEE 2")
-        setFormData(
-          {...data?.responseData, giNo: data.responseData?.igpId, grnType: "IGP",
-            materialDtlList: data?.responseData?.materialDtlList?.map((material, index) => ({
-              ...material, acceptedQuantity: material.quantity
-            }))
-          });
-        }
+      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.ogpId}&processStage=OGP`);
+      setFormData(prev => ({
+        ...data?.responseData,
+        ogpId: data.responseData?.ogpId,
+        igpDate: prev.igpDate,
+        materialDtlList: data?.responseData?.materialDtlList?.map(item => ({
+          ...item,
+          locatorDesc: locatorMasterObj[parseInt(item.locatorId)]
+        }))
+      }));
     } catch(error) {
-      message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
+      message.error(error?.response?.data?.responseStatus?.message || "Error fetching OGP data.");
     }
   }
 
@@ -64,24 +68,24 @@ const Grn = () => {
 
     try {
       setSubmitBtnLoading(true);
-      const {data} = await axios.post("/api/process-controller/saveGrn", payload);
+      const {data} = await axios.post("/api/process-controller/saveIgp", payload);
 
       setFormData(prev => ({
         ...prev,
-        grnNo: data?.responseData?.processNo
+        igpId: data?.responseData?.processNo
       }));
 
-      localStorage.removeItem("grnDraft");
+      localStorage.removeItem("igpDraft");
       setModalOpen(true);
     } catch(error) {
-      message.error(error?.response?.data?.responseStatus?.message || "Failed to save GRN.");
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to save IGP.");
     } finally {
       setSubmitBtnLoading(false);
     }
   };
 
   useEffect(() => {
-    const draft = localStorage.getItem("grnDraft");
+    const draft = localStorage.getItem("igpDraft");
     if(draft) {
       setFormData(JSON.parse(draft));
       message.success("Form loaded from draft.");
@@ -90,23 +94,13 @@ const Grn = () => {
 
   return (
     <Card className="a4-container" ref={printRef}>
-      <Heading title="Goods Receipt Note" />
+      <Heading title="Inward Gate Pass" />
       <CustomForm formData={formData}>
-        {
-          formData.grnType === "GI" && (
-            renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)
-          )
-        }
-        {
-          formData.grnType === "IGP" && (
-            renderFormFields(igpGrnFields, handleChange, formData, "", null, setFormData, handleSearch)
-          )
-        }
-        {/* {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)} */}
+        {renderFormFields(igpFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}
-          draftDataName="grnDraft"
+          draftDataName="igpDraft"
           submitBtnLoading={submitBtnLoading}
           submitBtnEnabled
           printBtnEnabled
@@ -114,9 +108,9 @@ const Grn = () => {
           handlePrint={handlePrint}
         />
       </CustomForm>
-      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Goods Receipt Note" processNo={formData?.grnNo} />
+      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Inward Gate Pass" processNo={formData?.igpId} />
     </Card>
   );
 };
 
-export default Grn;
+export default Igp;

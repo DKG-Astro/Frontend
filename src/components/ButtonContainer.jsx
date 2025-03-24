@@ -42,7 +42,7 @@ const ButtonContainer = ({
     <div className="grid md:grid-cols-4 gap-2">
       <Tooltip title="Clear form">
         <Button
-          type="primary"
+          // type="primary"
           danger
           icon={<UndoOutlined />}
           onClick={handleReset}
@@ -75,10 +75,8 @@ const ButtonContainer = ({
       <Tooltip title={"Save the form as draft."}>
         <Button
           onClick={saveDraft}
-          type="primary"
-          style={{
-            backgroundColor: "#eed202",
-          }}
+          type="warning"
+          className="border-yellow-300"
           icon={<CloudDownloadOutlined />}
           disabled={disabled ? true : (draftBtnEnabled ? false : true)}
         >
@@ -93,9 +91,10 @@ const ButtonContainer = ({
       >
         <Button
           onClick={handlePrint}
-          type="primary"
+          // type="primary"
           icon={<PrinterOutlined />}
           disabled={printBtnEnabled ? false : true}
+          className="border-blue-300"
         >
           Print
         </Button>
