@@ -109,7 +109,7 @@ export const apiCall = async (method, url, token, payload = null) => {
   };
 
   export const convertToCurrency = (amount) => {
-    const formattedAmount = amount.toLocaleString('en-IN', {
+    const formattedAmount = amount?.toLocaleString('en-IN', {
       style: 'currency',
       currency: 'INR'
     });
@@ -119,14 +119,14 @@ export const apiCall = async (method, url, token, payload = null) => {
   export const updateFormData = (newItem, setFormData) => {
     setFormData((prevValues) => {
       const updatedItems = [
-        ...(prevValues.items || []),
+        ...(prevValues.materialDtlList || []),
         {
           ...newItem,
-          noOfDays: prevValues.processType === "NIRP" ? "0" : (newItem.noOfDays ? newItem.noOfDays : "1"),
-          srNo: prevValues.items?.length ? prevValues.items.length + 1 : 1,
+          // noOfDays: prevValues.processType === "NIRP" ? "0" : (newItem.noOfDays ? newItem.noOfDays : "1"),
+          // srNo: prevValues.items?.length ? prevValues.items.length + 1 : 1,
         },
       ];
-      return { ...prevValues, items: updatedItems };
+      return { ...prevValues, materialDtlList: updatedItems };
     });
   };
 

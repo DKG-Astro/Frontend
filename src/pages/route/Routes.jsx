@@ -94,6 +94,9 @@ import WorkCreation from "../dashboard/workCreation/WorkCreation";
 import Master from "../masters/Master";
 import Grv from "../dashboard/grv/Grv";
 import Grn from "../dashboard/grn/Grn";
+import Isn from "../dashboard/isn/Isn";
+import Ogp from "../dashboard/ogp/Ogp";
+import Igp from "../dashboard/igp/Igp";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -132,117 +135,13 @@ const RoutesComponent = () => {
                 <Route path="goodsReturn" element={<Grv />} />
                 <Route path="goodsReceipt" element={<Grn />} />
                 <Route path="assetMaster" element={<Form15 />} />
-                <Route path="goodsIssue" element={<Form16/>} />
+                <Route path="goodsIssue" element={<Isn/>} />
                 <Route path="goodsTransfer" element={<Form17 />} />
                 <Route path="materialDisposal" element={<Form18 />} />
-                <Route path="gatePass" element={<Form19 />} />
+                <Route path="outward" element={<Ogp />} />
+                <Route path="inward" element={<Igp />} />
                 <Route path="demandIssue" element={<Form20 />} />
             </Route>
-
-            <Route path="/sms">
-              <Route index element={<SmsDutyStartForm />} />
-              <Route path="dutyStart" element={<SmsDutyStartForm />} />
-              <Route element={<SmsPrivateRoute />}>
-                <Route path="heatSummary" element={<SmsHeatSummary />} />
-                <Route path="heatDtl" element={<HeatDtl />} />
-                <Route path="dutyEnd" element={<SmsDutyEnd />} />
-                <Route path="bloomInspection" element={<SmsBloomInspection />} />
-                <Route path="shiftReports">
-                  <Route index element={<ShiftReports />} />
-                  <Route path="heatList" element={<SmsHeatList />} />
-                  <Route path="checkList" element={<SmsCheckList />} />
-                  <Route path="verification" element={<SmsVerification />} />
-                </Route>
-              </Route>
-            </Route>
-
-            <Route path="/stage">
-              <Route index element={<StageShiftDetailsForm />} />
-              <Route path="startDuty" element={<StageShiftDetailsForm />} />
-              <Route element={<RollingPrivateRoute />}>
-                <Route path="home" element={<StageHome />} />
-                <Route path="rollingControl" element={<RollingControlForm />} />
-                <Route path="rollingControl/rollingControlSample" element={<RollingControlSample />} />
-                <Route path="rollingVerification" element={<RollingVerification />} />
-                <Route path="finishingVerification" element={<FinishingVerification />} />
-                <Route path="htSequence" element={<HtSequence />} />
-                <Route path="testSampleMarkingList" element={<TestSampleList />} />
-                <Route path="newTestSampleDeclaration" element={<NewTestSampleDeclaration />} />
-              </Route>
-            </Route>
-
-            <Route path="/ndt">
-              <Route index element={<NDTStartDutyForm />} />
-              <Route path="startDuty" element={<NDTStartDutyForm />} />
-              <Route path="home" element={<NDTHome />} />
-              <Route path="calibration" element={<NCalibrationForm />} />
-              <Route path="report" element={<NReport />} />
-            </Route>
-
-            <Route path="/testing">
-              <Route index element={<TestingHome />} />
-              <Route path="home" element={<TestingHome />} />
-              <Route path="pendingTestSamples" element={<PendingTestSamples />} />
-              <Route path="testingReport" element={<TestingReport />} />
-              <Route path="heatPending" element={<HeatPending />} />
-              <Route path="report" element={<NReport />} />
-            </Route>
-
-            <Route path="/visual">
-              <Route index element={<VIShiftDetailsForm />} />
-              <Route path="startDuty" element={<VIShiftDetailsForm />} />
-              <Route path="home" element={<Home />} />
-              <Route path="inspection" element={<VisualInspectionForm />} />
-              <Route path="summary" element={<VIShiftSummary />} />
-            </Route>
-
-            <Route path="/welding">
-              <Route index element={<WeldingStartDutyForm />} />
-              <Route path="startDuty" element={<WeldingStartDutyForm />} />
-              <Route path="home" element={<WeldingHome />} />
-              <Route path="newWeldInspection" element={<NewWeldInspection />} />
-              <Route path="heldRejectedPanel" element={<HeldRejectedPanel />} />
-              <Route path="testSample" element={<WeldTestSample />} />
-              <Route path="tltTestDetails" element={<TLTTestDetails />} />
-              <Route path="hardnessTestDetails" element={<HardnessTestDetails />} />
-              <Route path="microTestDetails" element={<MicroTestDetails />} />
-              <Route path="macroTestDetails" element={<MacroTestDetails />} />
-              <Route path="shiftSummary" element={<WeldingSummary />} />
-            </Route>
-
-            <Route path="/srInspection">
-              <Route index element={<SrInspectionHome />} />
-              <Route path="addNewInspection" element={<SrNewInspectionForm />} />
-              <Route path="wsRemarks" element={<WsRemarks />} />
-            </Route>
-
-            <Route path="/qct">
-              <Route index element={<QctSampleList />} />
-              <Route path="sampleList" element={<QctSampleList />} />
-              <Route path="newSampleDeclaration" element={<QctSampleDeclarationForm />} />
-            </Route>
-
-            <Route path='/calibration'>
-              <Route index element={<CalibrationList />} />
-              <Route path='list' element={<CalibrationList />} />
-              <Route path='newModifyCalibration' element={<NewCalibrationForm />} />
-              <Route path='bulkCalibration' element={<BulkCalibrationForm  />} />
-            </Route>
-
-            {/* <Route path="/railDetails">
-              <Route index element={<SmsDutyStartForm />} />
-              <Route path="railId" element={<SmsHeatSummary />} />
-            </Route> */}
-            {/* <Route path="/railDetails/:railId" element={<RailDetails />} /> */}
-            <Route path="/reports">
-            <Route index element={<ReportsMain />} />
-            <Route path="contingencyPurchase" element={<CpReport />} />
-            <Route path="indent" element={<IndentReport />} />
-            <Route path="technoMom" element={<TechnoMom />} />
-            <Route path="vendorContract" element={<VendorContract />} />
-            <Route path="procurementActivity" element={<ProcurementActivityReport />} />   
-            </Route>
-          
           </Route>
 
 

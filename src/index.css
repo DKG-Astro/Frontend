@@ -384,6 +384,10 @@ label{
   @apply !text-sm
 }
 
+.ant-btn-primary{
+  @apply !bg-darkBlue hover:!bg-darkBlueHover !text-offWhite
+}
+
 /* .ant-form-item{
   @apply !m-0
 }

@@ -220,9 +220,16 @@ const items = [
           {
             key: "4.9",
             icon: <CiPassport1 />,
-            label: "Gate Pass",
+            label: "Outward Gate Pass",
             activeTab: 21,
-            path: "/inventory/gatePass",
+            path: "/inventory/outward",
+          },
+          {
+            key: "4.21",
+            icon: <CiPassport1 />,
+            label: "Inward Gate Pass",
+            activeTab: 23,
+            path: "/inventory/inward",
           },
           {
             key: "4.20",

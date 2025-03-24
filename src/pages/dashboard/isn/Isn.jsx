@@ -1,16 +1,17 @@
 import { Card, message } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
-import { renderFormFields } from "../../../utils/CommonFunctions";
-import { grvFields, igpGrnFields } from "./InputFields";
 import ButtonContainer from "../../../components/ButtonContainer";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
+import { isnFields } from "./InputFields";
+import ItemSearch from "../../../components/ItemSearch";
+import { renderFormFields } from "../../../utils/CommonFunctions";
 
-const Grn = () => {
+const Isn = () => {
   const printRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -19,12 +20,17 @@ const Grn = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [formData, setFormData] = useState({
-    giNo: "",
-    materialDtlList: [],
-    grnType: "GI"
+    issueNoteNo: ``,
+    issueDate: null,
+    consigneeDetail: "",
+    indentorName: "",
+    fieldStation: "",
+    materialDtlList: []
   });
 
   const handleChange = (fieldName, value) => {
+    console.log("Handlechangecalled", fieldName, value)
+
     if(typeof fieldName === 'string')
       setFormData(prev => ({...prev, [fieldName]: value}))
     else{
@@ -38,20 +44,12 @@ const Grn = () => {
 
   const handleSearch = async () => {
     try {
-      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=${formData.grnType}&processNo=${formData.giNo}`);
-      if(formData.grnType === "GI") {
-        console.log("HEREEE")
-        setFormData({...data?.responseData?.giDtls, giNo: data.responseData?.giDtls?.inspectionNo, grnType: "GI"});
-      }
-      else{
-        console.log("HEREEE 2")
-        setFormData(
-          {...data?.responseData, giNo: data.responseData?.igpId, grnType: "IGP",
-            materialDtlList: data?.responseData?.materialDtlList?.map((material, index) => ({
-              ...material, acceptedQuantity: material.quantity
-            }))
-          });
-        }
+      const {data} = await axios.get(`/api/asset-controller/getAssetDetails?assetId=${formData.assetId}`);
+      
+      setFormData(prev => ({
+        ...prev,
+        materialDtlList: data?.responseData || []
+      }));
     } catch(error) {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
@@ -64,49 +62,60 @@ const Grn = () => {
 
     try {
       setSubmitBtnLoading(true);
-      const {data} = await axios.post("/api/process-controller/saveGrn", payload);
+      const {data} = await axios.post("/api/process-controller/saveIsn", payload);
 
       setFormData(prev => ({
         ...prev,
-        grnNo: data?.responseData?.processNo
+        issueNoteNo: data?.responseData?.processNo
       }));
 
-      localStorage.removeItem("grnDraft");
+      localStorage.removeItem("isnDraft");
       setModalOpen(true);
     } catch(error) {
-      message.error(error?.response?.data?.responseStatus?.message || "Failed to save GRN.");
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to save Issue Note.");
     } finally {
       setSubmitBtnLoading(false);
     }
   };
 
   useEffect(() => {
-    const draft = localStorage.getItem("grnDraft");
+    const draft = localStorage.getItem("isnDraft");
     if(draft) {
       setFormData(JSON.parse(draft));
       message.success("Form loaded from draft.");
     }
   }, []);
 
+  const [itemQtyList, setItemQtyList] = useState([]);
+
+  const populateItemQtyDtls = useCallback(async () => {
+    try {
+      const { data } = await axios.get('/api/process-controller/getIsnAssetOhqDtls');
+      if (data?.responseData) {
+        setItemQtyList(data.responseData);
+      }
+    } catch (error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Error fetching item quantity details.");
+    }
+  }, [])
+
+  console.log("ITemqtlylist: ", itemQtyList)
+
+  useEffect(() => {
+    populateItemQtyDtls()
+  }, [populateItemQtyDtls])
+
   return (
     <Card className="a4-container" ref={printRef}>
-      <Heading title="Goods Receipt Note" />
+      <Heading title="Issue Note" />
+
+      <ItemSearch itemArray={itemQtyList} setFormData={setFormData} />
       <CustomForm formData={formData}>
-        {
-          formData.grnType === "GI" && (
-            renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)
-          )
-        }
-        {
-          formData.grnType === "IGP" && (
-            renderFormFields(igpGrnFields, handleChange, formData, "", null, setFormData, handleSearch)
-          )
-        }
-        {/* {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)} */}
+        {renderFormFields(isnFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}
-          draftDataName="grnDraft"
+          draftDataName="isnDraft"
           submitBtnLoading={submitBtnLoading}
           submitBtnEnabled
           printBtnEnabled
@@ -114,9 +123,9 @@ const Grn = () => {
           handlePrint={handlePrint}
         />
       </CustomForm>
-      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Goods Receipt Note" processNo={formData?.grnNo} />
+      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Issue Note" processNo={formData?.issueNoteNo} />
     </Card>
   );
 };
 
-export default Grn;
+export default Isn;
