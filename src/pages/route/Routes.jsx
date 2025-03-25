@@ -129,6 +129,14 @@ const RoutesComponent = () => {
                 <Route path="deliveryTracking" element={<Form10 />} />
             </Route>
 
+            <Route path="/reports" element={<ReportsMain />}>
+                <Route path="cpReport" element={<CpReport />} />
+                <Route path="indentReport" element={<IndentReport />} />
+                <Route path="technoMom" element={<TechnoMom />} />
+                <Route path="vendorContract" element={<VendorContract />} />
+                <Route path="procurementActivity" element={<ProcurementActivityReport />} />
+            </Route>
+
             <Route path="/inventory">
                 <Route path="gprn" element={<GPRN />} />
                 <Route path="goodsInspection" element={<GoodsInspection />} />

@@ -4,17 +4,17 @@ export const generalDtls = [
         colCnt: 5, // optional
         fieldList: [
             {
+                name: "poId",
+                label: "PO No.",
+                type: "search",
+                required: true
+            },
+            {
                 name: "gprnNo", // required
                 label: "GPRN No", // optional
                 type:"text", // required
-                // disabled: true, //optional
+                disabled: true, //optional
                 required: true // option
-            },
-            {
-                name: "poId",
-                label: "PO No.",
-                type: "text",
-                required: true
             },
             {
                 name: "date",

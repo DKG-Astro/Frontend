@@ -19,58 +19,58 @@ const GPRN = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
     const [formData, setFormData] = useState({
-      // gprnNo: "GPRN-2025001",
-      poId: "PO123456",
-      date: "13/12/2001",
-      challanNo: "DCN-78901",
-      deliveryDate: "13/12/2001",
-      vendorId: "VEND-001",
-      vendorName: "Astro Supplies Ltd.",
-      vendorEmail: "vendor@example.com",
-      vendorContactNo: 9876543210,
-      fieldStation: "Station A",
-      indentorName: "John Doe",
-      supplyExpectedDate: "13/12/2001",
-      consigneeDetail: "XYZ Warehouse, New York",
-      warrantyYears: 2,
-      project: "Space Exploration Project",
-      // receivedQty: "100",
-      // pendingQty: "20",
-      // acceptedQty: "80",
-      // provisionalReceiptCertificate: null,
-      receivedBy: "Jane Doe",
-      createdBy: "Admin",
-      updatedBy: "Editor",
-      materialDtlList: [
-        {
-          materialCode: "MAT-001",
-          materialDesc: "Aluminum Sheet",
-          uomId: "KG",
-          orderedQuantity: 200,
-          quantityDelivered: 180,
-          receivedQuantity: 170,
-          unitPrice: 25.5,
-          makeNo: "Make-123",
-          modelNo: "Model-XYZ",
-          serialNo: "SN-001A",
-          warranty: "2 Years",
-          note: "Handle with care",
-        },
-        {
-          materialCode: "MAT-002",
-          materialDesc: "Copper Sheet",
-          uomId: "KG",
-          orderedQuantity: 200,
-          quantityDelivered: 180,
-          receivedQuantity: 170,
-          unitPrice: 25.5,
-          makeNo: "Make-1234",
-          modelNo: "Model-XYZA",
-          serialNo: "SN-001AB",
-          warranty: "21 Years",
-          note: "Dont handle with care",
-        },
-      ],
+      // // gprnNo: "GPRN-2025001",
+      // poId: "PO123456",
+      // date: "13/12/2001",
+      // challanNo: "DCN-78901",
+      // deliveryDate: "13/12/2001",
+      // vendorId: "VEND-001",
+      // vendorName: "Astro Supplies Ltd.",
+      // vendorEmail: "vendor@example.com",
+      // vendorContactNo: 9876543210,
+      // fieldStation: "Station A",
+      // indentorName: "John Doe",
+      // supplyExpectedDate: "13/12/2001",
+      // consigneeDetail: "XYZ Warehouse, New York",
+      // warrantyYears: 2,
+      // project: "Space Exploration Project",
+      // // receivedQty: "100",
+      // // pendingQty: "20",
+      // // acceptedQty: "80",
+      // // provisionalReceiptCertificate: null,
+      // receivedBy: "Jane Doe",
+      // createdBy: "Admin",
+      // updatedBy: "Editor",
+      // materialDtlList: [
+      //   {
+      //     materialCode: "MAT-001",
+      //     materialDesc: "Aluminum Sheet",
+      //     uomId: "KG",
+      //     orderedQuantity: 200,
+      //     quantityDelivered: 180,
+      //     receivedQuantity: 170,
+      //     unitPrice: 25.5,
+      //     makeNo: "Make-123",
+      //     modelNo: "Model-XYZ",
+      //     serialNo: "SN-001A",
+      //     warranty: "2 Years",
+      //     note: "Handle with care",
+      //   },
+      //   {
+      //     materialCode: "MAT-002",
+      //     materialDesc: "Copper Sheet",
+      //     uomId: "KG",
+      //     orderedQuantity: 200,
+      //     quantityDelivered: 180,
+      //     receivedQuantity: 170,
+      //     unitPrice: 25.5,
+      //     makeNo: "Make-1234",
+      //     modelNo: "Model-XYZA",
+      //     serialNo: "SN-001AB",
+      //     warranty: "21 Years",
+      //     note: "Dont handle with care",
+      //   },
+      // ],
     });
 
     const handleChange = (fieldName, value) => {
@@ -112,6 +112,30 @@ const GPRN = () => {
       }
     }
 
+    const handleSearch = async () => {
+        try{
+          const {data} = await axios.get(`api/purchase-orders/${formData.poId}`)
+
+          const {data: vendorData} = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
+          const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentId}`)
+          
+          setFormData({
+            poId: data?.responseData?.poId,
+            vendorId: data?.responseData?.vendorId,
+            vendorName: vendorData?.responseData?.vendorName,
+            vendorEmail: vendorData?.responseData?.emailAddress,
+            vendorContactNo: vendorData?.responseData?.contactNo,
+            project: data?.responseData?.projectName || "N/A",
+            indentorName: indentData?.responseData?.indentorName,
+            consigneeDetail: data?.responseData?.consignesAddress,
+            materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity}))
+          })
+        }
+        catch(error){
+          message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
+        }
+    }
+
     useEffect(() => {
       const gprnDraft = localStorage.getItem("gprnDraft");
       if(gprnDraft){
@@ -125,7 +149,7 @@ const GPRN = () => {
       <Heading title="Goods Provisional Receipt Note"/>
       <CustomForm formData={formData}>
         {/* {renderFormFields(generalDtls, handleChange, formData)} */}
-        {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData)}
+        {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
          onFinish={onFinish} 
          formData={formData} 
