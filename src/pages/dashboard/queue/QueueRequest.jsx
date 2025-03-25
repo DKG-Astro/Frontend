@@ -170,7 +170,7 @@ const QueueRequest = () => {
   const fetchWorkflowTransitionHistory = async (requestId) => {
     try {
       const response = await axios.get(
-        `/astro-service/workflowTransitionHistory?requestId=${requestId}`
+        `/workflowTransitionHistory?requestId=${requestId}`
       );
       if (!response.data.responseData?.[0]?.remarks) {
         console.warn("No remarks found in transition history");

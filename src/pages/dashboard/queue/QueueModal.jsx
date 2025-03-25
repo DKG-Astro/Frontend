@@ -100,6 +100,62 @@ const QueueModal = ({
                       <strong>Location:</strong> {detailsData.consignesLocation}
                     </div>
                     <div className="detail-item">
+                      <strong>Technical Specs:</strong>
+                      {detailsData.technicalSpecificationsFileName ? (
+                        <a
+                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.technicalSpecificationsFileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {detailsData.technicalSpecificationsFileName} (View)
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                    <div className="detail-item">
+                      <strong>PAC/Brand PAC:</strong>
+                      {detailsData.uploadPACOrBrandPACFileName ? (
+                        <a
+                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadPACOrBrandPACFileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {detailsData.uploadPACOrBrandPACFileName} (View)
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Prior Approvals:</strong>
+                      {detailsData.uploadingPriorApprovalsFileName ? (
+                        <a
+                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadingPriorApprovalsFileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {detailsData.uploadingPriorApprovalsFileName} (View)
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Draft EOI/RFP:</strong>
+                      {detailsData.draftEOIOrRFPFileName ? (
+                        <a
+                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.draftEOIOrRFPFileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {detailsData.draftEOIOrRFPFileName} (View)
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                    <div className="detail-item">
                       <strong>Total Price:</strong> ₹
                       {detailsData.totalPriceOfAllMaterials?.toFixed(2)}
                     </div>
@@ -680,34 +736,34 @@ const QueueModal = ({
                   </Col>
                 </Row>
               </div>
-                <div className="detail-section">
-                  <Typography.Title level={5} className="section-title">
-                    <ShopOutlined /> Vendor Details
-                  </Typography.Title>
-                  <Row gutter={24}>
-                    <Col span={12}>
-                      <div className="detail-item">
-                        <strong>Vendor Name:</strong>{" "}
-                        {detailsData.vendorName || "N/A"}
-                      </div>
-                      <div className="detail-item">
-                        <strong>Account Number:</strong>{" "}
-                        {detailsData.vendorsAccountNo || "N/A"}
-                      </div>
-                    </Col>
-                    <Col span={12}>
-                      <div className="detail-item">
-                        <strong>IFSC Code:</strong>{" "}
-                        {detailsData.vendorsZRSCCode || "N/A"}
-                      </div>
-                      <div className="detail-item">
-                        <strong>Account Name:</strong>{" "}
-                        {detailsData.vendorsAccountName || "N/A"}
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-                <div className="detail-section">
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ShopOutlined /> Vendor Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Vendor Name:</strong>{" "}
+                      {detailsData.vendorName || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Number:</strong>{" "}
+                      {detailsData.vendorsAccountNo || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>IFSC Code:</strong>{" "}
+                      {detailsData.vendorsZRSCCode || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Name:</strong>{" "}
+                      {detailsData.vendorsAccountName || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+              <div className="detail-section">
                 <Typography.Title level={5} className="section-title">
                   <BarsOutlined /> Purchase Order Items
                 </Typography.Title>

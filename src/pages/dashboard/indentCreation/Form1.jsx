@@ -13,12 +13,24 @@ import {
   message,
   Modal,
 } from "antd";
-import { UploadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  SearchOutlined,
+  RestOutlined,
+  SendOutlined,
+  SaveOutlined,
+  ReloadOutlined,
+  PrinterOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useSelector } from "react-redux";
 import LineItem from "../LineItem";
 import { unitless } from "antd/es/theme/useToken";
+import FormContainer from "../../../components/DKG_FormContainer";
+import Heading from "../../../components/DKG_Heading";
+import { handlePrint } from "../../../utils/HandlePrint";
 dayjs.extend(customParseFormat);
 
 const { Option } = Select;
@@ -36,6 +48,9 @@ const Form1 = () => {
   const [locations, setLocations] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [generatedIndentId, setGeneratedIndentId] = useState("");
+  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
+  const [showDraftSavedModal, setShowDraftSavedModal] = useState(false);
+  const [isBrandPac, setIsBrandPac] = useState(false);
 
   const { userName, email, mobileNumber } = useSelector((state) => state.auth);
 
@@ -62,6 +77,21 @@ const Form1 = () => {
     };
     fetchLocations();
   }, []);
+
+  const handleSaveDraft = () => {
+    const formValues = form.getFieldsValue();
+    localStorage.setItem("draftFormData", JSON.stringify(formValues));
+    setShowDraftSavedModal(true);
+  };
+
+  // Load draft
+  useEffect(() => {
+    const savedDraft = localStorage.getItem("draftFormData");
+    if (savedDraft) {
+      const draftValues = JSON.parse(savedDraft);
+      form.setFieldsValue(draftValues);
+    }
+  }, [form]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -90,101 +120,139 @@ const Form1 = () => {
     fetchProjects();
   }, []);
 
-  const hasPacMaterial = () => {
-    const lineItems = form.getFieldValue("lineItems") || [];
-    return lineItems.some(
+  //   const handleSaveDraft = () => {
+  //     try {
+  //       const formValues = form.getFieldsValue();
+  //       const sanitizedValues = {
+  //         ...formValues,
+  //         uploadingPriorApprovalsFileName:
+  //           formValues.uploadingPriorApprovalsFileName?.map((file) => ({
+  //             uid: file.uid,
+  //             name: file.name,
+  //             status: file.status,
+  //           })),
+  //         technicalSpecificationsFileName:
+  //           formValues.technicalSpecificationsFileName?.map((file) => ({
+  //             uid: file.uid,
+  //             name: file.name,
+  //             status: file.status,
+  //           })),
+  //         draftEOIOrRFPFileName: formValues.draftEOIOrRFPFileName?.map(
+  //           (file) => ({
+  //             uid: file.uid,
+  //             name: file.name,
+  //             status: file.status,
+  //           })
+  //         ),
+  //         uploadPACOrBrandPACFileName:
+  //           formValues.uploadPACOrBrandPACFileName?.map((file) => ({
+  //             uid: file.uid,
+  //             name: file.name,
+  //             status: file.status,
+  //           })),
+  //       };
+  //       localStorage.setItem("draftFormData", JSON.stringify(sanitizedValues));
+  //       setShowDraftSavedModal(true);
+  //     } catch (error) {
+  //       message.error("Failed to save draft");
+  //       console.error("Draft save error:", error);
+  //     }
+  //   };
+
+  const hasPacMaterial = (lineItems) => {
+    return (lineItems || []).some(
       (item) => String(item?.modeOfProcurement).toLowerCase() === "brand pac"
     );
   };
 
-  const handleSearch = async () => {
-    const indentorId = form.getFieldValue("indentId");
-    if (!indentorId) {
-      message.error("Please enter an Indent ID");
-      return;
-    }
+  //   const handleSearch = async () => {
+  //     const indentorId = form.getFieldValue("indentId");
+  //     if (!indentorId) {
+  //       message.error("Please enter an Indent ID");
+  //       return;
+  //     }
 
-    try {
-      const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
-      );
+  //     try {
+  //       const response = await fetch(
+  //         `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
+  //       );
 
-      if (!response.ok)
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
+  //       if (!response.ok)
+  //         throw new Error(`Failed to fetch data: ${response.statusText}`);
 
-      const data = await response.json();
+  //       const data = await response.json();
 
-      console.log("API Response:", data); // Debugging log
+  //       console.log("API Response:", data); // Debugging log
 
-      if (!data.responseData) {
-        throw new Error("Invalid API response: responseData is missing");
-      }
+  //       if (!data.responseData) {
+  //         throw new Error("Invalid API response: responseData is missing");
+  //       }
 
-      const responseData = data.responseData;
+  //       const responseData = data.responseData;
 
-      // Ensure file upload fields are always an array
-      const getFileList = (fileName) =>
-        fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
+  //       // Ensure file upload fields are always an array
+  //       const getFileList = (fileName) =>
+  //         fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
 
-      const formData = {
-        indentId: responseData.indentId || "",
-        indentorName: responseData.indentorName || "",
-        indentorMobileNo: responseData.indentorMobileNo || "",
-        indentorEmail: responseData.indentorEmailAddress || "",
-        consigneeLocation: responseData.consignesLocation || "",
-        projectName: responseData.projectName || "",
-        preBidMeetingRequired: responseData.isPreBidMeetingRequired || false,
-        preBidMeetingDetails: responseData.preBidMeetingDate
-          ? dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")
-          : null,
-        preBidMeetingLocation: responseData.preBidMeetingVenue || "",
-        rateContractIndent: responseData.isItARateContractIndent || false,
-        estimatedRate: parseFloat(responseData.estimatedRate) || 0,
-        periodOfRateContract: parseFloat(responseData.periodOfContract) || 0,
-        singleOrMultipleJob: responseData.singleAndMultipleJob || "",
+  //       const formData = {
+  //         indentId: responseData.indentId || "",
+  //         indentorName: responseData.indentorName || "",
+  //         indentorMobileNo: responseData.indentorMobileNo || "",
+  //         indentorEmail: responseData.indentorEmailAddress || "",
+  //         consigneeLocation: responseData.consignesLocation || "",
+  //         projectName: responseData.projectName || "",
+  //         preBidMeetingRequired: responseData.isPreBidMeetingRequired || false,
+  //         preBidMeetingDetails: responseData.preBidMeetingDate
+  //           ? dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")
+  //           : null,
+  //         preBidMeetingLocation: responseData.preBidMeetingVenue || "",
+  //         rateContractIndent: responseData.isItARateContractIndent || false,
+  //         estimatedRate: parseFloat(responseData.estimatedRate) || 0,
+  //         periodOfRateContract: parseFloat(responseData.periodOfContract) || 0,
+  //         singleOrMultipleJob: responseData.singleAndMultipleJob || "",
 
-        // ✅ Fix file uploads - Ensure they are arrays
-        uploadingPriorApprovalsFileName: getFileList(
-          responseData.uploadingPriorApprovalsFileName
-        ),
-        technicalSpecificationsFileName: getFileList(
-          responseData.technicalSpecificationsFileName
-        ),
-        draftEOIOrRFPFileName: getFileList(responseData.draftEOIOrRFPFileName),
-        uploadPACOrBrandPAC: getFileList(
-          responseData.uploadPACOrBrandPACFileName
-        ),
+  //         // ✅ Fix file uploads - Ensure they are arrays
+  //         uploadingPriorApprovalsFileName: getFileList(
+  //           responseData.uploadingPriorApprovalsFileName
+  //         ),
+  //         technicalSpecificationsFileName: getFileList(
+  //           responseData.technicalSpecificationsFileName
+  //         ),
+  //         draftEOIOrRFPFileName: getFileList(responseData.draftEOIOrRFPFileName),
+  //         uploadPACOrBrandPAC: getFileList(
+  //           responseData.uploadPACOrBrandPACFileName
+  //         ),
 
-        // ✅ Ensure material details is an array
-        lineItems: Array.isArray(responseData.materialDetails)
-          ? responseData.materialDetails.map((item) => ({
-              materialCode: item.materialCode || "",
-              materialDescription: item.materialDescription || "",
-              quantity: parseFloat(item.quantity) || 0,
-              unitPrice: parseFloat(item.unitPrice) || 0,
-              uom: item.uom || "",
-              totalPrice: parseFloat(item.totalPrize) || 0,
-              budgetCode: item.budgetCode || "",
-              materialCategory: item.materialCategory || "",
-              materialSubcategory: item.materialSubCategory || "",
-              materialOrJobCodeUsedByDept: item.materialAndJob || "",
-              modeOfProcurement: item.modeOfProcurement || "",
-            }))
-          : [],
-      };
+  //         // ✅ Ensure material details is an array
+  //         lineItems: Array.isArray(responseData.materialDetails)
+  //           ? responseData.materialDetails.map((item) => ({
+  //               materialCode: item.materialCode || "",
+  //               materialDescription: item.materialDescription || "",
+  //               quantity: parseFloat(item.quantity) || 0,
+  //               unitPrice: parseFloat(item.unitPrice) || 0,
+  //               uom: item.uom || "",
+  //               totalPrice: parseFloat(item.totalPrize) || 0,
+  //               budgetCode: item.budgetCode || "",
+  //               materialCategory: item.materialCategory || "",
+  //               materialSubcategory: item.materialSubCategory || "",
+  //               materialOrJobCodeUsedByDept: item.materialAndJob || "",
+  //               modeOfProcurement: item.modeOfProcurement || "",
+  //             }))
+  //           : [],
+  //       };
 
-      console.log("Final Form Data:", formData); // Debugging log
+  //       console.log("Final Form Data:", formData); // Debugging log
 
-      // ✅ Update form fields safely
-      form.setFieldsValue(formData);
-      setPreBidRequired(formData.preBidMeetingRequired);
-      setRateContractIndent(formData.rateContractIndent);
-      message.success("Form data fetched successfully");
-    } catch (error) {
-      message.error(`Failed to fetch form data: ${error.message}`);
-      console.error("Error fetching data:", error);
-    }
-  };
+  //       // ✅ Update form fields safely
+  //       form.setFieldsValue(formData);
+  //       setPreBidRequired(formData.preBidMeetingRequired);
+  //       setRateContractIndent(formData.rateContractIndent);
+  //       message.success("Form data fetched successfully");
+  //     } catch (error) {
+  //       message.error(`Failed to fetch form data: ${error.message}`);
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
 
   const normFile = (e) => {
     // When uploading, an array of file objects is expected.
@@ -197,11 +265,6 @@ const Form1 = () => {
 
   const uploadFileToServer = async (file, fieldName) => {
     try {
-      if (!file) return "";
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error(`${fieldName} file is too large. Maximum 5MB allowed.`);
-      }
-
       const formData = new FormData();
       formData.append("file", file);
 
@@ -210,30 +273,81 @@ const Form1 = () => {
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${auth.token}`, // Add authentication if needed
+            Authorization: `Bearer ${auth.token}`,
           },
           body: formData,
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.responseStatus?.message || "File upload failed"
-        );
-      }
-
       const data = await response.json();
-      return data.responseData.fileName;
+      if (!response.ok)
+        throw new Error(data.responseStatus?.message || "Upload failed");
+
+      return data.responseData.fileName; // Server-generated filename
     } catch (error) {
-      console.error(`File upload error (${fieldName}):`, error);
-      throw new Error(`Failed to upload ${fieldName}: ${error.message}`);
+      message.error(`${fieldName} upload failed: ${error.message}`);
+      throw error;
     }
+  };
+
+  const createUploadHandler =
+    (fieldName) =>
+    async ({ file, onSuccess, onError }) => {
+      try {
+        const fileName = await uploadFileToServer(file, fieldName);
+        onSuccess({ fileName }, file);
+      } catch (error) {
+        onError(error);
+      }
+    };
+  const getFileViewUrl = (fileName) => {
+    return `http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName}`;
   };
 
   // Update the handleSubmit function with these changes
   const handleSubmit = async (values) => {
     setLoading(true);
+    const procurementModes = (values.lineItems || []).map(
+      (item) => item.modeOfProcurement
+    );
+
+    const allModesSame = procurementModes.every(
+      (mode) => mode === procurementModes[0]
+    );
+
+    if (!allModesSame) {
+      message.error("All items must have the same Mode of Procurement");
+      setLoading(false);
+      return;
+    }
+
+    const materialCodes = (values.lineItems || []).map(
+      (item) => item.materialCode
+    );
+    // const materialDescriptions = (values.lineItems || []).map(
+    //   (item) => item.materialDescription
+    // );
+
+    const isMaterialCodeUnique =
+      new Set(materialCodes).size === materialCodes.length;
+    // const isMaterialDescriptionUnique =
+    //   new Set(materialDescriptions).size === materialDescriptions.length;
+
+    if (!isMaterialCodeUnique) {
+      message.error("Material code must be unique for each item.");
+      setLoading(false);
+      return;
+    }
+    const descriptions = (values.lineItems || []).map(
+      (item) => materialDetailsMap[item.materialCode]?.description
+    );
+
+    const uniqueDescriptions = new Set(descriptions);
+    if (uniqueDescriptions.size !== descriptions.length) {
+      message.error("Material descriptions must be unique across items");
+      setLoading(false);
+      return;
+    }
     try {
       // Check if any line item has Brand PAC and the file is missing
       if (
@@ -267,6 +381,14 @@ const Form1 = () => {
         uploadFiles(values.draftEOIOrRFPFileName, "EOI/RFP"),
         uploadFiles(values.uploadPACOrBrandPACFileName, "Brand PAC"),
       ]);
+      const preBidMeetingDate =
+        values.preBidMeetingRequired && values.preBidMeetingDetails
+          ? values.preBidMeetingDetails.format("DD/MM/YYYY")
+          : null;
+
+      const preBidMeetingVenue = values.preBidMeetingRequired
+        ? String(values.preBidMeetingLocation)
+        : null;
 
       // Process material details with enhanced validation
       const materialDetails = (values.lineItems || []).map((item) => {
@@ -284,43 +406,58 @@ const Form1 = () => {
           quantity: quantity,
           unitPrice: unitPrice,
           uom: String(item.uom) || null,
-          totalPrize: totalPrice,
+        //   totalPrize: totalPrice,
           budgetCode: String(item.budgetCode) || null,
           materialCategory: String(item.materialCategory) || null,
           materialSubCategory: String(item.materialSubcategory) || null,
-          materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
+        //   materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
           modeOfProcurement: String(item.modeOfProcurement) || null,
-          vendorNames: String(item.vendorNames) || null,
+          vendorNames: item.vendorNames || null,
+            // ? Array.isArray(item.vendorNames)
+            //   ? item.vendorNames.join(", ")
+            //   : String(item.vendorNames)
+            // : null,
         };
       });
 
       // Build payload with proper type conversions
       const payload = {
-        consignesLocation: String(values.consigneeLocation) || "Bangalore",
-        createdBy: Number(actionPerformer) || 0,
-        estimatedRate: Number(values.estimatedRate) || 0,
+        // Rename form fields to match DTO
+        indentorEmailAddress: values.indentorEmail || null,
+        indentorMobileNo: values.indentorMobileNo || null,
+        indentorName: values.indentorName || null,
+        consignesLocation: values.consigneeLocation || "Bangalore",
+        isItARateContractIndent: values.rateContractIndent,
+        isPreBidMeetingRequired: values.preBidMeetingRequired,
+        periodOfContract: values.periodOfRateContract || 0,
+        singleAndMultipleJob: values.singleOrMultipleJob || null,
+
+        // Maintain existing fields that match
+        createdBy: actionPerformer || 0,
+        estimatedRate: values.estimatedRate || 0,
         fileType: "Indent",
-        indentId: String(values.indentId) || null,
-        indentorEmailAddress: String(values.indentorEmail) || null,
-        indentorMobileNo: String(values.indentorMobileNo) || null,
-        indentorName: String(values.indentorName) || null,
-        isItARateContractIndent: Boolean(values.rateContractIndent),
-        isPreBidMeetingRequired: Boolean(values.preBidMeetingRequired),
-        materialDetails: materialDetails,
-        periodOfContract: Number(values.periodOfRateContract) || 0,
-        preBidMeetingDate: values.preBidMeetingDetails?.isValid()
-          ? values.preBidMeetingDetails.format("DD/MM/YYYY")
-          : null,
-        preBidMeetingVenue: String(values.preBidMeetingLocation) || null,
         projectName: values.projectName || null,
-        singleAndMultipleJob: String(values.singleOrMultipleJob) || null,
-        updatedBy: null,
-        draftEOIOrRFPFileName: String(draftEOIOrRFP) || null,
-        uploadPACOrBrandPACFileName: String(uploadPACOrBrandPAC) || null,
-        technicalSpecificationsFileName:
-          String(technicalSpecifications) || null,
-        uploadingPriorApprovalsFileName: String(priorApprovalsFile) || null,
+        preBidMeetingDate: preBidMeetingDate,
+        preBidMeetingVenue: preBidMeetingVenue,
+        
+        // File handling
+        draftEOIOrRFPFileName: draftEOIOrRFP || null,
+        uploadPACOrBrandPACFileName: uploadPACOrBrandPAC || null,
+        technicalSpecificationsFileName: technicalSpecifications || null,
+        uploadingPriorApprovalsFileName: values.uploadingPriorApprovalsFileName?.[0]?.name || null,
+
+        // Material details adjustments
+        materialDetails: materialDetails.map(item => ({
+          ...item,
+          // Remove totalPrize as it's not in DTO
+          vendorNames: item.vendorNames ? 
+            (Array.isArray(item.vendorNames) ? 
+              item.vendorNames : 
+              String(item.vendorNames).split(',').map(s => s.trim())) : 
+            null
+        })),
       };
+      delete payload.lineItems;
 
       console.log("Final Payload:", JSON.stringify(payload, null, 2));
 
@@ -351,8 +488,9 @@ const Form1 = () => {
       // Show success modal with response data
       setGeneratedIndentId(responseData.responseData.indentId);
       setShowSuccessModal(true);
+      setIsPrintEnabled(true);
       message.success("Indent submitted successfully!");
-      //   form.resetFields();
+      form.resetFields();
     } catch (error) {
       message.error(`Submission Error: ${error.message}`);
       console.error("Detailed Error:", error);
@@ -391,6 +529,10 @@ const Form1 = () => {
 
   const handleCheckboxChange2 = (e) => {
     setRateContractIndent(e.target.checked);
+  };
+
+  const handleCheckboxChange3 = (e) => {
+    setIsBrandPac(e.target.checked);
   };
 
   useEffect(() => {
@@ -499,14 +641,11 @@ const Form1 = () => {
     });
   }, []);
 
-  const hasBrandPACMaterial = (lineItems) => {
-    return lineItems?.some((item) => item?.modeOfProcurement === "Brand PAC");
-  };
-
   return (
-    <div className="form-container">
-      <h2>Indent Creation</h2>
-      <Row justify="end">
+    <FormContainer>
+      {/* <div className="form-container"> */}
+      <Heading title={"Indent Creation"} />
+      {/* <Row justify="end">
         <Col>
           <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
             <Form.Item
@@ -523,7 +662,7 @@ const Form1 = () => {
             </Form.Item>
           </Form>
         </Col>
-      </Row>
+      </Row> */}
       <Form
         form={form}
         layout="vertical"
@@ -592,13 +731,40 @@ const Form1 = () => {
             name="uploadingPriorApprovalsFileName"
             valuePropName="fileList"
             getValueFromEvent={normFile}
-            // rules={[
-            //   { required: true, message: "Prior approvals are required" },
-            // ]}
           >
-            <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload Prior Approvals</Button>
+            <Upload
+              customRequest={createUploadHandler("Prior Approvals")}
+              maxCount={1}
+              onChange={({ file }) => {
+                if (file.status === "done") {
+                  form.setFieldsValue({
+                    uploadingPriorApprovalsFileName: [
+                      {
+                        uid: file.uid,
+                        name: file.response.fileName,
+                        status: "done",
+                      },
+                    ],
+                  });
+                }
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Upload File</Button>
             </Upload>
+            <div className="file-links">
+              {form
+                .getFieldValue("uploadingPriorApprovalsFileName")
+                ?.map((file) => (
+                  <a
+                    key={file.uid}
+                    href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${file.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {file.name} (View)
+                  </a>
+                ))}
+            </div>
           </Form.Item>
         </div>
 
@@ -650,8 +816,8 @@ const Form1 = () => {
         </Form.Item>
         <div className="form-section">
           {preBidRequired && (
-            <Row gutter={30}>
-              <Col span={15}>
+            <Row gutter={20}>
+              <Col span={12}>
                 <Form.Item
                   name="preBidMeetingDetails"
                   label="Tentative Meeting Date"
@@ -660,14 +826,6 @@ const Form1 = () => {
                       required: preBidRequired,
                       message: "Meeting date is required",
                     },
-                    () => ({
-                      validator(_, value) {
-                        if (!value || value.isValid()) {
-                          return Promise.resolve();
-                        }
-                        return Promise.reject("Invalid date format");
-                      },
-                    }),
                   ]}
                 >
                   <DatePicker
@@ -678,13 +836,13 @@ const Form1 = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={15}>
+              <Col span={12}>
                 <Form.Item
                   label="Meeting Location"
                   name="preBidMeetingLocation"
                   rules={[
                     {
-                      required: true,
+                      required: preBidRequired,
                       message: "Pre Bid Meeting Location is required",
                     },
                   ]}
@@ -772,42 +930,69 @@ const Form1 = () => {
               <Button icon={<UploadOutlined />}>Upload EOI or RFP</Button>
             </Upload>
           </Form.Item>
-          <Form.Item
-            label="Brand PAC Approval"
-            name="uploadPACOrBrandPACFileName"
-            dependencies={["lineItems"]} // Add this line
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-            rules={[
-              {
-                required: hasPacMaterial(),
-                message:
-                  "PAC/Brand PAC document is required when any item uses PAC procurement",
-              },
-            ]}
-          >
-            <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload Brand PAC</Button>
-            </Upload>
+          </div>
+          <Form.Item name="isBrandPac" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange3}>
+              Is it a brand PAC
+            </Checkbox>
           </Form.Item>
-        </div>
+          <div className="form-section">
+          {isBrandPac && (
+            <>
+              <Form.Item
+                label="Brand PAC Approval"
+                name="uploadPACOrBrandPACFileName"
+                dependencies={["lineItems"]}
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                rules={[
+                  ({ getFieldValue }) => ({
+                    required: hasPacMaterial(getFieldValue("lineItems")),
+                    message:
+                      "PAC/Brand PAC document is required when any item uses Brand PAC procurement",
+                  }),
+                ]}
+              >
+                <Upload beforeUpload={() => false} maxCount={1}>
+                  <Button icon={<UploadOutlined />}>Upload Brand PAC</Button>
+                </Upload>
+              </Form.Item>
+              <Form.Item label="Brand and Model" name="brandAndModel">
+                <Input />
+              </Form.Item>
+              <Form.Item label="It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand.
+
+However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:" 
+              name="justification">
+                <Input placeholder="Enter Declaration" />
+              </Form.Item>
+            </>
+          )}
+          </div>
 
         <Form.Item>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <Button type="default" htmlType="reset">
-              Reset
+              <ReloadOutlined /> Reset
             </Button>
             <Button type="primary" htmlType="submit" loading={loading}>
-              Submit
+              <SendOutlined /> Submit
             </Button>
-            <Button type="dashed" htmlType="button">
-              Save Draft
+            <Button type="dashed" htmlType="button" onClick={handleSaveDraft}>
+              <SaveOutlined /> Save Draft
+            </Button>
+            <Button
+              type="default"
+              onClick={() => handlePrint(form)}
+              style={{ marginRight: 8 }}
+              disabled={!isPrintEnabled}
+            >
+              <PrinterOutlined /> Print
             </Button>
           </div>
         </Form.Item>
         {/* Add this near the end of your component's JSX */}
         <Modal
-          title="Indent Submission Successful"
           open={showSuccessModal}
           onOk={() => setShowSuccessModal(false)}
           onCancel={() => setShowSuccessModal(false)}
@@ -821,20 +1006,35 @@ const Form1 = () => {
             </Button>,
           ]}
         >
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: "18px", marginBottom: "16px" }}>
-              Indent submitted successfully!
-            </p>
-            <p>
-              <strong>Generated Indent ID:</strong>
-              <span style={{ color: "#1890ff", marginLeft: "8px" }}>
-                {generatedIndentId}
-              </span>
-            </p>
+          <div className="flex flex-col items-center py-4">
+            <CheckCircleOutlined className="text-green-500 text-4xl mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              Indent saved successfully
+            </h3>
+            <p className="text-gray-600">Indent ID: {generatedIndentId}</p>
+          </div>
+        </Modal>
+        <Modal
+          open={showDraftSavedModal}
+          onCancel={() => setShowDraftSavedModal(false)}
+          footer={null}
+          centered
+        >
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <CheckCircleOutlined
+              style={{
+                fontSize: "48px",
+                color: "#52c41a",
+                marginBottom: "16px",
+              }}
+            />
+            <h3>Draft Saved Successfully</h3>
+            <p>Your changes have been saved locally.</p>
           </div>
         </Modal>
       </Form>
-    </div>
+      {/* </div> */}
+    </FormContainer>
   );
 };
 

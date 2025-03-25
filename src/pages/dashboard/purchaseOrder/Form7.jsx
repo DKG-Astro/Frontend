@@ -298,6 +298,7 @@ const Form7 = () => {
         incoterms: values.incoTerms,
         paymentterms: values.paymentTerms,
         vendorName: values.vendorName,
+        vendorId: values.vendorId,
         vendorAddress: values.vendorAddress,
         applicablePbgToBeSubmitted: values.applicablePBG,
         transposterAndFreightForWarderDetails: values.transporterDetails,
@@ -667,6 +668,14 @@ const Form7 = () => {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Vendor Id"
+            name="vendorId"
+            rules={[{ required: true, message: "Please enter vendor ID" }]}
+          >
+            <Input rows={1} placeholder="Enter vendor ID" disabled />
           </Form.Item>
 
           {/* Vendor Address */}

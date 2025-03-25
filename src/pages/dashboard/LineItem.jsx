@@ -22,6 +22,127 @@ const LineItem = ({
   const [materialCategories, setMaterialCategories] = useState([]);
   const [materialSubcategories, setMaterialSubcategories] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
+  const [vendors, setVendors] = useState([]);
+
+  useEffect(() => {
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch(
+          "http://103.181.158.220:8081/astro-service/api/vendor-master"
+        );
+        const data = await response.json();
+
+        if (data.responseStatus.statusCode === 0) {
+          // Filter active vendors if needed
+          const activeVendors = data.responseData.filter(
+            (vendor) => vendor.status === "Active"
+          );
+          setVendors(activeVendors);
+        }
+      } catch (error) {
+        console.error("Error fetching vendors:", error);
+        message.error("Failed to load vendor data");
+      }
+    };
+
+    fetchVendors();
+  }, []);
+  const vendorOptions = vendors.map((vendor) => ({
+    label: vendor.vendorName,
+    value: vendor.vendorName,
+    // Include additional fields if needed:
+    vendorId: vendor.vendorId,
+    contact: vendor.contactNo,
+    email: vendor.emailAddress,
+  }));
+
+  const vendorSelect = (mode, name) => {
+    switch (mode) {
+      case "Proprietary/Single Tender":
+        return (
+          <Form.Item
+            name={[name, "vendorNames"]}
+            rules={[
+              {
+                required: true,
+                message: "Please select a vendor",
+                validator: (_, value) => {
+                  const currentMode = form.getFieldValue([
+                    "lineItems",
+                    name,
+                    "modeOfProcurement",
+                  ]);
+
+                  if (currentMode === "Proprietary/Single Tender" && !value) {
+                    return Promise.reject("Please select a vendor");
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <CustomSelect
+              options={vendorOptions}
+              placeholder="Select Vendor"
+              showSearch
+              optionFilterProp="label"
+            />
+          </Form.Item>
+        );
+
+      case "Limited Pre Approved Vendor Tender":
+        return (
+          <Form.Item
+            name={[name, "vendorNames"]}
+            rules={[
+              {
+                required: true,
+                message: "Please select at least 4 vendors",
+                validator: (_, value) => {
+                  const currentMode = form.getFieldValue([
+                    "lineItems",
+                    name,
+                    "modeOfProcurement",
+                  ]);
+
+                  if (currentMode === "Limited Pre Approved Vendor Tender") {
+                    if (!value || value.length < 4) {
+                      return Promise.reject("Minimum 4 vendors required");
+                    }
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Select
+              options={vendorOptions}
+              mode="multiple"
+              placeholder="Select at least 4 vendors"
+              showSearch
+              optionFilterProp="label"
+            />
+          </Form.Item>
+        );
+
+      default:
+        return (
+          <Form.Item name={[name, "vendorNames"]}>
+            <Input disabled placeholder="Not applicable" />
+          </Form.Item>
+        );
+    }
+  };
+  const handleModeOfProcurementChange = (value, index) => {
+    const lineItems = form.getFieldValue("lineItems");
+    const currentItem = lineItems[index];
+
+    // Clear vendor names when mode changes
+    if (currentItem) {
+      currentItem.vendorNames = undefined;
+      form.setFieldsValue({ lineItems });
+    }
+  };
 
   const fetchInitialData = async () => {
     try {
@@ -95,14 +216,15 @@ const LineItem = ({
         {(fields, { add, remove }) => (
           <>
             {fields.map(({ key, name, ...restField }, index) => {
-              const modeOfProcurement = form.getFieldValue([
-                "lineItems",
-                name,
-                "modeOfProcurement",
-              ]);
+              //   const modeOfProcurement = form.getFieldValue([
+              //     "lineItems",
+              //     name,
+              //     "modeOfProcurement",
+              //   ]);
               return (
                 <div
                   key={key}
+                  className="line-item"
                   style={{
                     border: "1px solid #ccc",
                     padding: "20px",
@@ -141,16 +263,30 @@ const LineItem = ({
                               required: true,
                               message: "Please select a material code!",
                             },
+                            // Add uniqueness validation
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const lineItems =
+                                  getFieldValue("lineItems") || [];
+                                const duplicates = lineItems.filter(
+                                  (item, idx) =>
+                                    idx !== name && item.materialCode === value
+                                );
+                                if (duplicates.length > 0) {
+                                  return Promise.reject(
+                                    "Material code must be unique across items"
+                                  );
+                                }
+                                return Promise.resolve();
+                              },
+                            }),
                           ]}
                         >
                           <Select
                             placeholder="Select Material Code"
-                            showSearch // Add this
-                            optionFilterProp="children" // Add this
-                            filterOption={(
-                              input,
-                              option // Add this filter
-                            ) =>
+                            showSearch
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
                               option.children
                                 .toLowerCase()
                                 .includes(input.toLowerCase())
@@ -177,6 +313,36 @@ const LineItem = ({
                               required: true,
                               message: "Please select a material description!",
                             },
+                            ({ getFieldValue }) => ({
+                              validator(_, value) {
+                                const lineItems =
+                                  getFieldValue("lineItems") || [];
+                                const currentMaterial =
+                                  materialDetailsMap[value];
+
+                                // Get descriptions for all items
+                                const descriptions = lineItems.map(
+                                  (item) =>
+                                    materialDetailsMap[item.materialCode]
+                                      ?.description
+                                );
+
+                                // Check if current description exists in other items
+                                const duplicates = descriptions.filter(
+                                  (desc, idx) =>
+                                    idx !== name &&
+                                    desc === currentMaterial?.description
+                                );
+
+                                if (duplicates.length > 0) {
+                                  return Promise.reject(
+                                    "Material description must be unique"
+                                  );
+                                }
+
+                                return Promise.resolve();
+                              },
+                            }),
                           ]}
                         >
                           <Select
@@ -326,19 +492,20 @@ const LineItem = ({
                           {...restField}
                           name={[name, "modeOfProcurement"]}
                           label="Mode of Procurement"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Mode of procurement is required",
+                            },
+                          ]}
                         >
                           <Select
-                            placeholder="Select Mode of Procurement"
-                            onChange={() => {
-                              // Clear vendor names when mode changes
-                              form.setFieldValue(
-                                ["lineItems", name, "vendorNames"],
-                                undefined
-                              );
-                            }}
+                            placeholder="Select mode"
+                            onChange={(value) =>
+                              handleModeOfProcurementChange(value, index)
+                            }
                           >
-                            <Option value="GEM">GEM</Option>
-                            <Option value="Brand PAC">Brand PAC</Option>
+                            <Option value="BRAND PAC">Brand PAC</Option>
                             <Option value="Proprietary/Single Tender">
                               Proprietary/Single Tender
                             </Option>
@@ -349,39 +516,86 @@ const LineItem = ({
                             <Option value="Global Tender">Global Tender</Option>
                           </Select>
                         </Form.Item>
-                      </Col>
-                      {/* Vendor Selection */}
-                      {/* <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, "vendorNames"]}
-                        label="Vendor Names"
-                        rules={[
-                          {
-                            required: ["Proprietary/Single Tender", "Limited Pre Approved Vendor Tender"].includes(
-                              modeOfProcurement
-                            ),
-                            message: "Vendor selection is required",
-                          },
-                        ]}
-                      >
-                        {modeOfProcurement === "Proprietary/Single Tender" ? (
-                          <CustomSelect
-                            options={vendorMasterMod}
-                            placeholder="Select Vendor"
-                          />
-                        ) : modeOfProcurement ===
-                          "Limited Pre Approved Vendor Tender" ? (
-                          <CustomSelect
-                            options={vendorMasterMod}
-                            mode="multiple"
-                            placeholder="Select Vendors"
-                          />
-                        ) :(
-                            <Input placeholder="Vendors from material master" disabled />
+                        {form.getFieldValue([
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "Proprietary/Single Tender" && (
+                          <Form.Item
+                            {...restField}
+                            name={[name, "vendorNames"]}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Vendor name is required",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Select vendor">
+                              {vendorMasterMod?.map((vendor) => (
+                                <Option key={vendor.value} value={vendor.value}>
+                                  {vendor.label}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
                         )}
-                      </Form.Item>
-                    </Col> */}
+
+                        {form.getFieldValue([
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "BRAND PAC" && (
+                          <Form.Item
+                            {...restField}
+                            name={[name, "vendorNames"]}
+                            // rules={[
+                            //   {
+                            //     required: true,
+                            //     message: "Vendor name is required",
+                            //   },
+                            // ]}
+                          >
+                            <Input placeholder="Enter vendor name"/>
+                          </Form.Item>
+                        )}
+
+                        {form.getFieldValue([
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "Limited Pre Approved Vendor Tender" && (
+                          <Form.Item
+                            {...restField}
+                            name={[name, "vendorNames"]}
+                            rules={[
+                              {
+                                required: true,
+                                validator: (_, value) => {
+                                  if (!value || value.length !== 4) {
+                                    return Promise.reject(
+                                      "Please select exactly 4 vendors"
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Select
+                              mode="multiple"
+                              placeholder="Select vendors"
+                              maxTagCount={4}
+                            >
+                              {vendorMasterMod?.map((vendor) => (
+                                <Option key={vendor.value} value={vendor.value}>
+                                  {vendor.label}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        )}
+                      </Col>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
@@ -392,27 +606,17 @@ const LineItem = ({
                           <Input placeholder="Auto-calculated" />
                         </Form.Item>
                       </Col>
-                      {/* <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, "materialOrJobCodeUsedByDept"]}
-                        label="Material/Job Code Used By Dept"
-                        style={{ width: "100%" }}
-                      >
-                        <Input />
-                      </Form.Item>
-                    </Col> */}
                       <Col span={8}>
-                        <Form.Item
+                        {/* <Form.Item
                           {...restField}
                           name={[name, "vendorNames"]}
                           label="Vendor Names"
+                          dependencies={[
+                            ["lineItems", name, "modeOfProcurement"],
+                          ]}
                         >
-                          <Input.TextArea
-                            disabled
-                            placeholder="Vendors from material master"
-                          />
-                        </Form.Item>
+                          {vendorSelect(modeOfProcurement, name)}
+                        </Form.Item> */}
                       </Col>
                     </Row>
                     {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
