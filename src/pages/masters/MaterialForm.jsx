@@ -23,10 +23,16 @@ import {
 } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { modeOfProcurementList } from "../../utils/Constants";
+import { useLocation, useParams } from "react-router-dom";
+import dayjs from "dayjs";
 
 const MaterialForm = () => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
+  const { materialCode } = useParams(); // Get material code from URL
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [existingData, setExistingData] = useState(null);
+  const location = useLocation();
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
   const [materialList, setMaterialList] = useState([]);
@@ -37,6 +43,33 @@ const MaterialForm = () => {
   const [loading, setLoading] = useState(false);
   const [showMaterialCodePopup, setShowMaterialCodePopup] = useState(false);
   const [generatedMaterialCode, setGeneratedMaterialCode] = useState("");
+
+  useEffect(() => {
+    if (materialCode) {
+      const fetchMaterialData = async () => {
+        try {
+          const response = await fetch(
+            `http://103.181.158.220:8081/astro-service/api/material-master/${materialCode}`
+          );
+          const data = await response.json();
+
+          if (data.responseStatus?.statusCode === 0) {
+            const materialData = data.responseData;
+            setExistingData(materialData);
+            form.setFieldsValue({
+              ...materialData,
+              materialCode: materialData.materialCode, // Show existing code
+            });
+            setIsEditMode(true);
+          }
+        } catch (error) {
+          message.error("Failed to load material data");
+          console.error("Fetch error:", error);
+        }
+      };
+      fetchMaterialData();
+    }
+  }, [materialCode, form]);
 
   const fetchInitialData = async () => {
     try {
@@ -111,6 +144,7 @@ const MaterialForm = () => {
   const handleSubmit = async (values) => {
     setLoading(true);
     try {
+      const finalMaterialCode = isEditMode ? materialCode : values.materialCode;
       if (values.modeOfProcurement === "Proprietary/Single Tender") {
         if (!values?.vendorNames) {
           message.error("Please select vendor name");
@@ -134,64 +168,61 @@ const MaterialForm = () => {
         vendorNames = values.vendorNames;
       }
 
-      let uploadedFileName = "";
-      if (fileList.length > 0) {
+      let uploadedFileName = values.uploadImageFileName;
+      if (fileList.length > 0 && fileList[0].originFileObj) {
         const formData = new FormData();
         formData.append("file", fileList[0].originFileObj);
 
         const uploadResponse = await fetch(
           "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
-          {
-            method: "POST",
-            body: formData,
-          }
+          { method: "POST", body: formData }
         );
-
         const uploadResult = await uploadResponse.json();
-        uploadedFileName = uploadResult.fileName; // Adjust based on actual API response
+        uploadedFileName = uploadResult.fileName;
       }
 
-      // Prepare payload according to DTO structure
       const payload = {
-        ...values,
-        vendorNames,
-        endOfLife: values.endOfLife?.format("YYYY-MM-DD") || "",
+        category: values.category,
+        createdBy: isEditMode ? existingData.createdBy : actionPerformer,
+        currency: values.currency,
+        description: values.description,
+        estimatedPriceWithCcy: values.estimatedPriceWithCcy,
+        indigenousOrImported: values.indigenousOrImported,
+        subCategory: values.subCategory,
+        unitPrice: values.unitPrice,
+        uom: values.uom,
+        updatedBy: actionPerformer,
         uploadImageFileName: uploadedFileName,
-        createdBy: actionPerformer,
-        updatedBy: "0",
       };
 
-      const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/material-master",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const url = isEditMode
+        ? `http://103.181.158.220:8081/astro-service/api/material-master/${materialCode}`
+        : "http://103.181.158.220:8081/astro-service/api/material-master";
 
-      const result = await response.json();
+      const response = await fetch(url, {
+        method: isEditMode ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: isEditMode
+          ? JSON.stringify({ materialMasterDto: payload })
+          : JSON.stringify(payload),
+      });
 
       if (!response.ok) {
-        throw new Error(result.message || "Submission failed");
+        const errorData = await response.json();
+        throw new Error(
+          errorData.responseStatus?.message || "Operation failed"
+        );
       }
 
-      // Check actual API response structure here
-      console.log("API Response:", result);
-
-      // Adjust this line based on actual response structure
-      const generatedCode =
-        result.responseData?.materialCode || result.materialCode;
-
-      if (!generatedCode) {
-        throw new Error("Material code not found in response");
+      if (isEditMode) {
+        message.success("Material updated successfully!");
+        // Refresh data after update
+        location.state?.reload && window.location.reload();
+      } else {
+        const result = await response.json();
+        setGeneratedMaterialCode(result.responseData?.materialCode);
+        setShowMaterialCodePopup(true);
       }
-
-      setGeneratedMaterialCode(generatedCode);
-      setShowMaterialCodePopup(true);
-      message.success("Material submitted successfully!");
     } catch (error) {
       message.error(`Submission failed: ${error.message}`);
       console.error("Submission error:", error);
@@ -202,20 +233,25 @@ const MaterialForm = () => {
 
   const MaterialCodePopup = () => (
     <Modal
-      title="Material Created Successfully"
+      title={isEditMode ? "Material Updated" : "Material Created Successfully"}
       visible={showMaterialCodePopup}
       onOk={() => setShowMaterialCodePopup(false)}
       onCancel={() => setShowMaterialCodePopup(false)}
       okText="Continue Editing"
     >
-      {generatedMaterialCode ? (
+      {!isEditMode && generatedMaterialCode && (
         <p>
           Generated Material Code: <strong>{generatedMaterialCode}</strong>
         </p>
+      )}
+      {isEditMode ? (
+        <p>Material details updated successfully!</p>
       ) : (
-        <p>
-          Material created successfully! Code will be assigned after approval.
-        </p>
+        !generatedMaterialCode && (
+          <p>
+            Material created successfully! Code will be assigned after approval.
+          </p>
+        )
       )}
     </Modal>
   );
@@ -237,7 +273,7 @@ const MaterialForm = () => {
           <FormInputItem
             label="Material Code"
             name="materialCode"
-            placeholder="auto generated"
+            placeholder={isEditMode ? materialCode : "Auto-generated"}
             disabled
           />
           <Form.Item
