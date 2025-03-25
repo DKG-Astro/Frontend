@@ -40,11 +40,9 @@ const Grn = () => {
     try {
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=${formData.grnType}&processNo=${formData.giNo}`);
       if(formData.grnType === "GI") {
-        console.log("HEREEE")
         setFormData({...data?.responseData?.giDtls, giNo: data.responseData?.giDtls?.inspectionNo, grnType: "GI"});
       }
       else{
-        console.log("HEREEE 2")
         setFormData(
           {...data?.responseData, giNo: data.responseData?.igpId, grnType: "IGP",
             materialDtlList: data?.responseData?.materialDtlList?.map((material, index) => ({
