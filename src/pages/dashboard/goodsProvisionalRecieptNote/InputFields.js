@@ -14,7 +14,7 @@ export const generalDtls = [
                 label: "GPRN No", // optional
                 type:"text", // required
                 disabled: true, //optional
-                required: true // option
+                // required: true // option
             },
             {
                 name: "date",
