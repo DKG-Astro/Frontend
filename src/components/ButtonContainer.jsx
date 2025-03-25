@@ -59,7 +59,7 @@ const ButtonContainer = ({
         }
       >
         <Button
-          onClick={onFinish}
+          htmlType="submit"
           type="primary"
           style={{
             backgroundColor: "#4CAF50",

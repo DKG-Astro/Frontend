@@ -95,7 +95,7 @@ const Igp = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Inward Gate Pass" />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(igpFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}

@@ -89,7 +89,7 @@ const Grn = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Goods Receipt Note" />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {
           formData.grnType === "GI" && (
             renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)

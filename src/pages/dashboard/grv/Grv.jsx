@@ -85,7 +85,7 @@ const Grv = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Goods Return Voucher" />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}

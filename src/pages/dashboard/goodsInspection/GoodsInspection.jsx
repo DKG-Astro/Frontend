@@ -80,7 +80,7 @@ const GoodsInspection = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Goods Inspection" />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}

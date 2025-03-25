@@ -118,7 +118,7 @@ const GPRN = () => {
 
           const {data: vendorData} = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
           const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentId}`)
-          
+
           setFormData({
             poId: data?.responseData?.poId,
             vendorId: data?.responseData?.vendorId,
@@ -147,7 +147,7 @@ const GPRN = () => {
   return (
     <Card className='a4-container' ref={printRef}>
       <Heading title="Goods Provisional Receipt Note"/>
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {/* {renderFormFields(generalDtls, handleChange, formData)} */}
         {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer

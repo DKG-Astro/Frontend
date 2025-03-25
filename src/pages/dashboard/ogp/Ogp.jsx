@@ -94,7 +94,7 @@ const Ogp = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Outward Gate Pass" />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(ogpFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}
