@@ -16,7 +16,7 @@ export const grvFields = [
                 type: "text",
                 disabled: true,
                 span: 2,
-                required: true
+                // required: true
             },
             {
                 name: "date",
