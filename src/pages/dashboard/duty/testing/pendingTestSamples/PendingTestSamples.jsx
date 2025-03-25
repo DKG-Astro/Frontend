@@ -50,7 +50,7 @@ const PendingTestSamples = () => {
         <SubHeader title="Pending Test Samples" link="/testing/home" />
         <GeneralInfo data={testingGeneralInfo} />
 
-        <FormBody initialValues={formData}>
+        {/* <FormBody initialValues={formData}>
             <div className='grid grid-cols-1 md:grid-cols-3 sm:grid-cols-3 gap-x-4'>
                 <div className='flex items-center gap-x-2'>
                     <FilterFilled />
@@ -92,7 +92,7 @@ const PendingTestSamples = () => {
                 </div>
             </div>
 
-            <Divider className='mt-0 mb-6' />
+            <Divider className='mt-0 mb-6' /> */}
 
             <Table
                 dataSource={sampleData}
@@ -109,7 +109,7 @@ const PendingTestSamples = () => {
             <div className='flex justify-center'>
                 <Btn onClick={handleClick}>OK</Btn>
             </div>
-        </FormBody>
+        {/* </FormBody> */}
     </FormContainer>
   )
 }
