@@ -110,7 +110,7 @@ const Isn = () => {
       <Heading title="Issue Note" />
 
       <ItemSearch itemArray={itemQtyList} setFormData={setFormData} />
-      <CustomForm formData={formData}>
+      <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(isnFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}

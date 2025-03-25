@@ -117,6 +117,7 @@ const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, requi
 
   return (
     <Form.Item
+    required={required}
       label={label}
       name={name}
       className="mb-4"

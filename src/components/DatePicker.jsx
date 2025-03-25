@@ -140,10 +140,12 @@ const InputDatePicker = ({
 
   return (
     <Form.Item
+    required={required}
+    rules={[{ required: required ? true : false, message: 'Please input a value!' }]}
       label={label}
-      rules={[
-        { required: required ?? false, message: "Please input value!" },
-      ]}
+      // rules={[
+      //   { required: required ?? false, message: "Please input value!" },
+      // ]}
       initialValue={initialValue} // Set initial value
     >
       <DatePicker
