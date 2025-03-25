@@ -8,7 +8,7 @@ export const isnFields = [
                 label: "Issue Note No",
                 type: "text",
                 disabled: true,
-                required: true
+                // required: true
             },
             {
                 name: "issueDate",
