@@ -556,7 +556,7 @@ const LineItem = ({
                             //   },
                             // ]}
                           >
-                            <Input placeholder="Enter vendor name"/>
+                            <Input disabled placeholder="Enter vendor name"/>
                           </Form.Item>
                         )}
 
@@ -572,9 +572,9 @@ const LineItem = ({
                               {
                                 required: true,
                                 validator: (_, value) => {
-                                  if (!value || value.length !== 4) {
+                                  if (!value || value.length < 4) {
                                     return Promise.reject(
-                                      "Please select exactly 4 vendors"
+                                      "Please select at least 4 vendors"
                                     );
                                   }
                                   return Promise.resolve();

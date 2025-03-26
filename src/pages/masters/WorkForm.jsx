@@ -72,14 +72,14 @@ const WorkForm = () => {
         <FormInputItem name="workCode" label="Work Code" disabled />
         <CustomSelect name="workSubCategory" label="Work Sub Category" options={subCategoryMaster} />
         <FormInputItem name="workDescription" label="Work Description" />
-        <CustomSelect name="modeOfProcurement" label="Mode Of Procurement" options={modeOfProcurementList} />
+        {/* <CustomSelect name="modeOfProcurement" label="Mode Of Procurement" options={modeOfProcurementList} /> */}
 
-        {procurementMode === "Proprietary/Single Tender" && (
+        {/* {procurementMode === "Proprietary/Single Tender" && (
           <CustomSelect name="vendorNames" label="Vendor Name" options={vendorMasterMod} />
         )}
         {procurementMode === "Limited Pre Approved Vendor Tender" && (
           <CustomSelect name="vendorNames" label="Vendor Names" options={vendorMasterMod} multiselect className="col-span-2" />
-        )}
+        )} */}
 
         <div className="flex justify-center col-span-2">
           <Btn htmlType='submit' text='Save' loading={loading}/>

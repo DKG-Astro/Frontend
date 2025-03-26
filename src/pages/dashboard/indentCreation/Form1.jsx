@@ -439,6 +439,9 @@ const Form1 = () => {
         projectName: values.projectName || null,
         preBidMeetingDate: preBidMeetingDate,
         preBidMeetingVenue: preBidMeetingVenue,
+        justification: values.justification || null,
+        brandAndModel: values.brandAndModel || null,
+        brandPac: values.brandPac || null,
         
         // File handling
         draftEOIOrRFPFileName: draftEOIOrRFP || null,
@@ -732,26 +735,26 @@ const Form1 = () => {
             valuePropName="fileList"
             getValueFromEvent={normFile}
           >
-            <Upload
-              customRequest={createUploadHandler("Prior Approvals")}
-              maxCount={1}
-              onChange={({ file }) => {
-                if (file.status === "done") {
-                  form.setFieldsValue({
-                    uploadingPriorApprovalsFileName: [
-                      {
-                        uid: file.uid,
-                        name: file.response.fileName,
-                        status: "done",
-                      },
-                    ],
-                  });
-                }
-              }}
+            <Upload beforeUpload={() => false} maxCount={1}
+            //   customRequest={createUploadHandler("Prior Approvals")}
+            //   maxCount={1}
+            //   onChange={({ file }) => {
+            //     if (file.status === "done") {
+            //       form.setFieldsValue({
+            //         uploadingPriorApprovalsFileName: [
+            //           {
+            //             uid: file.uid,
+            //             name: file.response.fileName,
+            //             status: "done",
+            //           },
+            //         ],
+            //       });
+            //     }
+            //   }}
             >
               <Button icon={<UploadOutlined />}>Upload File</Button>
             </Upload>
-            <div className="file-links">
+            {/* <div className="file-links">
               {form
                 .getFieldValue("uploadingPriorApprovalsFileName")
                 ?.map((file) => (
@@ -764,7 +767,7 @@ const Form1 = () => {
                     {file.name} (View)
                   </a>
                 ))}
-            </div>
+            </div> */}
           </Form.Item>
         </div>
 
@@ -931,7 +934,7 @@ const Form1 = () => {
             </Upload>
           </Form.Item>
           </div>
-          <Form.Item name="isBrandPac" valuePropName="checked">
+          <Form.Item name="brandPac" valuePropName="checked">
             <Checkbox onChange={handleCheckboxChange3}>
               Is it a brand PAC
             </Checkbox>
