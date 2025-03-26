@@ -78,16 +78,16 @@ const JobForm = () => {
         <FormInputItem name="assetId" label="Asset Id" />
         <CustomSelect name="category" label="Category" options={categoryMaster} />
         <FormInputItem name="jobDescription" label="Job Description" />
-        <CustomSelect name="modeOfProcurement" label="Mode Of Procurement" options={modeOfProcurementList} />
+        {/* <CustomSelect name="modeOfProcurement" label="Mode Of Procurement" options={modeOfProcurementList} /> */}
         <CustomSelect name="uom" label="UOM" options={uomMasterMod} />
         <FormInputItem name="value" label="Value" />
 
-        {procurementMode === "Proprietary/Single Tender" && (
+        {/* {procurementMode === "Proprietary/Single Tender" && (
           <CustomSelect name="vendorNames" label="Vendor Name" options={vendorMasterMod} />
         )}
         {procurementMode === "Limited Pre Approved Vendor Tender" && (
           <CustomSelect name="vendorNames" label="Vendor Names" options={vendorMasterMod} multiselect className="col-span-2" />
-        )}
+        )} */}
 
         <div className="flex justify-center col-span-2">
           <Btn htmlType='submit' text='Save' loading={loading}/>

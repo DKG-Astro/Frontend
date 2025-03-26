@@ -742,9 +742,9 @@ const Form4 = () => {
             label="Tender Upload"
             valuePropName="fileList"
             getValueFromEvent={normFile}
-            rules={[
-              { required: true, message: "Tender documents are required" },
-            ]}
+            // rules={[
+            //   { required: true, message: "Tender documents are required" },
+            // ]}
           >
             <Upload beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Upload Tender Documents</Button>
@@ -766,7 +766,7 @@ const Form4 = () => {
             label="Specific Terms & Conditions"
             valuePropName="fileList"
             getValueFromEvent={normFile}
-            rules={[{ required: true, message: "Specific T&C is required" }]}
+            // rules={[{ required: true, message: "Specific T&C is required" }]}
           >
             <Upload beforeUpload={() => false}>
               <Button icon={<UploadOutlined />}>Upload Specific T&C</Button>
@@ -842,7 +842,7 @@ const Form4 = () => {
           </Form.Item>
           <Form.Item
             name="applicablePerformance"
-            label="Applicable Performance"
+            label="Performance and Warranty Security"
             rules={[{ required: true }]}
           >
             <Input.TextArea rows={1} />

@@ -114,20 +114,6 @@ const QueueModal = ({
                       )}
                     </div>
                     <div className="detail-item">
-                      <strong>PAC/Brand PAC:</strong>
-                      {detailsData.uploadPACOrBrandPACFileName ? (
-                        <a
-                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadPACOrBrandPACFileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {detailsData.uploadPACOrBrandPACFileName} (View)
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
-                    </div>
-                    <div className="detail-item">
                       <strong>Prior Approvals:</strong>
                       {detailsData.uploadingPriorApprovalsFileName ? (
                         <a
@@ -231,8 +217,51 @@ const QueueModal = ({
                       dataIndex: "budgetCode",
                       width: 120,
                     },
+                    {
+                      title: "Vendor Names",
+                      dataIndex: "vendorNames",
+                      width: 120,
+                      render: (text) => (text ? text.join(", ") : "N/A"),
+                    },
                   ]}
                 />
+              </div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ProjectOutlined /> Brand PAC
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Brand PAC:</strong>{" "}
+                      {String(detailsData.brandPac) || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>PAC/Brand PAC:</strong>
+                      {detailsData.uploadPACOrBrandPACFileName ? (
+                        <a
+                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadPACOrBrandPACFileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {detailsData.uploadPACOrBrandPACFileName} (View)
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Brand and Model:</strong>{" "}
+                      {detailsData.brandAndModel || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Justification:</strong>{" "}
+                      {detailsData.justification || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
               </div>
             </div>
           )}

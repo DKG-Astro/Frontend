@@ -186,7 +186,7 @@ const MaterialForm = () => {
         createdBy: isEditMode ? existingData.createdBy : actionPerformer,
         currency: values.currency,
         description: values.description,
-        estimatedPriceWithCcy: values.estimatedPriceWithCcy,
+        estimatedPriceWithCcy: null,
         indigenousOrImported: values.indigenousOrImported,
         subCategory: values.subCategory,
         unitPrice: values.unitPrice,
@@ -345,7 +345,7 @@ const MaterialForm = () => {
           <FormInputItem
             type="number"
             name="unitPrice"
-            label="Unit Price"
+            label="Estimated Price with CCY"
             required
           />
         </div>
@@ -402,19 +402,19 @@ const MaterialForm = () => {
             </Select>
           </Form.Item>
 
-          <FormInputItem
+          {/* <FormInputItem
             label="Estimated Price with CCY"
             name="estimatedPriceWithCcy"
             required
-          />
+          /> */}
         </div>
 
         <div className="form-section">
-          <Form.Item label="Upload Image">
+          <Form.Item label="Upload Document">
             <Upload
               beforeUpload={() => false}
               maxCount={1}
-              accept="image/*"
+            //   accept="image/*"
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}
             >
