@@ -97,6 +97,8 @@ import Grn from "../dashboard/grn/Grn";
 import Isn from "../dashboard/isn/Isn";
 import Ogp from "../dashboard/ogp/Ogp";
 import Igp from "../dashboard/igp/Igp";
+import Asset from "../dashboard/asset/Asset";
+import AssetDisposal from "../dashboard/assetDisposal/AssetDisposal";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -142,10 +144,10 @@ const RoutesComponent = () => {
                 <Route path="goodsInspection" element={<GoodsInspection />} />
                 <Route path="goodsReturn" element={<Grv />} />
                 <Route path="goodsReceipt" element={<Grn />} />
-                <Route path="assetMaster" element={<Form15 />} />
+                <Route path="assetMaster" element={<Asset />} />
                 <Route path="goodsIssue" element={<Isn/>} />
                 <Route path="goodsTransfer" element={<Form17 />} />
-                <Route path="materialDisposal" element={<Form18 />} />
+                <Route path="materialDisposal" element={<AssetDisposal />} />
                 <Route path="outward" element={<Ogp />} />
                 <Route path="inward" element={<Igp />} />
                 <Route path="demandIssue" element={<Form20 />} />

@@ -1,4 +1,4 @@
-const locatorMaster = [
+export const locatorMaster = [
     {
         value: "1",
         label: "Locator 1"
