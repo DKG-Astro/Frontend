@@ -382,6 +382,7 @@ const QueueRequest = () => {
         requestId: item.requestId,
         workflowId: item.workflowId,
         workflowName: item.workflowName,
+        createdDate: new Date(item.createdDate),
         remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
         // Correct field mappings based on workflowId
         ...(item.workflowId === 1 && {
@@ -426,7 +427,7 @@ const QueueRequest = () => {
         }),
         status: item.nextAction,
         workflowTransitionId: item.workflowTransitionId
-      }));
+      })).sort((a,b)=> b.createdDate - a.createdDate);
       setData(formattedData);
     } catch (err) {
       setError(err.message);
