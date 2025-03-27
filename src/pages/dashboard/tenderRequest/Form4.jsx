@@ -6,6 +6,7 @@ import {
   Form,
   Input,
   message,
+  Modal,
   Row,
   Select,
   Upload,
@@ -20,6 +21,7 @@ import {
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const Form4 = () => {
   const [form] = Form.useForm();
@@ -38,6 +40,9 @@ const Form4 = () => {
   const actionPerformer = auth.userId;
 
   const [lastValidIndentIds, setLastValidIndentIds] = useState([]);
+  const [consigneeOptions, setConsigneeOptions] = useState([]);
+  const [showTenderIdModal, setShowTenderIdModal] = useState(false);
+  const [submittedTenderId, setSubmittedTenderId] = useState("");
 
   const getFileList = (fileName) =>
     fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
@@ -110,6 +115,26 @@ const Form4 = () => {
 
     fetchApprovedIndents();
   }, []);
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await axios.get(
+          "http://103.181.158.220:8081/astro-service/api/location-master"
+        );
+        if (response.data.responseStatus.statusCode === 0) {
+          setConsigneeOptions(
+            response.data.responseData.map((location) => ({
+              value: location.locationName,
+              label: location.locationName,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+      }
+    };
+    fetchLocations();
+  }, []);
 
   // ----------------------------
   // Format a material object for Form.List
@@ -124,6 +149,8 @@ const Form4 = () => {
     totalPrice: material.totalPrice,
     materialCategory: material.materialCategory,
     materialSubCategory: material.materialSubCategory,
+    modeOfProcurement: material.modeOfProcurement,
+    vendorNames: material.vendorNames,
   });
 
   // ----------------------------
@@ -243,96 +270,97 @@ const Form4 = () => {
   // ----------------------------
   // Tender Search Functionality
   // ----------------------------
-  const tenderSearch = async () => {
-    const tenderId = form.getFieldValue("tenderId");
-    if (!tenderId) {
-      message.error("Please enter a Tender ID");
-      return;
-    }
+  //   const tenderSearch = async () => {
+  //     const tenderId = form.getFieldValue("tenderId");
+  //     if (!tenderId) {
+  //       message.error("Please enter a Tender ID");
+  //       return;
+  //     }
 
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
-      );
-      if (!response.ok) {
-        throw new Error(`Failed to fetch tender: ${response.statusText}`);
-      }
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch(
+  //         `http://103.181.158.220:8081/astro-service/api/tender-requests/${tenderId}`
+  //       );
+  //       if (!response.ok) {
+  //         throw new Error(`Failed to fetch tender: ${response.statusText}`);
+  //       }
 
-      const data = await response.json();
+  //       const data = await response.json();
 
-      if (!data.responseData) {
-        throw new Error("Invalid API response: responseData is missing");
-      }
+  //       if (!data.responseData) {
+  //         throw new Error("Invalid API response: responseData is missing");
+  //       }
 
-      const responseData = data.responseData;
+  //       const responseData = data.responseData;
 
-      console.log("RESPINSDDTAA: ", responseData)
+  //       console.log("RESPINSDDTAA: ", responseData);
 
-      // Updated mapping: keys here match the form field names
-      const formData = {
-        tenderId: responseData.tenderId || "",
-        title: responseData.titleOfTender || "",
-        openingDate: responseData.openingDate
-          ? dayjs(responseData.openingDate, "DD/MM/YYYY")
-          : null,
-        closingDate: responseData.closingDate
-          ? dayjs(responseData.closingDate, "DD/MM/YYYY")
-          : null,
-        tenderUpload: getFileList(responseData.uploadTenderDocuments),
-        "generalTerms&Conditions": getFileList(
-          responseData.uploadGeneralTermsAndConditions
-        ),
-        "specificTerms&Conditions": getFileList(
-          responseData.uploadSpecificTermsAndConditions
-        ),
-        lastDate: responseData.lastDateOfSubmission
-          ? dayjs(responseData.lastDateOfSubmission, "DD/MM/YYYY")
-          : null,
-        applicableTaxes: responseData.applicableTaxes || "",
-        consignesAndBillinngAddress:
-          responseData.consignesAndBillinngAddress || "Koramangala, Bangalore - 560034",
-        incoTerms: responseData.incoTerms || "",
-        paymentTerms: responseData.paymentTerms || "",
-        ldClause: responseData.ldClause || "",
-        applicablePerformance: responseData.applicablePerformance || "",
-        bidType: responseData.bidType || "",
-        bidSecurity: responseData.bidSecurityDeclaration ? true : false,
-        mllStatusDeclaration: responseData.mllStatusDeclaration ? true : false,
-      };
+  //       // Updated mapping: keys here match the form field names
+  //       const formData = {
+  //         tenderId: responseData.tenderId || "",
+  //         title: responseData.titleOfTender || "",
+  //         openingDate: responseData.openingDate
+  //           ? dayjs(responseData.openingDate, "DD/MM/YYYY")
+  //           : null,
+  //         closingDate: responseData.closingDate
+  //           ? dayjs(responseData.closingDate, "DD/MM/YYYY")
+  //           : null,
+  //         tenderUpload: getFileList(responseData.uploadTenderDocuments),
+  //         "generalTerms&Conditions": getFileList(
+  //           responseData.uploadGeneralTermsAndConditions
+  //         ),
+  //         "specificTerms&Conditions": getFileList(
+  //           responseData.uploadSpecificTermsAndConditions
+  //         ),
+  //         lastDate: responseData.lastDateOfSubmission
+  //           ? dayjs(responseData.lastDateOfSubmission, "DD/MM/YYYY")
+  //           : null,
+  //         applicableTaxes: responseData.applicableTaxes || "",
+  //         consignesAndBillinngAddress:
+  //           responseData.consignesAndBillinngAddress ||
+  //           "Koramangala, Bangalore - 560034",
+  //         incoTerms: responseData.incoTerms || "",
+  //         paymentTerms: responseData.paymentTerms || "",
+  //         ldClause: responseData.ldClause || "",
+  //         applicablePerformance: responseData.applicablePerformance || "",
+  //         bidType: responseData.bidType || "",
+  //         bidSecurity: responseData.bidSecurityDeclaration ? true : false,
+  //         mllStatusDeclaration: responseData.mllStatusDeclaration ? true : false,
+  //       };
 
-      // If indentResponseDTO exists, populate indentId and merge line items
-      // Inside the tenderSearch function
-      if (
-        responseData.indentResponseDTO &&
-        Array.isArray(responseData.indentResponseDTO)
-      ) {
-        const indentIds = responseData.indentResponseDTO.map(
-          (indent) => indent.indentId
-        );
+  //       // If indentResponseDTO exists, populate indentId and merge line items
+  //       // Inside the tenderSearch function
+  //       if (
+  //         responseData.indentResponseDTO &&
+  //         Array.isArray(responseData.indentResponseDTO)
+  //       ) {
+  //         const indentIds = responseData.indentResponseDTO.map(
+  //           (indent) => indent.indentId
+  //         );
 
-        let allMaterials = [];
-        responseData.indentResponseDTO.forEach((indent) => {
-          if (indent.materialDetails && Array.isArray(indent.materialDetails)) {
-            allMaterials = [...allMaterials, ...indent.materialDetails];
-          }
-        });
+  //         let allMaterials = [];
+  //         responseData.indentResponseDTO.forEach((indent) => {
+  //           if (indent.materialDetails && Array.isArray(indent.materialDetails)) {
+  //             allMaterials = [...allMaterials, ...indent.materialDetails];
+  //           }
+  //         });
 
-        // Remove the de-duplication filter
-        formData.indentId = indentIds;
-        formData.lineItems = allMaterials.map(formatMaterial); // Directly assign all materials
-      }
+  //         // Remove the de-duplication filter
+  //         formData.indentId = indentIds;
+  //         formData.lineItems = allMaterials.map(formatMaterial); // Directly assign all materials
+  //       }
 
-      // Set the fetched data into the form
-      form.setFieldsValue(formData);
-      message.success("Tender data fetched successfully");
-    } catch (error) {
-      message.error(`Failed to fetch tender: ${error.message}`);
-      console.error("Error fetching tender data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //       // Set the fetched data into the form
+  //       form.setFieldsValue(formData);
+  //       message.success("Tender data fetched successfully");
+  //     } catch (error) {
+  //       message.error(`Failed to fetch tender: ${error.message}`);
+  //       console.error("Error fetching tender data:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
   // ----------------------------
   // Form Submission & Save Draft - Handling file uploads via FormData
@@ -365,7 +393,7 @@ const Form4 = () => {
       setLoading(true);
       const values = await form.validateFields();
 
-      console.log("Value", values)
+      console.log("Value", values);
 
       // Validate project consistency
       if (values.indentId?.length > 0) {
@@ -388,33 +416,30 @@ const Form4 = () => {
       }
 
       // Upload files and get their names
-      const uploadFiles = async (fileList) => {
-        if (!fileList || fileList.length === 0) return "";
+      const uploadFile = async (fileList, fieldName) => {
         try {
+          if (!fileList || fileList.length === 0) return null;
           return await uploadFileToServer(fileList[0].originFileObj);
         } catch (error) {
-          message.error(`File upload failed: ${error.message}`);
+          message.error(`${fieldName} upload failed: ${error.message}`);
           throw error;
         }
       };
 
-      // Upload all files in parallel
-      const [
-        uploadTenderDocuments,
-        uploadGeneralTermsAndConditions,
-        uploadSpecificTermsAndConditions,
-      ] = await Promise.all([
-        uploadFiles(values.tenderUpload),
-        uploadFiles(values["generalTerms&Conditions"]),
-        uploadFiles(values["specificTerms&Conditions"]),
-      ]);
+      const [tenderDocUrl, generalTermsUrl, specificTermsUrl] =
+        await Promise.all([
+          uploadFile(values.uploadTenderDocuments, "Tender documents"),
+          uploadFile(values.uploadGeneralTermsAndConditions, "General T&C"),
+          uploadFile(values.uploadSpecificTermsAndConditions, "Specific T&C"),
+        ]);
 
       // Prepare the payload with uploaded file names
       const formatDate = (date) => (date ? date.format("DD/MM/YYYY") : null);
 
       // Prepare the Payload
       const payload = {
-        tenderId: values.tenderId || null,
+        ...values,
+        // tenderId: values.tenderId || null,
         titleOfTender: values.title?.trim() || null,
         openingDate: formatDate(values.openingDate),
         closingDate: formatDate(values.closingDate),
@@ -423,8 +448,8 @@ const Form4 = () => {
         lastDateOfSubmission: formatDate(values.lastDate),
         applicableTaxes: values.applicableTaxes || null,
         fileType: "Tender",
-        consignesAndBillinngAddress:
-          values.consignesAndBillinngAddress?.trim() || "Koramangala, Bangalore - 560034",
+        consigneeAddress: values.consigneeAddress || null,
+        billingAddress: values.billingAddress,
         incoTerms: values.incoTerms?.trim() || null,
         paymentTerms: values.paymentTerms?.trim() || null,
         ldClause: values.ldClause?.trim() || null,
@@ -437,27 +462,28 @@ const Form4 = () => {
         totalTenderValue: values.totalTenderValue
           ? parseFloat(values.totalTenderValue)
           : 0,
-        uploadTenderDocuments: uploadTenderDocuments || null,
-        uploadGeneralTermsAndConditions:
-          uploadGeneralTermsAndConditions || null,
-        uploadSpecificTermsAndConditions:
-          uploadSpecificTermsAndConditions || null,
+        uploadTenderDocuments: tenderDocUrl || null,
+        uploadGeneralTermsAndConditions: generalTermsUrl || null,
+        uploadSpecificTermsAndConditions: specificTermsUrl || null,
         updatedBy: null,
         createdBy: actionPerformer,
         indentIds: Array.isArray(values.indentId) ? values.indentId : [],
-        materialDetails:
-          values.lineItems?.map((item) => ({
-            materialCode: item.materialCode,
-            materialDescription: item.materialDescription,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            uom: item.uom,
-            totalPrize: item.totalPrice,
-            budgetCode: item.budgetCode,
-            materialCategory: item.materialCategory,
-            materialSubCategory: item.materialSubCategory,
-          })) || [],
+        // materialDetails:
+        //   values.lineItems?.map((item) => ({
+        //     materialCode: item.materialCode,
+        //     materialDescription: item.materialDescription,
+        //     quantity: item.quantity,
+        //     unitPrice: item.unitPrice,
+        //     uom: item.uom,
+        //     totalPrize: item.totalPrice,
+        //     budgetCode: item.budgetCode,
+        //     materialCategory: item.materialCategory,
+        //     materialSubCategory: item.materialSubCategory,
+        //   })) || [],
       };
+      delete payload.lineItems;
+
+      console.log("PAYLOAD", payload);
 
       // Create FormData
       const response = await fetch(
@@ -477,6 +503,11 @@ const Form4 = () => {
       }
 
       const result = await response.json();
+      if (!values.tenderId && result.responseData?.tenderId) {
+        form.setFieldsValue({ tenderId: result.responseData.tenderId });
+        setSubmittedTenderId(result.responseData.tenderId);
+        setShowTenderIdModal(true);
+      }
       message.success("Tender submitted successfully");
       console.log("API Response:", result);
       form.resetFields();
@@ -518,7 +549,9 @@ const Form4 = () => {
       <h2>Tender Request</h2>
       <Form
         form={form}
-        initialValues={{consignesAndBillinngAddress: "Koramangala, Bangalore - 560034"}}
+        initialValues={{
+          billingAddress: "Koramangala, 2nd Block, Bangalore -560034",
+        }}
         onFinish={handleSubmit}
         onFinishFailed={(errorInfo) => {
           console.log("Validation Failed:", errorInfo);
@@ -526,7 +559,7 @@ const Form4 = () => {
         }}
         layout="vertical"
       >
-        <Form.Item name="tenderId">
+        {/* <Form.Item name="tenderId">
           <Row justify="end" style={{ marginBottom: "20px" }}>
             <Col>
               <Input
@@ -540,7 +573,7 @@ const Form4 = () => {
               </Button>
             </Col>
           </Row>
-        </Form.Item>
+        </Form.Item> */}
 
         <div className="form-section">
           <Form.Item
@@ -588,8 +621,10 @@ const Form4 = () => {
         </div>
 
         {/* Indent dropdown with onChange to fetch line items */}
-        <Form.Item name="indentId" label="Indent ID"
-        rules={[{ required: true }]}
+        <Form.Item
+          name="indentId"
+          label="Indent ID"
+          rules={[{ required: true }]}
         >
           <Select
             placeholder="Select Indent"
@@ -709,10 +744,46 @@ const Form4 = () => {
                         <Col span={8}>
                           <Form.Item
                             {...restField}
+                            name={[name, "materialCategory"]}
+                            label="Material Category"
+                          >
+                            <Input placeholder="Auto-filled" disabled />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "materialSubCategory"]}
+                            label="Material Sub-Category"
+                          >
+                            <Input placeholder="Auto-filled" disabled />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "modeOfProcurement"]}
+                            label="Mode of Procurement"
+                          >
+                            <Input placeholder="Auto-filled" disabled />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
                             name={[name, "totalPrice"]}
                             label="Total Price"
                           >
                             <Input placeholder="Auto-calculated" disabled />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "vendorNames"]}
+                            label="Vendor Names"
+                          >
+                            <Input placeholder="Auto-filled" disabled />
                           </Form.Item>
                         </Col>
                       </Row>
@@ -751,7 +822,7 @@ const Form4 = () => {
             </Upload>
           </Form.Item>
           <Form.Item
-            name="generalTerms&Conditions"
+            name="uploadGeneralTermsAndConditions"
             label="General Terms & Conditions"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -762,7 +833,7 @@ const Form4 = () => {
             </Upload>
           </Form.Item>
           <Form.Item
-            name="specificTerms&Conditions"
+            name="specificTermsAndConditions"
             label="Specific Terms & Conditions"
             valuePropName="fileList"
             getValueFromEvent={normFile}
@@ -805,17 +876,6 @@ const Form4 = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="consignesAndBillinngAddress"
-            label="Consignees and Billing Address"
-            rules={[{ required: true }]}
-          >
-            <Input.TextArea rows={2}
-            
-              
-            //  defaultValue={"Koramangala, Bangalore - 560034"} 
-             />
-          </Form.Item>
         </div>
 
         <div className="form-section">
@@ -826,6 +886,31 @@ const Form4 = () => {
           >
             <Input.TextArea rows={1} />
           </Form.Item>
+          <Form.Item
+            name="consigneeAddress"
+            label="Consignee Address"
+            rules={[{ required: true, message: "Please select consignee!" }]}
+          >
+            <Select
+              showSearch
+              optionFilterProp="children"
+              placeholder="Select consignee"
+              options={consigneeOptions}
+            />
+          </Form.Item>
+          <Form.Item
+            name="billingAddress"
+            label="Billing Address"
+            rules={[{ required: true }]}
+          >
+            <Input.TextArea
+              rows={2}
+              disabled
+              //  defaultValue={"Koramangala, Bangalore - 560034"}
+            />
+          </Form.Item>
+        </div>
+        <div className="form-section">
           <Form.Item
             name="paymentTerms"
             label="Payment Terms"
@@ -857,7 +942,26 @@ const Form4 = () => {
             <Checkbox>Yes</Checkbox>
           </Form.Item>
         </div>
-
+        <Modal
+          title="Tender Created Successfully"
+          visible={showTenderIdModal}
+          onOk={() => {
+            setShowTenderIdModal(false);
+            form.resetFields();
+            setSearchTenderId("");
+          }}
+          onCancel={() => {
+            setShowTenderIdModal(false);
+            form.resetFields();
+            setSearchTenderId("");
+          }}
+          cancelButtonProps={{ style: { display: "none" } }}
+        >
+          <p>
+            Your Tender ID: <strong>{submittedTenderId}</strong>
+          </p>
+          <p>Please note this ID for future reference.</p>
+        </Modal>
         <div className="form-section">
           <Form.Item>
             <div style={{ display: "flex", justifyContent: "space-between" }}>

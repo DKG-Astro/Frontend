@@ -406,17 +406,17 @@ const Form1 = () => {
           quantity: quantity,
           unitPrice: unitPrice,
           uom: String(item.uom) || null,
-        //   totalPrize: totalPrice,
+          //   totalPrize: totalPrice,
           budgetCode: String(item.budgetCode) || null,
           materialCategory: String(item.materialCategory) || null,
           materialSubCategory: String(item.materialSubcategory) || null,
-        //   materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
+          //   materialAndJob: String(item.materialOrJobCodeUsedByDept) || null,
           modeOfProcurement: String(item.modeOfProcurement) || null,
           vendorNames: item.vendorNames || null,
-            // ? Array.isArray(item.vendorNames)
-            //   ? item.vendorNames.join(", ")
-            //   : String(item.vendorNames)
-            // : null,
+          // ? Array.isArray(item.vendorNames)
+          //   ? item.vendorNames.join(", ")
+          //   : String(item.vendorNames)
+          // : null,
         };
       });
 
@@ -442,22 +442,24 @@ const Form1 = () => {
         justification: values.justification || null,
         brandAndModel: values.brandAndModel || null,
         brandPac: values.brandPac || null,
-        
+
         // File handling
         draftEOIOrRFPFileName: draftEOIOrRFP || null,
         uploadPACOrBrandPACFileName: uploadPACOrBrandPAC || null,
         technicalSpecificationsFileName: technicalSpecifications || null,
-        uploadingPriorApprovalsFileName: values.uploadingPriorApprovalsFileName?.[0]?.name || null,
+        uploadingPriorApprovalsFileName: priorApprovalsFile || null,
 
         // Material details adjustments
-        materialDetails: materialDetails.map(item => ({
+        materialDetails: materialDetails.map((item) => ({
           ...item,
           // Remove totalPrize as it's not in DTO
-          vendorNames: item.vendorNames ? 
-            (Array.isArray(item.vendorNames) ? 
-              item.vendorNames : 
-              String(item.vendorNames).split(',').map(s => s.trim())) : 
-            null
+          vendorNames: item.vendorNames
+            ? Array.isArray(item.vendorNames)
+              ? item.vendorNames
+              : String(item.vendorNames)
+                  .split(",")
+                  .map((s) => s.trim())
+            : null,
         })),
       };
       delete payload.lineItems;
@@ -735,22 +737,24 @@ const Form1 = () => {
             valuePropName="fileList"
             getValueFromEvent={normFile}
           >
-            <Upload beforeUpload={() => false} maxCount={1}
-            //   customRequest={createUploadHandler("Prior Approvals")}
-            //   maxCount={1}
-            //   onChange={({ file }) => {
-            //     if (file.status === "done") {
-            //       form.setFieldsValue({
-            //         uploadingPriorApprovalsFileName: [
-            //           {
-            //             uid: file.uid,
-            //             name: file.response.fileName,
-            //             status: "done",
-            //           },
-            //         ],
-            //       });
-            //     }
-            //   }}
+            <Upload
+              beforeUpload={() => false}
+              maxCount={1}
+              //   customRequest={createUploadHandler("Prior Approvals")}
+              //   maxCount={1}
+              //   onChange={({ file }) => {
+              //     if (file.status === "done") {
+              //       form.setFieldsValue({
+              //         uploadingPriorApprovalsFileName: [
+              //           {
+              //             uid: file.uid,
+              //             name: file.response.fileName,
+              //             status: "done",
+              //           },
+              //         ],
+              //       });
+              //     }
+              //   }}
             >
               <Button icon={<UploadOutlined />}>Upload File</Button>
             </Upload>
@@ -933,13 +937,13 @@ const Form1 = () => {
               <Button icon={<UploadOutlined />}>Upload EOI or RFP</Button>
             </Upload>
           </Form.Item>
-          </div>
-          <Form.Item name="brandPac" valuePropName="checked">
-            <Checkbox onChange={handleCheckboxChange3}>
-              Is it a brand PAC
-            </Checkbox>
-          </Form.Item>
-          <div className="form-section">
+        </div>
+        <Form.Item name="brandPac" valuePropName="checked">
+          <Checkbox onChange={handleCheckboxChange3}>
+            Is it a brand PAC
+          </Checkbox>
+        </Form.Item>
+        <div className="form-section">
           {isBrandPac && (
             <>
               <Form.Item
@@ -963,15 +967,17 @@ const Form1 = () => {
               <Form.Item label="Brand and Model" name="brandAndModel">
                 <Input />
               </Form.Item>
-              <Form.Item label="It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand.
+              <Form.Item
+                label="It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand.
 
-However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:" 
-              name="justification">
+However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:"
+                name="justification"
+              >
                 <Input placeholder="Enter Declaration" />
               </Form.Item>
             </>
           )}
-          </div>
+        </div>
 
         <Form.Item>
           <div style={{ display: "flex", justifyContent: "space-between" }}>

@@ -407,14 +407,15 @@ const Form7b = () => {
           <DatePicker format="DD/MM/YYYY" />
         </Form.Item>
 
-        <LineItem
-          form={form}
-          materialList={materialList}
-          projects={projects}
-          materialDetailsMap={materialDetailsMap}
-          handleMaterialSelect={handleMaterialSelect}
-          // Update the handlePriceCalculation prop in Form7b's LineItem usage:
-          handlePriceCalculation={(index, field, value) => {
+        <Form.List name="lineItems">
+    {(fields) => (
+      <LineItem
+        form={form}
+        materialList={[]} // Pass empty array since materials come from indents
+        projects={[]}
+        materialDetailsMap={{}}
+        // calculateTotalPrice={calculateTotalPrice}
+        handlePriceCalculation={(index, field, value) => {
             // Immediately update the changed field
             form.setFieldValue(["lineItems", index, field], value);
 
@@ -447,7 +448,12 @@ const Form7b = () => {
               ]);
             }
           }}
-        />
+        showAndRemove={false} // Disable add/remove buttons
+        handleMaterialSelect={() => {}} // Empty handlers since materials are read-only
+        handleMaterialDescriptionSelect={() => {}}
+      />
+    )}
+  </Form.List>
 
         <div className="form-section">
           <Form.Item
