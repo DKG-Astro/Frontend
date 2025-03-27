@@ -388,6 +388,16 @@ label{
   @apply !bg-darkBlue hover:!bg-darkBlueHover !text-offWhite
 }
 
+@media print {
+  /* Simulate `md` breakpoint when printing */
+  html {
+    width: 768px; /* Force medium breakpoint */
+  }
+
+  body {
+    @apply md:text-lg md:p-10 md:bg-white md:text-black;
+  }
+}
 /* .ant-form-item{
   @apply !m-0
 }
