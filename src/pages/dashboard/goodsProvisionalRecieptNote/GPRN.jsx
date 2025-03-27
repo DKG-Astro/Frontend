@@ -73,6 +73,8 @@ const GPRN = () => {
       // ],
     });
 
+    console.log("Formdata: ", formData)
+
     const handleChange = (fieldName, value) => {
       if(typeof fieldName === 'string')
         setFormData(prev => ({...prev, [fieldName]: value}))
@@ -117,7 +119,7 @@ const GPRN = () => {
           const {data} = await axios.get(`api/purchase-orders/${formData.poId}`)
 
           const {data: vendorData} = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
-          const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentId}`)
+          const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentIds[0]}`)
 
           setFormData({
             poId: data?.responseData?.poId,
@@ -132,6 +134,7 @@ const GPRN = () => {
           })
         }
         catch(error){
+          console.log("ERROR: ", error)
           message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
         }
     }
