@@ -99,6 +99,13 @@ import Ogp from "../dashboard/ogp/Ogp";
 import Igp from "../dashboard/igp/Igp";
 import Asset from "../dashboard/asset/Asset";
 import AssetDisposal from "../dashboard/assetDisposal/AssetDisposal";
+import Test from "../../components/Test";
+import InvReportsMain from "../reports/InvReportsMain";
+import GoodsIssueReport from "../reports/GoodsIssueReport";
+import IgpReport from "../reports/IgpReport";
+import OgpReport from "../reports/OgpReport";
+import AssetReport from "../reports/AssetReport";
+import StockReport from "../reports/StockReport";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -138,6 +145,14 @@ const RoutesComponent = () => {
                 <Route path="vendorContract" element={<VendorContract />} />
                 <Route path="procurementActivity" element={<ProcurementActivityReport />} />
             </Route>
+            <Route path="/invReports" element={<InvReportsMain />}>
+                <Route path="goodsIssue" element={<GoodsIssueReport />} />
+                <Route path="igp" element={<IgpReport />} />
+                <Route path="ogp" element={<OgpReport />} />
+                <Route path="asset" element={<AssetReport />} />
+                <Route path="stock" element={<StockReport />} />
+            </Route>
+
 
             <Route path="/inventory">
                 <Route path="gprn" element={<GPRN />} />
@@ -157,7 +172,10 @@ const RoutesComponent = () => {
 
         </Route>
 
+
+
         <Route path="/login" element={<Login />} />
+        <Route path="/test" element={<Test />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
