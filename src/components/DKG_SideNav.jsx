@@ -161,6 +161,13 @@ const items = [
     key: "4",
     label: "Inventory",
     items:[
+      {
+        key: "12",
+        icon: <FileTextOutlined />,
+        label: "Inventory Reports",
+        // activeTab: 2,
+        path: "/invReports",
+      },
         {
             key: "4.1",
             icon: <GoldOutlined />,

@@ -7,7 +7,7 @@ import { CloseCircleOutlined } from '@ant-design/icons';
 import Btn from './DKG_Btn';
 import TableComponent from './DKG_Table';
 
-const CustomReport = ({api, columns, title}) => {
+const CustomReport = ({api, columns, title, showFilter}) => {
     const { token } = useSelector((state) => state.auth);
     const [form] = Form.useForm()
     const [filter, setFilter] = useState({
@@ -18,15 +18,20 @@ const CustomReport = ({api, columns, title}) => {
       const [dataSource, setDataSource] = useState([]);
 
       const populateData = async () => {
-        if(!filter.startDate || !filter.endDate) {
-          message.error("Please enter start date and end date both.")
-          return;
+        if(showFilter){
+          if(!filter.startDate || !filter.endDate) {
+            message.error("Please enter start date and end date both.")
+            return;
+          }
         }
         try {
-            console.log("Inside try")
+          let newApi = api;
+          if(showFilter){
+            newApi = api + "?startDate=" + filter.startDate + "&endDate=" + filter.endDate;
+          }
           const { data } = await apiCall(
             "GET",
-            api + "?startDate=" + filter.startDate + "&endDate=" + filter.endDate,
+            newApi,
             token,
             filter
           );
@@ -44,22 +49,29 @@ const CustomReport = ({api, columns, title}) => {
         <h1 className="!text-lg font-semibold text-center mb-8">{title}</h1>
 
         <Form form={form} initialValues={filter} onFinish={populateData} className="grid md:grid-cols-4 grid-cols-2 gap-x-2 items-center px-2 pt-0 border !py-4 border-darkBlueHover mb-8">
-            <CustomDatePicker
+          {
+            showFilter && (
+              <>
+              <CustomDatePicker
+                  className="no-border"
+                  defaultValue={filter.startDate}
+                  placeholder="From date"
+                  name="startDate"
+                  onChange={handleChange}
+                  required
+                  />
+              <CustomDatePicker
                 className="no-border"
-              defaultValue={filter.startDate}
-              placeholder="From date"
-              name="startDate"
-              onChange={handleChange}
-              required
-              />
-            <CustomDatePicker
-              className="no-border"
-              defaultValue={filter.endDate}
-              placeholder="To date"
-              name="endDate"
-              onChange={handleChange}
-              required
-              />
+                defaultValue={filter.endDate}
+                placeholder="To date"
+                name="endDate"
+                onChange={handleChange}
+                required
+                />
+                </>
+
+            )
+          }
             <Btn htmlType="submit" className="w-full">
               {" "}
               Search
