@@ -332,7 +332,7 @@ const Form7 = () => {
         setGeneratedPOId(responseData.responseData.poId);
         form.setFieldsValue({ poId: responseData.responseData.poId });
         setShowSuccessModal(true);
-        setIsPrintEnabled(true);
+        // setIsPrintEnabled(true);
         message.success("PO created successfully!");
       } else {
         throw new Error(
@@ -368,7 +368,7 @@ const Form7 = () => {
             <Form.Item
               label="PO ID"
               name="poId" // Changed from "poID" to "poId"
-              rules={[{ required: true, message: "Please enter PO ID" }]}
+            //   rules={[{ required: true, message: "Please enter PO ID" }]}
             >
               <Input.Search
                 placeholder="Enter PO ID"

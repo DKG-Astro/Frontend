@@ -5,7 +5,7 @@ import QueueRequest from "./QueueRequest";
 import QueueAction from "./QueueAction";
 
 const { Text } = Typography;
-const RESTRICTED_USER_IDS = new Set([18, 25, 31, 34, 36]);
+const RESTRICTED_USER_IDS = new Set([25, 31, 34, 36]);
 
 const QueueTable = () => {
   const auth = useSelector((state) => state.auth);
