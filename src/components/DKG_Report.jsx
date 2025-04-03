@@ -53,7 +53,7 @@ const CustomReport = ({api, columns, title, showFilter}) => {
             showFilter && (
               <>
               <CustomDatePicker
-                  className="no-border"
+                  className="no-margin"
                   defaultValue={filter.startDate}
                   placeholder="From date"
                   name="startDate"
@@ -61,7 +61,7 @@ const CustomReport = ({api, columns, title, showFilter}) => {
                   required
                   />
               <CustomDatePicker
-                className="no-border"
+                className="no-margin"
                 defaultValue={filter.endDate}
                 placeholder="To date"
                 name="endDate"
