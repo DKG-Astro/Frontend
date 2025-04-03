@@ -6,6 +6,7 @@ import {
   Form,
   Input,
   message,
+  Modal,
   Row,
   Select,
   Space,
@@ -748,7 +749,19 @@ const Form7 = () => {
           </Form.Item>
         </div>
 
-        <CustomModal
+        {/* Submit Button Section */}
+        <div className="form-section">
+          <Button type="default" htmlType="reset">
+            Reset
+          </Button>
+          <Button type="primary" htmlType="submit" loading={loading}>
+            Submit
+          </Button>
+          <Button type="dashed" htmlType="button">
+            Save Draft
+          </Button>
+        </div>
+        <Modal
           open={showSuccessModal}
           title="Purchase Order Created"
           onCancel={() => setShowSuccessModal(false)}
@@ -767,20 +780,7 @@ const Form7 = () => {
           ]}
         >
           <p>Generated PO ID: {generatedPOId}</p>
-        </CustomModal>
-
-        {/* Submit Button Section */}
-        <div className="form-section">
-          <Button type="default" htmlType="reset">
-            Reset
-          </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Submit
-          </Button>
-          <Button type="dashed" htmlType="button">
-            Save Draft
-          </Button>
-        </div>
+        </Modal>
       </Form>
     </div>
   );
