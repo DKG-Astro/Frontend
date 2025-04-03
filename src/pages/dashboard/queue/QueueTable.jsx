@@ -16,7 +16,8 @@ const QueueTable = () => {
   // Check if user is restricted
   const isRestricted = RESTRICTED_USER_IDS.has(userId);
 
-  const role = useSelector(state => state?.auth);
+  const {role} = useSelector(state => state?.auth);
+  console.log("ROLE: ", role)
 
   // Handle tab switching for restricted users
   useEffect(() => {

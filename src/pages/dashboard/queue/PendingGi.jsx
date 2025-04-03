@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CustomReport from '../../../components/DKG_Report';
-import { Button, Table } from 'antd';
+import { Button, message, Table } from 'antd';
 import axios from 'axios';
 import TableComponent from '../../../components/DKG_Table';
 import { useNavigate } from 'react-router-dom';
@@ -63,10 +63,16 @@ const PendingGi = () => {
   const [ds, setDs] = useState([]);
 
   const populateData = async () => {
-    const {data} = await axios.get(api);
-
-    const responseData = data?.responseData || [];
-    setDs(responseData);
+    try{
+        const {data} = await axios.get(api);
+        
+        const responseData = data?.responseData || [];
+        setDs(responseData);
+    }
+    catch(e){
+        message.error("Erorr fetching details.");
+        console.log(e);
+    }
   }
   useEffect(() => {
     populateData();
