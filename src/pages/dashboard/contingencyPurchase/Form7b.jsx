@@ -40,6 +40,12 @@ const Form7b = () => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
 
+  const { vendorMaster } = useSelector((state) => state.masters);
+  const vendorMasterMod = vendorMaster?.map((vendor) => ({
+    label: vendor.vendorName,
+    value: vendor.vendorName,
+  }));
+
   useEffect(() => {
     const fetchVendors = async () => {
       setVendorLoading(true);
@@ -352,6 +358,10 @@ const Form7b = () => {
         ]);
       }
     }
+  };
+
+  const handleMaterialDescriptionSelect = (index, materialCode) => {
+    handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
   const handleModeOfProcurementChange = (value, index) => {
