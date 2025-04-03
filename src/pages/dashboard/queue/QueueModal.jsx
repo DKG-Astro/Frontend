@@ -101,45 +101,71 @@ const QueueModal = ({
                     </div>
                     <div className="detail-item">
                       <strong>Technical Specs:</strong>
-                      {detailsData.technicalSpecificationsFileName ? (
-                        <a
-                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.technicalSpecificationsFileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {detailsData.technicalSpecificationsFileName} (View)
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
+                      {detailsData.technicalSpecificationsFileName
+                        ? detailsData.technicalSpecificationsFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.technicalSpecificationsFileName.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                     <div className="detail-item">
                       <strong>Prior Approvals:</strong>
-                      {detailsData.uploadingPriorApprovalsFileName ? (
-                        <a
-                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadingPriorApprovalsFileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {detailsData.uploadingPriorApprovalsFileName} (View)
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
+                      {detailsData.uploadingPriorApprovalsFileName
+                        ? detailsData.uploadingPriorApprovalsFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadingPriorApprovalsFileName.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                     <div className="detail-item">
                       <strong>Draft EOI/RFP:</strong>
-                      {detailsData.draftEOIOrRFPFileName ? (
-                        <a
-                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.draftEOIOrRFPFileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {detailsData.draftEOIOrRFPFileName} (View)
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
+                      {detailsData.draftEOIOrRFPFileName
+                        ? detailsData.draftEOIOrRFPFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.draftEOIOrRFPFileName.split(", ")
+                                    .length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                     <div className="detail-item">
                       <strong>Total Price:</strong> ₹
@@ -226,43 +252,54 @@ const QueueModal = ({
                   ]}
                 />
               </div>
-              <div className="detail-section">
-                <Typography.Title level={5} className="section-title">
-                  <ProjectOutlined /> Brand PAC
-                </Typography.Title>
-                <Row gutter={24}>
-                  <Col span={12}>
-                    <div className="detail-item">
-                      <strong>Brand PAC:</strong>{" "}
-                      {String(detailsData.brandPac) || "N/A"}
-                    </div>
-                  </Col>
-                  <Col span={12}>
-                    <div className="detail-item">
-                      <strong>PAC/Brand PAC:</strong>
-                      {detailsData.uploadPACOrBrandPACFileName ? (
-                        <a
-                          href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${detailsData.uploadPACOrBrandPACFileName}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {detailsData.uploadPACOrBrandPACFileName} (View)
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
-                    </div>
-                    <div className="detail-item">
-                      <strong>Brand and Model:</strong>{" "}
-                      {detailsData.brandAndModel || "N/A"}
-                    </div>
-                    <div className="detail-item">
-                      <strong>Justification:</strong>{" "}
-                      {detailsData.justification || "N/A"}
-                    </div>
-                  </Col>
-                </Row>
-              </div>
+              {detailsData.brandPac && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Brand PAC
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Brand PAC:</strong>{" "}
+                        {String(detailsData.brandPac) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>PAC/Brand PAC:</strong>
+                        {detailsData.uploadPACOrBrandPACFileName
+                          ? detailsData.uploadPACOrBrandPACFileName
+                              .split(", ")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.uploadPACOrBrandPACFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Brand and Model:</strong>{" "}
+                        {detailsData.brandAndModel || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Justification:</strong>{" "}
+                        {detailsData.justification || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
             </div>
           )}
 
@@ -542,20 +579,76 @@ const QueueModal = ({
                 <Row gutter={24}>
                   <Col span={8}>
                     <div className="detail-item">
-                      <strong>Tender Documents:</strong>{" "}
-                      {detailsData.uploadTenderDocuments || "N/A"}
+                      <strong>Tender Documents:</strong>
+                      {detailsData.uploadTenderDocuments
+                        ? detailsData.uploadTenderDocuments
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadTenderDocuments.split(", ")
+                                    .length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                   </Col>
                   <Col span={8}>
                     <div className="detail-item">
-                      <strong>Specific Terms & Conditions:</strong>{" "}
-                      {detailsData.uploadSpecificTermsAndConditions || "N/A"}
+                      <strong>Specific Terms:</strong>
+                      {detailsData.uploadSpecificTermsAndConditions
+                        ? detailsData.uploadSpecificTermsAndConditions
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadSpecificTermsAndConditions.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                   </Col>
                   <Col span={8}>
                     <div className="detail-item">
-                      <strong>General Terms & Conditions:</strong>{" "}
-                      {detailsData.uploadGeneralTermsAndConditions || "N/A"}
+                      <strong>General Terms:</strong>
+                      {detailsData.uploadGeneralTermsAndConditions
+                        ? detailsData.uploadGeneralTermsAndConditions
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadGeneralTermsAndConditions.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                   </Col>
                 </Row>

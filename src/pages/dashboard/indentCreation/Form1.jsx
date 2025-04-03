@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useRef, useState } from "react";
 import {
   Form,
   Input,
@@ -27,10 +27,10 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useSelector } from "react-redux";
 import LineItem from "../LineItem";
-import { unitless } from "antd/es/theme/useToken";
 import FormContainer from "../../../components/DKG_FormContainer";
 import Heading from "../../../components/DKG_Heading";
-import { handlePrint } from "../../../utils/HandlePrint";
+import { useReactToPrint } from "react-to-print";
+import './printStyle.css'
 dayjs.extend(customParseFormat);
 
 const { Option } = Select;
@@ -54,6 +54,10 @@ const Form1 = () => {
 
   const { userName, email, mobileNumber } = useSelector((state) => state.auth);
 
+  const printRef = useRef();
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -164,95 +168,101 @@ const Form1 = () => {
       (item) => String(item?.modeOfProcurement).toLowerCase() === "brand pac"
     );
   };
+  const PrintableContent = forwardRef(({ children }, ref) => (
+    <div ref={ref} className="printable-content">
+      {/* <Heading title={"Indent Creation"} /> */}
+      {children}
+    </div>
+  ));
 
-  //   const handleSearch = async () => {
-  //     const indentorId = form.getFieldValue("indentId");
-  //     if (!indentorId) {
-  //       message.error("Please enter an Indent ID");
-  //       return;
-  //     }
+    const handleSearch = async () => {
+      const indentId = form.getFieldValue("indentId");
+      if (!indentId) {
+        message.error("Please enter an Indent ID");
+        return;
+      }
 
-  //     try {
-  //       const response = await fetch(
-  //         `http://103.181.158.220:8081/astro-service/api/indents/${indentorId}`
-  //       );
+      try {
+        const response = await fetch(
+          `http://103.181.158.220:8081/astro-service/api/indents/${indentId}`
+        );
 
-  //       if (!response.ok)
-  //         throw new Error(`Failed to fetch data: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to fetch data: ${response.statusText}`);
 
-  //       const data = await response.json();
+        const data = await response.json();
 
-  //       console.log("API Response:", data); // Debugging log
+        console.log("API Response:", data); // Debugging log
 
-  //       if (!data.responseData) {
-  //         throw new Error("Invalid API response: responseData is missing");
-  //       }
+        if (!data.responseData) {
+          throw new Error("Invalid API response: responseData is missing");
+        }
 
-  //       const responseData = data.responseData;
+        const responseData = data.responseData;
 
-  //       // Ensure file upload fields are always an array
-  //       const getFileList = (fileName) =>
-  //         fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
+        // Ensure file upload fields are always an array
+        const getFileList = (fileName) =>
+          fileName ? [{ uid: "-1", name: fileName, status: "done" }] : [];
 
-  //       const formData = {
-  //         indentId: responseData.indentId || "",
-  //         indentorName: responseData.indentorName || "",
-  //         indentorMobileNo: responseData.indentorMobileNo || "",
-  //         indentorEmail: responseData.indentorEmailAddress || "",
-  //         consigneeLocation: responseData.consignesLocation || "",
-  //         projectName: responseData.projectName || "",
-  //         preBidMeetingRequired: responseData.isPreBidMeetingRequired || false,
-  //         preBidMeetingDetails: responseData.preBidMeetingDate
-  //           ? dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")
-  //           : null,
-  //         preBidMeetingLocation: responseData.preBidMeetingVenue || "",
-  //         rateContractIndent: responseData.isItARateContractIndent || false,
-  //         estimatedRate: parseFloat(responseData.estimatedRate) || 0,
-  //         periodOfRateContract: parseFloat(responseData.periodOfContract) || 0,
-  //         singleOrMultipleJob: responseData.singleAndMultipleJob || "",
+        const formData = {
+          indentId: generatedIndentId || "",
+          indentorName: responseData.indentorName || "",
+          indentorMobileNo: responseData.indentorMobileNo || "",
+          indentorEmail: responseData.indentorEmailAddress || "",
+          consigneeLocation: responseData.consignesLocation || "",
+          projectName: responseData.projectName || "",
+          preBidMeetingRequired: responseData.isPreBidMeetingRequired || false,
+          preBidMeetingDetails: responseData.preBidMeetingDate
+            ? dayjs(responseData.preBidMeetingDate, "DD/MM/YYYY")
+            : null,
+          preBidMeetingLocation: responseData.preBidMeetingVenue || "",
+          rateContractIndent: responseData.isItARateContractIndent || false,
+          estimatedRate: parseFloat(responseData.estimatedRate) || 0,
+          periodOfRateContract: parseFloat(responseData.periodOfContract) || 0,
+          singleOrMultipleJob: responseData.singleAndMultipleJob || "",
 
-  //         // ✅ Fix file uploads - Ensure they are arrays
-  //         uploadingPriorApprovalsFileName: getFileList(
-  //           responseData.uploadingPriorApprovalsFileName
-  //         ),
-  //         technicalSpecificationsFileName: getFileList(
-  //           responseData.technicalSpecificationsFileName
-  //         ),
-  //         draftEOIOrRFPFileName: getFileList(responseData.draftEOIOrRFPFileName),
-  //         uploadPACOrBrandPAC: getFileList(
-  //           responseData.uploadPACOrBrandPACFileName
-  //         ),
+          // ✅ Fix file uploads - Ensure they are arrays
+          uploadingPriorApprovalsFileName: getFileList(
+            responseData.uploadingPriorApprovalsFileName
+          ),
+          technicalSpecificationsFileName: getFileList(
+            responseData.technicalSpecificationsFileName
+          ),
+          draftEOIOrRFPFileName: getFileList(responseData.draftEOIOrRFPFileName),
+          uploadPACOrBrandPAC: getFileList(
+            responseData.uploadPACOrBrandPACFileName
+          ),
 
-  //         // ✅ Ensure material details is an array
-  //         lineItems: Array.isArray(responseData.materialDetails)
-  //           ? responseData.materialDetails.map((item) => ({
-  //               materialCode: item.materialCode || "",
-  //               materialDescription: item.materialDescription || "",
-  //               quantity: parseFloat(item.quantity) || 0,
-  //               unitPrice: parseFloat(item.unitPrice) || 0,
-  //               uom: item.uom || "",
-  //               totalPrice: parseFloat(item.totalPrize) || 0,
-  //               budgetCode: item.budgetCode || "",
-  //               materialCategory: item.materialCategory || "",
-  //               materialSubcategory: item.materialSubCategory || "",
-  //               materialOrJobCodeUsedByDept: item.materialAndJob || "",
-  //               modeOfProcurement: item.modeOfProcurement || "",
-  //             }))
-  //           : [],
-  //       };
+          // ✅ Ensure material details is an array
+          lineItems: Array.isArray(responseData.materialDetails)
+            ? responseData.materialDetails.map((item) => ({
+                materialCode: item.materialCode || "",
+                materialDescription: item.materialDescription || "",
+                quantity: parseFloat(item.quantity) || 0,
+                unitPrice: parseFloat(item.unitPrice) || 0,
+                uom: item.uom || "",
+                totalPrice: parseFloat(item.totalPrize) || 0,
+                budgetCode: item.budgetCode || "",
+                materialCategory: item.materialCategory || "",
+                materialSubcategory: item.materialSubCategory || "",
+                materialOrJobCodeUsedByDept: item.materialAndJob || "",
+                modeOfProcurement: item.modeOfProcurement || "",
+              }))
+            : [],
+        };
 
-  //       console.log("Final Form Data:", formData); // Debugging log
+        console.log("Final Form Data:", formData); // Debugging log
 
-  //       // ✅ Update form fields safely
-  //       form.setFieldsValue(formData);
-  //       setPreBidRequired(formData.preBidMeetingRequired);
-  //       setRateContractIndent(formData.rateContractIndent);
-  //       message.success("Form data fetched successfully");
-  //     } catch (error) {
-  //       message.error(`Failed to fetch form data: ${error.message}`);
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
+        // ✅ Update form fields safely
+        form.setFieldsValue(formData);
+        setPreBidRequired(formData.preBidMeetingRequired);
+        setRateContractIndent(formData.rateContractIndent);
+        message.success("Form data fetched successfully");
+      } catch (error) {
+        message.error(`Failed to fetch form data: ${error.message}`);
+        console.error("Error fetching data:", error);
+      }
+    };
 
   const normFile = (e) => {
     // When uploading, an array of file objects is expected.
@@ -289,17 +299,6 @@ const Form1 = () => {
       throw error;
     }
   };
-
-  const createUploadHandler =
-    (fieldName) =>
-    async ({ file, onSuccess, onError }) => {
-      try {
-        const fileName = await uploadFileToServer(file, fieldName);
-        onSuccess({ fileName }, file);
-      } catch (error) {
-        onError(error);
-      }
-    };
   const getFileViewUrl = (fileName) => {
     return `http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName}`;
   };
@@ -367,7 +366,13 @@ const Form1 = () => {
       // Continue with file uploads and payload construction as before
       const uploadFiles = async (fileList, fieldName) => {
         if (!fileList || fileList.length === 0) return "";
-        return uploadFileToServer(fileList[0].originFileObj, fieldName);
+        // Upload all files and join filenames with commas
+        const uploadedNames = await Promise.all(
+          fileList.map(file => 
+            uploadFileToServer(file.originFileObj, fieldName)
+          )
+        );
+        return uploadedNames.join(", ");
       };
 
       const [
@@ -445,9 +450,9 @@ const Form1 = () => {
 
         // File handling
         draftEOIOrRFPFileName: draftEOIOrRFP || null,
-        uploadPACOrBrandPACFileName: uploadPACOrBrandPAC || null,
-        technicalSpecificationsFileName: technicalSpecifications || null,
-        uploadingPriorApprovalsFileName: priorApprovalsFile || null,
+      uploadPACOrBrandPACFileName: uploadPACOrBrandPAC || null,
+      technicalSpecificationsFileName: technicalSpecifications || null,
+      uploadingPriorApprovalsFileName: priorApprovalsFile || null,
 
         // Material details adjustments
         materialDetails: materialDetails.map((item) => ({
@@ -492,10 +497,11 @@ const Form1 = () => {
 
       // Show success modal with response data
       setGeneratedIndentId(responseData.responseData.indentId);
+      form.setFieldsValue({ indentId: responseData.responseData.indentId });
       setShowSuccessModal(true);
       setIsPrintEnabled(true);
       message.success("Indent submitted successfully!");
-      form.resetFields();
+    //   form.resetFields();
     } catch (error) {
       message.error(`Submission Error: ${error.message}`);
       console.error("Detailed Error:", error);
@@ -647,403 +653,407 @@ const Form1 = () => {
   }, []);
 
   return (
-    <FormContainer>
-      {/* <div className="form-container"> */}
-      <Heading title={"Indent Creation"} />
-      {/* <Row justify="end">
-        <Col>
-          <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
+    <PrintableContent ref={printRef}>
+        <FormContainer>
+        {/* <div className="form-container"> */}
+        <Heading title={"Indent Creation"} />
+        <Row justify="end">
+            <Col>
+            <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
+                <Form.Item
+                label="Indent ID"
+                name="indentId"
+                //   rules={[{ required: true, message: "Indentor ID is required" }]}
+                >
+                <Space>
+                    <Input placeholder="Enter Indent ID" disabled />
+                    <Button type="primary" onClick={handleSearch}>
+                    <SearchOutlined />
+                    </Button>
+                </Space>
+                </Form.Item>
+            </Form>
+            </Col>
+        </Row>
+        <Form
+            form={form}
+            layout="vertical"
+            onFinish={handleSubmit}
+            onFinishFailed={(errorInfo) => {
+            console.error("Validation Failed:", errorInfo);
+            message.error("Please fill all required fields");
+            }}
+            initialValues={{
+            indentId: generatedIndentId || "",
+            lineItems: [{}],
+            preBidMeetingRequired: false,
+            rateContractIndent: false,
+            consigneeLocation: "Bangalore", // Default value that matches one of the options
+            }}
+            ref={printRef}
+        >
+            <div className="form-section">
             <Form.Item
-              label="Indent ID"
-              name="indentId"
-              //   rules={[{ required: true, message: "Indentor ID is required" }]}
+                label="Indentor Name"
+                name="indentorName"
+                rules={[{ required: true, message: "Indentor name is required" }]}
             >
-              <Space>
-                <Input placeholder="Enter Indent ID" disabled />
-                <Button type="primary" onClick={handleSearch}>
-                  <SearchOutlined />
-                </Button>
-              </Space>
+                <Input value="Auto-populated" />
             </Form.Item>
-          </Form>
-        </Col>
-      </Row> */}
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        onFinishFailed={(errorInfo) => {
-          console.error("Validation Failed:", errorInfo);
-          message.error("Please fill all required fields");
-        }}
-        initialValues={{
-          lineItems: [{}],
-          preBidMeetingRequired: false,
-          rateContractIndent: false,
-          consigneeLocation: "Bangalore", // Default value that matches one of the options
-        }}
-      >
-        <div className="form-section">
-          <Form.Item
-            label="Indentor Name"
-            name="indentorName"
-            rules={[{ required: true, message: "Indentor name is required" }]}
-          >
-            <Input value="Auto-populated" />
-          </Form.Item>
 
-          <Form.Item
-            label="Indentor Mobile No."
-            name="indentorMobileNo"
-            rules={[
-              { required: true, message: "Indentor mobile number is required" },
-            ]}
-          >
-            <Input value="Auto-populated" />
-          </Form.Item>
-        </div>
-
-        <div className="form-section">
-          <Form.Item
-            label="Indentor Email"
-            name="indentorEmail"
-            rules={[{ required: true, message: "Indentor name is required" }]}
-          >
-            <Input value="Auto-populated" />
-          </Form.Item>
-
-          <Form.Item
-            label="Consignee Location"
-            name="consigneeLocation"
-            rules={[
-              { required: true, message: "Consignee location is required" },
-            ]}
-          >
-            <Select placeholder="Select location">
-              {locations.map((location) => (
-                <Option
-                  key={location.locationCode}
-                  value={location.locationName}
-                >
-                  {location.locationName}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Upload Prior Approvals"
-            name="uploadingPriorApprovalsFileName"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-          >
-            <Upload
-              beforeUpload={() => false}
-              maxCount={1}
-              //   customRequest={createUploadHandler("Prior Approvals")}
-              //   maxCount={1}
-              //   onChange={({ file }) => {
-              //     if (file.status === "done") {
-              //       form.setFieldsValue({
-              //         uploadingPriorApprovalsFileName: [
-              //           {
-              //             uid: file.uid,
-              //             name: file.response.fileName,
-              //             status: "done",
-              //           },
-              //         ],
-              //       });
-              //     }
-              //   }}
+            <Form.Item
+                label="Indentor Mobile No."
+                name="indentorMobileNo"
+                rules={[
+                { required: true, message: "Indentor mobile number is required" },
+                ]}
             >
-              <Button icon={<UploadOutlined />}>Upload File</Button>
-            </Upload>
-            {/* <div className="file-links">
-              {form
-                .getFieldValue("uploadingPriorApprovalsFileName")
-                ?.map((file) => (
-                  <a
-                    key={file.uid}
-                    href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${file.name}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {file.name} (View)
-                  </a>
+                <Input value="Auto-populated" />
+            </Form.Item>
+            </div>
+
+            <div className="form-section">
+            <Form.Item
+                label="Indentor Email"
+                name="indentorEmail"
+                rules={[{ required: true, message: "Indentor name is required" }]}
+            >
+                <Input value="Auto-populated" />
+            </Form.Item>
+
+            <Form.Item
+                label="Consignee Location"
+                name="consigneeLocation"
+                rules={[
+                { required: true, message: "Consignee location is required" },
+                ]}
+            >
+                <Select placeholder="Select location">
+                {locations.map((location) => (
+                    <Option
+                    key={location.locationCode}
+                    value={location.locationName}
+                    >
+                    {location.locationName}
+                    </Option>
                 ))}
-            </div> */}
-          </Form.Item>
-        </div>
+                </Select>
+            </Form.Item>
 
-        <LineItem
-          form={form}
-          materialList={materialList}
-          projects={projects}
-          materialDetailsMap={materialDetailsMap}
-          calculateTotalPrice={calculateTotalPrice}
-          handleMaterialSelect={handleMaterialSelect}
-          handlePriceCalculation={handlePriceCalculation}
-          handleMaterialDescriptionSelect={handleMaterialDescriptionSelect}
-        />
-
-        <div className="form-section">
-          <Form.Item name="projectName" label="Project Name">
-            <Select placeholder="Select project" loading={loading} allowClear>
-              {projects.map((project) => (
-                <Option
-                  key={project.projectNameDescription}
-                  value={project.projectNameDescription}
-                >
-                  {project.projectNameDescription}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Upload Technical Specifications"
-            name="technicalSpecificationsFileName"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-            // rules={[
-            //   { required: true, message: "Technical specifications are required" },
-            // ]}
-          >
-            <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>
-                Upload Technical Specifications
-              </Button>
-            </Upload>
-          </Form.Item>
-        </div>
-
-        <Form.Item name="preBidMeetingRequired" valuePropName="checked">
-          <Checkbox onChange={handleCheckboxChange}>
-            Pre-bid Meeting Required
-          </Checkbox>
-        </Form.Item>
-        <div className="form-section">
-          {preBidRequired && (
-            <Row gutter={20}>
-              <Col span={12}>
-                <Form.Item
-                  name="preBidMeetingDetails"
-                  label="Tentative Meeting Date"
-                  rules={[
-                    {
-                      required: preBidRequired,
-                      message: "Meeting date is required",
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    format="DD/MM/YYYY"
-                    disabledDate={(current) =>
-                      current && current < dayjs().startOf("day")
-                    }
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  label="Meeting Location"
-                  name="preBidMeetingLocation"
-                  rules={[
-                    {
-                      required: preBidRequired,
-                      message: "Pre Bid Meeting Location is required",
-                    },
-                  ]}
-                >
-                  <Select placeholder="Select location">
-                    {locations.map((location) => (
-                      <Option
-                        key={location.locationCode}
-                        value={location.locationName}
-                      >
-                        {location.locationName}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-        </div>
-
-        <Form.Item name="rateContractIndent" valuePropName="checked">
-          <Checkbox onChange={handleCheckboxChange2}>
-            Is it a rate contract indent
-          </Checkbox>
-        </Form.Item>
-        <div className="form-section">
-          {rateContractIndent && (
-            <Row gutter={24}>
-              <Col span={8}>
-                <Form.Item
-                  name="estimatedRate"
-                  label="Estimated Rate"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter estimated rate!",
-                    },
-                  ]}
-                >
-                  <Input type="number" placeholder="Enter Estimated Rate" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="periodOfRateContract"
-                  label="Period of Rate Contract"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Enter Period of Contract!",
-                    },
-                  ]}
-                >
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="singleOrMultipleJob"
-                  label="Single or Multiple Job"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Select placeholder="Select Material Code">
-                    <Option value="Single">Single</Option>
-                    <Option value="Multiple">Multiple</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          )}
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Upload draft EOI or RFP"
-            name="draftEOIOrRFPFileName"
-            valuePropName="fileList"
-            getValueFromEvent={normFile}
-            // rules={[{ required: true, message: "GOI or RFP is required" }]}
-          >
-            <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>Upload EOI or RFP</Button>
-            </Upload>
-          </Form.Item>
-        </div>
-        <Form.Item name="brandPac" valuePropName="checked">
-          <Checkbox onChange={handleCheckboxChange3}>
-            Is it a brand PAC
-          </Checkbox>
-        </Form.Item>
-        <div className="form-section">
-          {isBrandPac && (
-            <>
-              <Form.Item
-                label="Brand PAC Approval"
-                name="uploadPACOrBrandPACFileName"
-                dependencies={["lineItems"]}
+            <Form.Item
+                label="Upload Prior Approvals"
+                name="uploadingPriorApprovalsFileName"
                 valuePropName="fileList"
                 getValueFromEvent={normFile}
-                rules={[
-                  ({ getFieldValue }) => ({
-                    required: hasPacMaterial(getFieldValue("lineItems")),
-                    message:
-                      "PAC/Brand PAC document is required when any item uses Brand PAC procurement",
-                  }),
-                ]}
-              >
-                <Upload beforeUpload={() => false} maxCount={1}>
-                  <Button icon={<UploadOutlined />}>Upload Brand PAC</Button>
+            >
+                <Upload
+                beforeUpload={() => false}
+                //   customRequest={createUploadHandler("Prior Approvals")}
+                //   onChange={({ file }) => {
+                //     if (file.status === "done") {
+                //       form.setFieldsValue({
+                //         uploadingPriorApprovalsFileName: [
+                //           {
+                //             uid: file.uid,
+                //             name: file.response.fileName,
+                //             status: "done",
+                //           },
+                //         ],
+                //       });
+                //     }
+                //   }}
+                >
+                <Button icon={<UploadOutlined />}>Upload File</Button>
                 </Upload>
-              </Form.Item>
-              <Form.Item label="Brand and Model" name="brandAndModel">
-                <Input />
-              </Form.Item>
-              <Form.Item
-                label="It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand.
+                {/* <div className="file-links">
+                {form
+                    .getFieldValue("uploadingPriorApprovalsFileName")
+                    ?.map((file) => (
+                    <a
+                        key={file.uid}
+                        href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${file.name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {file.name} (View)
+                    </a>
+                    ))}
+                </div> */}
+            </Form.Item>
+            </div>
 
-However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:"
-                name="justification"
-              >
-                <Input placeholder="Enter Declaration" />
-              </Form.Item>
-            </>
-          )}
-        </div>
-
-        <Form.Item>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Button type="default" htmlType="reset">
-              <ReloadOutlined /> Reset
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              <SendOutlined /> Submit
-            </Button>
-            <Button type="dashed" htmlType="button" onClick={handleSaveDraft}>
-              <SaveOutlined /> Save Draft
-            </Button>
-            <Button
-              type="default"
-              onClick={() => handlePrint(form)}
-              style={{ marginRight: 8 }}
-              disabled={!isPrintEnabled}
-            >
-              <PrinterOutlined /> Print
-            </Button>
-          </div>
-        </Form.Item>
-        {/* Add this near the end of your component's JSX */}
-        <Modal
-          open={showSuccessModal}
-          onOk={() => setShowSuccessModal(false)}
-          onCancel={() => setShowSuccessModal(false)}
-          footer={[
-            <Button
-              key="ok"
-              type="primary"
-              onClick={() => setShowSuccessModal(false)}
-            >
-              OK
-            </Button>,
-          ]}
-        >
-          <div className="flex flex-col items-center py-4">
-            <CheckCircleOutlined className="text-green-500 text-4xl mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              Indent saved successfully
-            </h3>
-            <p className="text-gray-600">Indent ID: {generatedIndentId}</p>
-          </div>
-        </Modal>
-        <Modal
-          open={showDraftSavedModal}
-          onCancel={() => setShowDraftSavedModal(false)}
-          footer={null}
-          centered
-        >
-          <div style={{ textAlign: "center", padding: "20px" }}>
-            <CheckCircleOutlined
-              style={{
-                fontSize: "48px",
-                color: "#52c41a",
-                marginBottom: "16px",
-              }}
+            <div className="print-section">
+            <LineItem
+            form={form}
+            materialList={materialList}
+            projects={projects}
+            materialDetailsMap={materialDetailsMap}
+            calculateTotalPrice={calculateTotalPrice}
+            handleMaterialSelect={handleMaterialSelect}
+            handlePriceCalculation={handlePriceCalculation}
+            handleMaterialDescriptionSelect={handleMaterialDescriptionSelect}
             />
-            <h3>Draft Saved Successfully</h3>
-            <p>Your changes have been saved locally.</p>
-          </div>
-        </Modal>
-      </Form>
-      {/* </div> */}
-    </FormContainer>
+            </div>
+
+            <div className="form-section">
+            <Form.Item name="projectName" label="Project Name">
+                <Select placeholder="Select project" loading={loading} allowClear>
+                {projects.map((project) => (
+                    <Option
+                    key={project.projectNameDescription}
+                    value={project.projectNameDescription}
+                    >
+                    {project.projectNameDescription}
+                    </Option>
+                ))}
+                </Select>
+            </Form.Item>
+            <Form.Item
+                label="Upload Technical Specifications"
+                name="technicalSpecificationsFileName"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                // rules={[
+                //   { required: true, message: "Technical specifications are required" },
+                // ]}
+            >
+                <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>
+                    Upload Technical Specifications
+                </Button>
+                </Upload>
+            </Form.Item>
+            </div>
+
+            <Form.Item name="preBidMeetingRequired" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange}>
+                Pre-bid Meeting Required
+            </Checkbox>
+            </Form.Item>
+            <div className="form-section">
+            {preBidRequired && (
+                <Row gutter={20}>
+                <Col span={12}>
+                    <Form.Item
+                    name="preBidMeetingDetails"
+                    label="Tentative Meeting Date"
+                    rules={[
+                        {
+                        required: preBidRequired,
+                        message: "Meeting date is required",
+                        },
+                    ]}
+                    >
+                    <DatePicker
+                        format="DD/MM/YYYY"
+                        disabledDate={(current) =>
+                        current && current < dayjs().startOf("day")
+                        }
+                    />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item
+                    label="Meeting Location"
+                    name="preBidMeetingLocation"
+                    rules={[
+                        {
+                        required: preBidRequired,
+                        message: "Pre Bid Meeting Location is required",
+                        },
+                    ]}
+                    >
+                    <Select placeholder="Select location">
+                        {locations.map((location) => (
+                        <Option
+                            key={location.locationCode}
+                            value={location.locationName}
+                        >
+                            {location.locationName}
+                        </Option>
+                        ))}
+                    </Select>
+                    </Form.Item>
+                </Col>
+                </Row>
+            )}
+            </div>
+
+            <Form.Item name="rateContractIndent" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange2}>
+                Is it a rate contract indent
+            </Checkbox>
+            </Form.Item>
+            <div className="form-section">
+            {rateContractIndent && (
+                <Row gutter={24}>
+                <Col span={8}>
+                    <Form.Item
+                    name="estimatedRate"
+                    label="Estimated Rate"
+                    rules={[
+                        {
+                        required: true,
+                        message: "Please enter estimated rate!",
+                        },
+                    ]}
+                    >
+                    <Input type="number" placeholder="Enter Estimated Rate" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item
+                    name="periodOfRateContract"
+                    label="Period of Rate Contract"
+                    rules={[
+                        {
+                        required: true,
+                        message: "Enter Period of Contract!",
+                        },
+                    ]}
+                    >
+                    <Input type="number" />
+                    </Form.Item>
+                </Col>
+                <Col span={8}>
+                    <Form.Item
+                    name="singleOrMultipleJob"
+                    label="Single or Multiple Job"
+                    rules={[
+                        {
+                        required: true,
+                        },
+                    ]}
+                    >
+                    <Select placeholder="Select Material Code">
+                        <Option value="Single">Single</Option>
+                        <Option value="Multiple">Multiple</Option>
+                    </Select>
+                    </Form.Item>
+                </Col>
+                </Row>
+            )}
+            </div>
+            <div className="form-section">
+            <Form.Item
+                label="Upload draft EOI or RFP"
+                name="draftEOIOrRFPFileName"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                // rules={[{ required: true, message: "GOI or RFP is required" }]}
+            >
+                <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>Upload EOI or RFP</Button>
+                </Upload>
+            </Form.Item>
+            </div>
+            <Form.Item name="brandPac" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange3}>
+                Is it a brand PAC
+            </Checkbox>
+            </Form.Item>
+            <div className="form-section">
+            {isBrandPac && (
+                <>
+                <Form.Item
+                    label="Brand PAC Approval"
+                    name="uploadPACOrBrandPACFileName"
+                    dependencies={["lineItems"]}
+                    valuePropName="fileList"
+                    getValueFromEvent={normFile}
+                    rules={[
+                    ({ getFieldValue }) => ({
+                        required: hasPacMaterial(getFieldValue("lineItems")),
+                        message:
+                        "PAC/Brand PAC document is required when any item uses Brand PAC procurement",
+                    }),
+                    ]}
+                >
+                    <Upload beforeUpload={() => false}>
+                    <Button icon={<UploadOutlined />}>Upload Brand PAC</Button>
+                    </Upload>
+                </Form.Item>
+                <Form.Item label="Brand and Model" name="brandAndModel">
+                    <Input />
+                </Form.Item>
+                <Form.Item
+                    label="It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand.
+
+    However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:"
+                    name="justification"
+                >
+                    <Input placeholder="Enter Declaration" />
+                </Form.Item>
+                </>
+            )}
+            </div>
+
+            <Form.Item>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <Button type="default" htmlType="reset">
+                <ReloadOutlined /> Reset
+                </Button>
+                <Button type="primary" htmlType="submit" loading={loading}>
+                <SendOutlined /> Submit
+                </Button>
+                <Button type="dashed" htmlType="button" onClick={handleSaveDraft}>
+                <SaveOutlined /> Save Draft
+                </Button>
+                <Button
+                type="default"
+                onClick={handlePrint}
+                style={{ marginRight: 8 }}
+                disabled={!isPrintEnabled}
+                >
+                <PrinterOutlined /> Print
+                </Button>
+            </div>
+            </Form.Item>
+            {/* Add this near the end of your component's JSX */}
+            <Modal
+            open={showSuccessModal}
+            onOk={() => setShowSuccessModal(false)}
+            onCancel={() => setShowSuccessModal(false)}
+            footer={[
+                <Button
+                key="ok"
+                type="primary"
+                onClick={() => setShowSuccessModal(false)}
+                >
+                OK
+                </Button>,
+            ]}
+            >
+            <div className="flex flex-col items-center py-4">
+                <CheckCircleOutlined className="text-green-500 text-4xl mb-4" />
+                <h3 className="text-lg font-semibold mb-2">
+                Indent saved successfully
+                </h3>
+                <p className="text-gray-600">Indent ID: {generatedIndentId}</p>
+            </div>
+            </Modal>
+            <Modal
+            open={showDraftSavedModal}
+            onCancel={() => setShowDraftSavedModal(false)}
+            footer={null}
+            centered
+            >
+            <div style={{ textAlign: "center", padding: "20px" }}>
+                <CheckCircleOutlined
+                style={{
+                    fontSize: "48px",
+                    color: "#52c41a",
+                    marginBottom: "16px",
+                }}
+                />
+                <h3>Draft Saved Successfully</h3>
+                <p>Your changes have been saved locally.</p>
+            </div>
+            </Modal>
+        </Form>
+        {/* </div> */}
+        </FormContainer>
+    </PrintableContent>
   );
 };
 

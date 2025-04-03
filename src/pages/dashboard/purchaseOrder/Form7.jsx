@@ -17,6 +17,7 @@ import {
 } from "@ant-design/icons";
 import TextArea from "antd/es/input/TextArea";
 import { useSelector } from "react-redux";
+import CustomModal from "../../../components/CustomModal";
 
 // Option can be destructured from Select for cleaner code
 const { Option } = Select;
@@ -31,6 +32,8 @@ const Form7 = () => {
   const [vendors, setVendors] = useState([]);
   const [loadingVendors, setLoadingVendors] = useState(false);
   const [showLineItems, setShowLineItems] = useState(false);
+  const [generatedPOId, setGeneratedPOId] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
 
@@ -291,7 +294,8 @@ const Form7 = () => {
         tenderId: values.tenderID,
         indentId: selectedIndentId,
         consignesAddress: values.consigneeAddress || "Banglore",
-        billingAddress: values.billingAddress || "Koramangala, Bangalore - 560034",
+        billingAddress:
+          values.billingAddress || "Koramangala, Bangalore - 560034",
         deliveryPeriod: parseFloat(values.deliveryPeriod) || 0,
         warranty: parseFloat(values.warranty) || 0,
         ifLdClauseApplicable: !!values.ifLDClauseApplicable, // Ensure boolean
@@ -321,15 +325,20 @@ const Form7 = () => {
         }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      const responseData = await response.json();
+
+      if (responseData.responseStatus?.statusCode === 0) {
+        // Set generated ID and update form
+        setGeneratedPOId(responseData.responseData.poId);
+        form.setFieldsValue({ poId: responseData.responseData.poId });
+        setShowSuccessModal(true);
+        setIsPrintEnabled(true);
+        message.success("PO created successfully!");
+      } else {
         throw new Error(
-          errorData.responseStatus?.message || "Submission failed"
+          responseData.responseStatus?.message || "Submission failed"
         );
       }
-
-      message.success("PO submitted successfully");
-      form.resetFields();
     } catch (error) {
       message.error(`Failed to submit PO: ${error.message}`);
       console.error("Submission Error:", error);
@@ -346,7 +355,10 @@ const Form7 = () => {
         form={form}
         layout="vertical"
         onFinish={submitPOData}
-        initialValues={{ date: null, billingAddress: "Koramangala, Bangalore - 560034" }}
+        initialValues={{
+          date: null,
+          billingAddress: "Koramangala, Bangalore - 560034",
+        }}
       >
         <Row justify="end">
           <Col>
@@ -388,7 +400,11 @@ const Form7 = () => {
 
           {/* Consignee Address */}
           <Form.Item label="Consignee Address" name="consigneeAddress">
-            <TextArea rows={1} placeholder="Enter consignee address" defaultValue={"Bangalore"} />
+            <TextArea
+              rows={1}
+              placeholder="Enter consignee address"
+              defaultValue={"Bangalore"}
+            />
           </Form.Item>
 
           {/* Billing Address */}
@@ -399,7 +415,11 @@ const Form7 = () => {
               { required: true, message: "Please enter billing address" },
             ]}
           >
-            <TextArea rows={2} placeholder="Enter billing address" defaultValue={"Koramangala, Bangalore - 560034"} />
+            <TextArea
+              rows={2}
+              placeholder="Enter billing address"
+              defaultValue={"Koramangala, Bangalore - 560034"}
+            />
           </Form.Item>
 
           {/* Delivery Period */}
@@ -727,6 +747,27 @@ const Form7 = () => {
             <Input placeholder="Enter vendor's account name" disabled />
           </Form.Item>
         </div>
+
+        <CustomModal
+          open={showSuccessModal}
+          title="Purchase Order Created"
+          onCancel={() => setShowSuccessModal(false)}
+          footer={[
+            // <Button
+            //   key="print"
+            //   type="primary"
+            //   onClick={handlePrint}
+            //   disabled={!isPrintEnabled}
+            // >
+            //   Print
+            // </Button>,
+            <Button key="close" onClick={() => setShowSuccessModal(false)}>
+              Close
+            </Button>,
+          ]}
+        >
+          <p>Generated PO ID: {generatedPOId}</p>
+        </CustomModal>
 
         {/* Submit Button Section */}
         <div className="form-section">

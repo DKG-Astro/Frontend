@@ -365,13 +365,14 @@ const Form4 = () => {
   // ----------------------------
   // Form Submission & Save Draft - Handling file uploads via FormData
 
-  const uploadFileToServer = async (file) => {
+  const uploadFileToServer = async (file, fieldName) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("fileType", "Tender");
 
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/file/upload?fileType=Tender",
+        "http://103.181.158.220:8081/astro-service/file/upload",
         {
           method: "POST",
           body: formData,
@@ -379,9 +380,8 @@ const Form4 = () => {
       );
 
       if (!response.ok) throw new Error("File upload failed");
-
       const data = await response.json();
-      return data.responseData.fileName; // Return the uploaded filename
+      return data.responseData.fileName;
     } catch (error) {
       console.error("File upload error:", error);
       throw error;
@@ -416,21 +416,21 @@ const Form4 = () => {
       }
 
       // Upload files and get their names
-      const uploadFile = async (fileList, fieldName) => {
-        try {
-          if (!fileList || fileList.length === 0) return null;
-          return await uploadFileToServer(fileList[0].originFileObj);
-        } catch (error) {
-          message.error(`${fieldName} upload failed: ${error.message}`);
-          throw error;
-        }
+      const uploadFiles = async (fileList, fieldName) => {
+        if (!fileList || fileList.length === 0) return "";
+        const uploadedNames = await Promise.all(
+          fileList.map(file => 
+            uploadFileToServer(file.originFileObj, fieldName)
+          )
+        );
+        return uploadedNames.join(", ");
       };
 
       const [tenderDocUrl, generalTermsUrl, specificTermsUrl] =
         await Promise.all([
-          uploadFile(values.uploadTenderDocuments, "Tender documents"),
-          uploadFile(values.uploadGeneralTermsAndConditions, "General T&C"),
-          uploadFile(values.uploadSpecificTermsAndConditions, "Specific T&C"),
+          uploadFiles(values.uploadTenderDocuments, "Tender documents"),
+          uploadFiles(values.uploadGeneralTermsAndConditions, "General T&C"),
+          uploadFiles(values.uploadSpecificTermsAndConditions, "Specific T&C"),
         ]);
 
       // Prepare the payload with uploaded file names

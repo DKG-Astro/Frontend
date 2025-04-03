@@ -33,6 +33,8 @@ const Form7b = () => {
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
   const [vendors, setVendors] = useState([]);
   const [vendorLoading, setVendorLoading] = useState(false);
+  const [generatedContingencyId, setGeneratedContingencyId] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -137,6 +139,7 @@ const Form7b = () => {
       message.error("Failed to fetch contingency data.");
     }
   };
+  const showAndRemove = true;
 
   const normFile = (e) => {
     // When uploading, an array of file objects is expected.
@@ -151,11 +154,6 @@ const Form7b = () => {
   // Add this utility function at the top of your file
   const uploadFileToServer = async (file, fieldName) => {
     try {
-      if (!file) return "";
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error(`${fieldName} file is too large. Maximum 5MB allowed.`);
-      }
-
       const formData = new FormData();
       formData.append("file", file);
 
@@ -181,7 +179,6 @@ const Form7b = () => {
       throw new Error(`Failed to upload ${fieldName}: ${error.message}`);
     }
   };
-
   // Modified submit function
   const submitContingencyData = async (values) => {
     setLoading(true);
@@ -195,7 +192,7 @@ const Form7b = () => {
         message.error("One or more items exceed the ₹50,000 limit");
         return;
       }
-      const lineItem = values.lineItems[0];
+      //   const lineItem = values.lineItems[0];
 
       const totalAmount = values.lineItems.reduce(
         (sum, item) => sum + (item.totalPrice || 0),
@@ -209,14 +206,20 @@ const Form7b = () => {
       }
 
       // Handle file upload first
-      const uploadFile = async (fileList, fieldName) => {
+      const uploadFiles = async (fileList, fieldName) => {
         if (!fileList || fileList.length === 0) return "";
-        return uploadFileToServer(fileList[0].originFileObj, fieldName);
+        const uploadedNames = await Promise.all(
+          fileList.map((file) =>
+            uploadFileToServer(file.originFileObj, fieldName)
+          )
+        );
+        return uploadedNames.join(", ");
       };
 
-      const [uploadedFileName] = await Promise.all([
-        uploadFile(values.uploadCopyOfInvoice, "Invoice Copy"),
-      ]);
+      const uploadedFileName = await uploadFiles(
+        values.uploadCopyOfInvoice,
+        "Invoice Copy"
+      );
 
       // Build payload with file name
       const payload = {
@@ -264,8 +267,15 @@ const Form7b = () => {
         );
       }
 
+      setGeneratedContingencyId(responseData.responseData.contingencyId);
+      form.setFieldsValue({
+        contingencyId: responseData.responseData.contingencyId,
+      });
+      setShowSuccessModal(true);
+      setIsPrintEnabled(true);
+
       message.success("Contingency submitted successfully!");
-      form.resetFields();
+      //   form.resetFields();
     } catch (error) {
       console.error("Submission Error:", error);
       message.error(`Error: ${error.message}`);
@@ -343,8 +353,18 @@ const Form7b = () => {
     }
   };
 
+  const handleModeOfProcurementChange = (value, index) => {
+    const lineItems = form.getFieldValue("lineItems");
+    const currentItem = lineItems[index];
+
+    // Clear vendor names when mode changes
+    if (currentItem) {
+      currentItem.vendorNames = undefined;
+      form.setFieldsValue({ lineItems });
+    }
+  };
   // Calculate total price dynamically
-  const updateTotalPrice = (name) => {
+  const handlePriceCalculation = (name) => {
     const values = form.getFieldValue(["lineItems", name]);
     if (values?.quantity && values?.unitRate) {
       const total = values.quantity * values.unitRate;
@@ -407,53 +427,443 @@ const Form7b = () => {
           <DatePicker format="DD/MM/YYYY" />
         </Form.Item>
 
-        <Form.List name="lineItems">
-    {(fields) => (
-      <LineItem
-        form={form}
-        materialList={[]} // Pass empty array since materials come from indents
-        projects={[]}
-        materialDetailsMap={{}}
-        // calculateTotalPrice={calculateTotalPrice}
-        handlePriceCalculation={(index, field, value) => {
-            // Immediately update the changed field
-            form.setFieldValue(["lineItems", index, field], value);
+        <Form.List name="lineItems" initialValue={[{}]}>
+          {(fields, { add, remove }) => (
+            <>
+              {fields.map(({ key, name, ...restField }, index) => {
+                //   const modeOfProcurement = form.getFieldValue([
+                //     "lineItems",
+                //     name,
+                //     "modeOfProcurement",
+                //   ]);
+                return (
+                  <div
+                    key={key}
+                    className="line-item"
+                    style={{
+                      border: "1px solid #ccc",
+                      padding: "20px",
+                      paddingBottom: "5px",
+                      marginBottom: "20px",
+                      position: "relative",
+                    }}
+                  >
+                    {showAndRemove && (
+                      <DeleteOutlined
+                        onClick={() => remove(name)}
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          fontSize: "18px",
+                          cursor: "pointer",
+                        }}
+                      />
+                    )}
+                    <Space
+                      style={{
+                        display: "flex",
+                        marginBottom: 20,
+                        flexWrap: "wrap",
+                      }}
+                      align="start"
+                    >
+                      <Row gutter={16}>
+                        <Col span={8}>
+                          <Form.Item
+                            name={[name, "materialCode"]}
+                            label="Material Code"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select a material code!",
+                              },
+                              // Add uniqueness validation
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  const lineItems =
+                                    getFieldValue("lineItems") || [];
+                                  const duplicates = lineItems.filter(
+                                    (item, idx) =>
+                                      idx !== name &&
+                                      item.materialCode === value
+                                  );
+                                  if (duplicates.length > 0) {
+                                    return Promise.reject(
+                                      "Material code must be unique across items"
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              }),
+                            ]}
+                          >
+                            <Select
+                              placeholder="Select Material Code"
+                              showSearch
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children
+                                  .toLowerCase()
+                                  .includes(input.toLowerCase())
+                              }
+                              onChange={(value) =>
+                                handleMaterialSelect(index, value)
+                              }
+                            >
+                              {materialList.map((code) => (
+                                <Option key={code} value={code}>
+                                  {code}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "materialDescription"]}
+                            label="Material Description"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "Please select a material description!",
+                              },
+                              ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                  const lineItems =
+                                    getFieldValue("lineItems") || [];
+                                  const currentMaterial =
+                                    materialDetailsMap[value];
 
-            // Get current values directly from form instance
-            const quantity = parseFloat(
-              form.getFieldValue(["lineItems", index, "quantity"]) || 0
-            );
-            const unitPrice = parseFloat(
-              form.getFieldValue(["lineItems", index, "unitPrice"]) || 0
-            );
-            const total = quantity * unitPrice;
+                                  // Get descriptions for all items
+                                  const descriptions = lineItems.map(
+                                    (item) =>
+                                      materialDetailsMap[item.materialCode]
+                                        ?.description
+                                  );
 
-            // Update total price
-            form.setFieldValue(["lineItems", index, "totalPrice"], total);
+                                  // Check if current description exists in other items
+                                  const duplicates = descriptions.filter(
+                                    (desc, idx) =>
+                                      idx !== name &&
+                                      desc === currentMaterial?.description
+                                  );
 
-            // Validation
-            if (total > 50000) {
-              form.setFields([
-                {
-                  name: ["lineItems", index, "totalPrice"],
-                  errors: ["Total price cannot exceed ₹50,000"],
-                },
-              ]);
-            } else {
-              form.setFields([
-                {
-                  name: ["lineItems", index, "totalPrice"],
-                  errors: [],
-                },
-              ]);
-            }
-          }}
-        showAndRemove={false} // Disable add/remove buttons
-        handleMaterialSelect={() => {}} // Empty handlers since materials are read-only
-        handleMaterialDescriptionSelect={() => {}}
-      />
-    )}
-  </Form.List>
+                                  if (duplicates.length > 0) {
+                                    return Promise.reject(
+                                      "Material description must be unique"
+                                    );
+                                  }
+
+                                  return Promise.resolve();
+                                },
+                              }),
+                            ]}
+                          >
+                            <Select
+                              placeholder="Select Material Description"
+                              showSearch
+                              onChange={(value) =>
+                                handleMaterialDescriptionSelect(index, value)
+                              }
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children
+                                  .toLowerCase()
+                                  .includes(input.toLowerCase())
+                              }
+                            >
+                              {Object.values(materialDetailsMap).map(
+                                (material) => (
+                                  <Option
+                                    key={material.materialCode}
+                                    value={material.materialCode}
+                                  >
+                                    {material.description}
+                                  </Option>
+                                )
+                              )}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "quantity"]}
+                            label="Quantity"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter quantity!",
+                              },
+                            ]}
+                          >
+                            <Input
+                              type="number"
+                              placeholder="Enter Quantity"
+                              onChange={(e) =>
+                                handlePriceCalculation(
+                                  index,
+                                  "quantity",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "unitPrice"]}
+                            label="Unit Price"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter unit price!",
+                              },
+                            ]}
+                          >
+                            <Input
+                              type="number"
+                              placeholder="Enter Unit Price"
+                              onChange={(e) =>
+                                handlePriceCalculation(
+                                  index,
+                                  "unitPrice",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "uom"]}
+                            label="UOM"
+                            rules={[
+                              { required: true, message: "Please select UOM!" },
+                            ]}
+                          >
+                            <Input placeholder="Enter UOM" disabled />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "budgetCode"]}
+                            label="Budget Code"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select a budget code!",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Select Budget Code">
+                              {projects.map((project) => (
+                                <Option
+                                  key={project.projectCode}
+                                  value={project.projectCode}
+                                >
+                                  {project.budgetType}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "materialCategory"]}
+                            label="Material Category"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter material category!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Material Category" />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "materialSubcategory"]}
+                            label="Material Subcategory"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please enter material subcategory!",
+                              },
+                            ]}
+                          >
+                            <Input placeholder="Enter Material Subcategory" />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "modeOfProcurement"]}
+                            label="Mode of Procurement"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Mode of procurement is required",
+                              },
+                            ]}
+                          >
+                            <Select
+                              placeholder="Select mode"
+                              onChange={(value) =>
+                                handleModeOfProcurementChange(value, index)
+                              }
+                            >
+                              <Option value="BRAND PAC">Brand PAC</Option>
+                              <Option value="Proprietary/Single Tender">
+                                Proprietary/Single Tender
+                              </Option>
+                              <Option value="Limited Pre Approved Vendor Tender">
+                                Limited Pre Approved Vendor Tender
+                              </Option>
+                              <Option value="Open Tender">Open Tender</Option>
+                              <Option value="Global Tender">
+                                Global Tender
+                              </Option>
+                            </Select>
+                          </Form.Item>
+                          {form.getFieldValue([
+                            "lineItems",
+                            index,
+                            "modeOfProcurement",
+                          ]) === "Proprietary/Single Tender" && (
+                            <Form.Item
+                              {...restField}
+                              name={[name, "vendorNames"]}
+                              rules={[
+                                {
+                                  required: true,
+                                  message: "Vendor name is required",
+                                },
+                              ]}
+                            >
+                              <Select placeholder="Select vendor">
+                                {vendorMasterMod?.map((vendor) => (
+                                  <Option
+                                    key={vendor.value}
+                                    value={vendor.value}
+                                  >
+                                    {vendor.label}
+                                  </Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          )}
+
+                          {form.getFieldValue([
+                            "lineItems",
+                            index,
+                            "modeOfProcurement",
+                          ]) === "BRAND PAC" && (
+                            <Form.Item
+                              {...restField}
+                              name={[name, "vendorNames"]}
+                              // rules={[
+                              //   {
+                              //     required: true,
+                              //     message: "Vendor name is required",
+                              //   },
+                              // ]}
+                            >
+                              <Input disabled placeholder="Enter vendor name" />
+                            </Form.Item>
+                          )}
+
+                          {form.getFieldValue([
+                            "lineItems",
+                            index,
+                            "modeOfProcurement",
+                          ]) === "Limited Pre Approved Vendor Tender" && (
+                            <Form.Item
+                              {...restField}
+                              name={[name, "vendorNames"]}
+                              rules={[
+                                {
+                                  required: true,
+                                  validator: (_, value) => {
+                                    if (!value || value.length < 4) {
+                                      return Promise.reject(
+                                        "Please select at least 4 vendors"
+                                      );
+                                    }
+                                    return Promise.resolve();
+                                  },
+                                },
+                              ]}
+                            >
+                              <Select
+                                mode="multiple"
+                                placeholder="Select vendors"
+                                maxTagCount={4}
+                              >
+                                {vendorMasterMod?.map((vendor) => (
+                                  <Option
+                                    key={vendor.value}
+                                    value={vendor.value}
+                                  >
+                                    {vendor.label}
+                                  </Option>
+                                ))}
+                              </Select>
+                            </Form.Item>
+                          )}
+                        </Col>
+                        <Col span={8}>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "totalPrice"]}
+                            label="Total Price"
+                            shouldUpdate
+                          >
+                            <Input placeholder="Auto-calculated" />
+                          </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                          {/* <Form.Item
+                          {...restField}
+                          name={[name, "vendorNames"]}
+                          label="Vendor Names"
+                          dependencies={[
+                            ["lineItems", name, "modeOfProcurement"],
+                          ]}
+                        >
+                          {vendorSelect(modeOfProcurement, name)}
+                        </Form.Item> */}
+                        </Col>
+                      </Row>
+                      {/* <MinusCircleOutlined onClick={() => remove(name)} /> */}
+                    </Space>
+                  </div>
+                );
+              })}
+              {showAndRemove && (
+                <Form.Item>
+                  {/* <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    icon={<PlusOutlined />}
+                    style={{ width: "32%" }}
+                  >
+                    Add Material
+                  </Button> */}
+                </Form.Item>
+              )}
+            </>
+          )}
+        </Form.List>
 
         <div className="form-section">
           <Form.Item
