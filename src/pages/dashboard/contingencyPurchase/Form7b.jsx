@@ -6,9 +6,11 @@ import {
   Form,
   Input,
   message,
+  Modal,
   Row,
   Select,
   Space,
+  Spin,
   Upload,
 } from "antd";
 import {
@@ -230,7 +232,7 @@ const Form7b = () => {
 
       // Build payload with file name
       const payload = {
-        contigencyId: contingencyId || null,
+        // contigencyId: contingencyId || null,
         vendorsName: values.vendorName,
         vendorsInvoiceNo: values.vendorInvoiceNo,
         lineItems: values.lineItems.map((item) => ({
@@ -268,21 +270,21 @@ const Form7b = () => {
 
       const responseData = await response.json();
 
-      if (!response.ok || responseData.responseStatus.statusCode !== 0) {
-        throw new Error(
-          responseData.responseStatus?.message || "Submission failed"
-        );
-      }
+    if (!response.ok) {
+      throw new Error(
+        responseData.responseStatus?.message || "Submission failed"
+      );
+    }
 
-      setGeneratedContingencyId(responseData.responseData.contingencyId);
-      form.setFieldsValue({
-        contingencyId: responseData.responseData.contingencyId,
-      });
-      setShowSuccessModal(true);
-    //   setIsPrintEnabled(true);
-
-      message.success("Contingency submitted successfully!");
-      //   form.resetFields();
+    // Fix 1: Check correct response structure
+    if (responseData.responseData?.contigencyId) {
+      setGeneratedContingencyId(responseData.responseData?.contigencyId);
+      setShowSuccessModal(true);  // Fix 2: Ensure modal state is set
+      message.success("Contingency purchase created successfully");
+    } 
+    else {
+      throw new Error("No contingency ID in response");
+    }
     } catch (error) {
       console.error("Submission Error:", error);
       message.error(`Error: ${error.message}`);
@@ -987,26 +989,6 @@ const Form7b = () => {
             ))}
           </Select>
         </Form.Item>
-        <CustomModal
-          open={showSuccessModal}
-          title="CP Created"
-          onCancel={() => setShowSuccessModal(false)}
-          footer={[
-            // <Button
-            //   key="print"
-            //   type="primary"
-            //   onClick={handlePrint}
-            //   disabled={!isPrintEnabled}
-            // >
-            //   Print
-            // </Button>,
-            <Button key="close" onClick={() => setShowSuccessModal(false)}>
-              Close
-            </Button>,
-          ]}
-        >
-          <p>Generated CP ID: {generatedContingencyId}</p>
-        </CustomModal>
 
         <div className="form-section">
           <Button type="default" htmlType="reset">
@@ -1019,6 +1001,22 @@ const Form7b = () => {
             Save Draft
           </Button>
         </div>
+        <Modal
+          open={showSuccessModal}
+          title="CP Created"
+          onCancel={() => setShowSuccessModal(false)}
+          footer={[
+            <Button key="close" onClick={() => setShowSuccessModal(false)}>
+              Close
+            </Button>,
+          ]}
+        >
+          {generatedContingencyId ? (
+            <p>Generated CP ID: {generatedContingencyId}</p>
+          ) : (
+            <Spin tip="Generating ID..." size="small" />
+          )}
+        </Modal>
       </Form>
     </div>
   );
