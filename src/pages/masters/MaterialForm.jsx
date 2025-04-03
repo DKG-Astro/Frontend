@@ -186,7 +186,7 @@ const MaterialForm = () => {
         createdBy: isEditMode ? existingData.createdBy : actionPerformer,
         currency: values.currency,
         description: values.description,
-        estimatedPriceWithCcy: values.estimatedPriceWithCcy,
+        // estimatedPriceWithCcy: values.estimatedPriceWithCcy,
         indigenousOrImported: values.indigenousOrImported,
         subCategory: values.subCategory,
         unitPrice: values.unitPrice,
@@ -342,15 +342,15 @@ const MaterialForm = () => {
             options={modeOfProcurementList} 
             required 
           /> */}
-          <FormInputItem
+          {/* <FormInputItem
             type="number"
             name="unitPrice"
             label="Unit Price"
             required
-          />
+          /> */}
           <FormInputItem
             type="number"
-            name="estimatedPriceWithCcy"
+            name="unitPrice"
             label="Estimated Price with CCY"
             required
           />
