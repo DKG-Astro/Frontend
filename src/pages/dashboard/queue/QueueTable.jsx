@@ -3,6 +3,7 @@ import { Tabs, Typography, Row, Col } from "antd";
 import { useSelector } from "react-redux";
 import QueueRequest from "./QueueRequest";
 import QueueAction from "./QueueAction";
+import PendingGi from "./PendingGi";
 
 const { Text } = Typography;
 const RESTRICTED_USER_IDS = new Set([25, 31, 34, 36]);
@@ -14,6 +15,8 @@ const QueueTable = () => {
 
   // Check if user is restricted
   const isRestricted = RESTRICTED_USER_IDS.has(userId);
+
+  const role = useSelector(state => state?.auth);
 
   // Handle tab switching for restricted users
   useEffect(() => {
@@ -45,6 +48,14 @@ const QueueTable = () => {
         <Tabs.TabPane tab="Queue2" key="action">
           <QueueAction />
         </Tabs.TabPane>
+
+        {
+          (role === "Indent Creator" || role === "Store Purchase Officer") &&
+          <Tabs.TabPane tab="Queue3" key="inventory">
+          <PendingGi />
+          </Tabs.TabPane>
+        }
+        
       </Tabs>
     </div>
   );

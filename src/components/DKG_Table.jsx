@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Input, Button, Dropdown, Menu, Checkbox } from "antd";
 import { DownOutlined, ExportOutlined, SearchOutlined } from "@ant-design/icons";
 import * as XLSX from "xlsx";
+import Btn from "./DKG_Btn";
 
 const TableComponent = ({
   columns,
@@ -137,8 +138,32 @@ const TableComponent = ({
     .filter((col) => !hiddenColumns.includes(col.key));
 
   // Dropdown to manage column visibility
+  // Add these functions at the top with other state declarations
+  const handleSelectAllColumns = () => {
+    setHiddenColumns([]);
+  };
+
+  const handleDeselectAllColumns = () => {
+    setHiddenColumns(columns.map(col => col.key));
+  };
+
+  // Update the columnOptions menu
   const columnOptions = (
     <Menu>
+        <div className="flex items-center gap-2 !bg-white">
+      <Menu.Item key="selectAll">
+
+        <Btn type="link" onClick={handleSelectAllColumns} className="!text-darkBlueHover !font-semibold " block>
+          Select All
+        </Btn>
+      </Menu.Item>
+      <Menu.Item key="deselectAll">
+        <Button type="link" onClick={handleDeselectAllColumns} block className="border-darkBlue hover:border-darkBlueHover !text-darkBlue hover:text-darkBlueHover !font-semibold">
+          Deselect All
+        </Button>
+      </Menu.Item>
+        </div>
+      <Menu.Divider />
       {columns.map((col) => (
         <Menu.Item key={col.key}>
           <Checkbox
