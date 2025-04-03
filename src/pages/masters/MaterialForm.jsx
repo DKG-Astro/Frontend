@@ -237,7 +237,7 @@ const MaterialForm = () => {
       visible={showMaterialCodePopup}
       onOk={() => setShowMaterialCodePopup(false)}
       onCancel={() => setShowMaterialCodePopup(false)}
-      okText="Continue Editing"
+      okText="OK"
     >
       {!isEditMode && generatedMaterialCode && (
         <p>

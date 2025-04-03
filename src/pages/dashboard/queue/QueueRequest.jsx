@@ -129,7 +129,7 @@ const QueueRequest = () => {
   };
 
   const handleApprove = async (record) => {
-    console.log("Handleapprove clicked: ", record)
+    console.log("Handleapprove clicked: ", record);
     // if (!currentUserId) {
     //   message.error("User details not loaded yet.");
     //   return;
@@ -138,29 +138,40 @@ const QueueRequest = () => {
       // const workflowTransitionId = await fetchWorkflowTransitionId(
       //   record.requestId
       // );
-      const workflowTransitionId = record.workflowTransitionId;
-      if (!workflowTransitionId) {
-        message.error("Workflow transition ID not found for this request.");
-        return;
+
+      if (record.requestId.startsWith("V")) {
+        await axios.post("/api/vendor-master-util/performAction", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Vendor approved",
+          requestId: record.requestId,
+        });
+      } else if (record.requestId.startsWith("M")) {
+        await axios.post("/api/material-master-util/performActionForMaterial", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Material approved",
+          requestId: record.requestId,
+        });
+      } else {
+        const workflowTransitionId = record.workflowTransitionId;
+        if (!workflowTransitionId) {
+          message.error("Workflow transition ID not found for this request.");
+          return;
+        }
+        // Existing approval logic
+        const payload = {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          assignmentRole: null,
+          remarks: "Approved successfully",
+          requestId: record.requestId,
+          workflowTransitionId: record.workflowTransitionId,
+        };
+        await axios.post("/performTransitionAction", payload);
       }
-
-      const payload = {
-        action: "APPROVED",
-        actionBy: actionPerformer,
-        assignmentRole: null,
-        remarks: "Approved successfully",
-        requestId: record.requestId,
-        workflowTransitionId,
-      };
-
-      await axios.post(
-        "http://103.181.158.220:8081/astro-service/performTransitionAction",
-        payload,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      message.success(`Request ${record.requestId} approved successfully.`);
-      setData((prevData) => prevData.filter((item) => item.key !== record.key));
+      message.success(`Request ${record.requestId} processed`);
+      setData((prev) => prev.filter((item) => item.key !== record.key));
     } catch (error) {
       message.error("Failed to approve");
       console.error("Approval error:", error);
@@ -193,40 +204,56 @@ const QueueRequest = () => {
     // }
     try {
       // Get full transition history
-      const history = await fetchWorkflowTransitionHistory(record.requestId);
+      if (record.requestId.startsWith("V")) {
+        await axios.post("/api/vendor-master-util/performAction", {
+          action: "REJECTED",
+          actionBy: actionPerformer,
+          remarks: rejectComment,
+          requestId: record.requestId,
+        });
+      } else if (record.requestId.startsWith("M")) {
+        await axios.post("/api/material-master-util/performActionForMaterial", {
+          action: "REJECTED",
+          actionBy: actionPerformer,
+          remarks: rejectComment,
+          requestId: record.requestId,
+        });
+      } else {
+        const history = await fetchWorkflowTransitionHistory(record.requestId);
 
-      if (!history || history.length === 0) {
-        message.error("No transition history found for this request.");
-        return;
+        if (!history || history.length === 0) {
+          message.error("No transition history found for this request.");
+          return;
+        }
+
+        // Find the last approval action
+        const previousApprovals = history.filter(
+          (entry) => entry.action === "APPROVED"
+        );
+        if (previousApprovals.length === 0) {
+          message.error("No previous approval found to revert to.");
+          return;
+        }
+
+        // Get the last approval entry
+        const lastApproval = previousApprovals[previousApprovals.length - 1];
+
+        // Get current transition ID (assuming first in array is current)
+        const currentTransition = history[0];
+
+        const payload = {
+          action: "REJECTED",
+          actionBy: actionPerformer,
+          assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
+          remarks: rejectComment, // Use user's reject comments
+          requestId: record.requestId,
+          workflowTransitionId: currentTransition.workflowTransitionId,
+        };
+
+        await axios.post("/performTransitionAction", payload, {
+          headers: { "Content-Type": "application/json" },
+        });
       }
-
-      // Find the last approval action
-      const previousApprovals = history.filter(
-        (entry) => entry.action === "APPROVED"
-      );
-      if (previousApprovals.length === 0) {
-        message.error("No previous approval found to revert to.");
-        return;
-      }
-
-      // Get the last approval entry
-      const lastApproval = previousApprovals[previousApprovals.length - 1];
-
-      // Get current transition ID (assuming first in array is current)
-      const currentTransition = history[0];
-
-      const payload = {
-        action: "REJECTED",
-        actionBy: actionPerformer,
-        assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
-        remarks: rejectComment, // Use user's reject comments
-        requestId: record.requestId,
-        workflowTransitionId: currentTransition.workflowTransitionId,
-      };
-
-      await axios.post("/performTransitionAction", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
 
       message.success(`Request ${record.requestId} rejected and out of queue`);
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
@@ -255,29 +282,45 @@ const QueueRequest = () => {
       // const workflowTransitionId = await fetchWorkflowTransitionId(
       //   record.requestId
       // );
-      const workflowTransitionId = record.workflowTransitionId;
-      if (!workflowTransitionId) {
-        message.error("Workflow transition ID not found for this request.");
-        return;
+      if (record.requestId.startsWith('V')) {
+        await axios.post('/api/vendor-master-util/performAction', {
+          action: "CHANGE_REQUESTED",
+          actionBy: actionPerformer,
+          remarks: requestChangeComment,
+          requestId: record.requestId
+        });
+      } else if (record.requestId.startsWith("M")) {
+        await axios.post("/api/material-master-util/performActionForMaterial", {
+          action: "CHANGE_REQUESTED",
+          actionBy: actionPerformer,
+          remarks: requestChangeComment,
+          requestId: record.requestId,
+        });
+      } else {
+        const workflowTransitionId = record.workflowTransitionId;
+        if (!workflowTransitionId) {
+          message.error("Workflow transition ID not found for this request.");
+          return;
+        }
+
+        const payload = {
+          action: "Change requested",
+          actionBy: actionPerformer,
+          assignmentRole: selectedRole,
+          remarks: requestChangeComment,
+          // requestId: record.requestId,
+          // workflowTransitionId,
+          // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
+          // remarks: rejectComment, // Use user's reject comments
+          requestId: record.requestId,
+          // workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
+          workflowTransitionId: record.workflowTransitionId,
+        };
+
+        await axios.post("/performTransitionAction", payload, {
+          headers: { "Content-Type": "application/json" },
+        });
       }
-
-      const payload = {
-        action: "Change requested",
-        actionBy: actionPerformer,
-        assignmentRole: selectedRole,
-        remarks: requestChangeComment,
-        // requestId: record.requestId,
-        // workflowTransitionId,
-        // assignmentRole: lastApproval.assignmentRole, // Assign to previous approver's role
-        // remarks: rejectComment, // Use user's reject comments
-        requestId: record.requestId,
-        // workflowTransitionId: await fetchWorkflowTransitionId(record.requestId),
-        workflowTransitionId: record.workflowTransitionId
-      };
-
-      await axios.post("/performTransitionAction", payload, {
-        headers: { "Content-Type": "application/json" },
-      });
 
       message.success("Request change submitted successfully.");
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
@@ -318,6 +361,9 @@ const QueueRequest = () => {
         break;
       case 5:
         endpoint = `/api/service-orders/${record.requestId}`;
+        break;
+      case 6:
+        endpoint = `/api/vendor-master-util/${record.requestId}`;
         break;
       default:
         message.error("Invalid workflow ID.");
@@ -377,57 +423,59 @@ const QueueRequest = () => {
       //     status: item.nextAction,
       //     remarks: item.remarks || "No remarks",
       //   }));
-      const formattedData = response.data.responseData.map((item) => ({
-        key: item.requestId,
-        requestId: item.requestId,
-        workflowId: item.workflowId,
-        workflowName: item.workflowName,
-        createdDate: new Date(item.createdDate),
-        remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
-        // Correct field mappings based on workflowId
-        ...(item.workflowId === 1 && {
-          // Indent
-          indentorName: item.indentorName,
-          amount: item.amount,
-          projectName: item.projectName,
-          budgetName: item.budgetName,
-          modeOfProcurement: item.modeOfProcurement,
-          consignee: item.consignee,
-        }),
-        ...(item.workflowId === 2 && {
-          // Contingency Purchase
-          createdBy: item.createdBy,
-          amount: item.amount,
-          projectName: item.projectName,
-          consignee: item.deliveryLocation,
-        }),
-        ...(item.workflowId === 3 && {
-          // Purchase Order
-          createdBy: item.createdBy,
-          amount: item.amount,
-          projectName: item.projectName,
-          budgetCode: item.budgetCode,
-          procurementType: item.procurementType,
-          consignee: item.consignee,
-        }),
-        ...(item.workflowId === 4 && {
-          // Tender
-          createdBy: item.createdBy,
-          projectName: item.projectName,
-          budgetCode: item.budgetCode,
-          procurementType: item.procurementType,
-          consignee: item.deliveryAddress,
-        }),
-        ...(item.workflowId === 5 && {
-          createdBy: item.createdBy,
-          projectName: item.projectName,
-          budgetCode: item.budgetCode,
-          procurementType: item.procurementType,
-          consignee: item.consignee,
-        }),
-        status: item.nextAction,
-        workflowTransitionId: item.workflowTransitionId
-      })).sort((a,b)=> b.createdDate - a.createdDate);
+      const formattedData = response.data.responseData
+        .map((item) => ({
+          key: item.requestId,
+          requestId: item.requestId,
+          workflowId: item.workflowId,
+          workflowName: item.workflowName,
+          createdDate: new Date(item.createdDate),
+          remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
+          // Correct field mappings based on workflowId
+          ...(item.workflowId === 1 && {
+            // Indent
+            indentorName: item.indentorName,
+            amount: item.amount,
+            projectName: item.projectName,
+            budgetName: item.budgetName,
+            modeOfProcurement: item.modeOfProcurement,
+            consignee: item.consignee,
+          }),
+          ...(item.workflowId === 2 && {
+            // Contingency Purchase
+            createdBy: item.createdBy,
+            amount: item.amount,
+            projectName: item.projectName,
+            consignee: item.deliveryLocation,
+          }),
+          ...(item.workflowId === 3 && {
+            // Purchase Order
+            createdBy: item.createdBy,
+            amount: item.amount,
+            projectName: item.projectName,
+            budgetCode: item.budgetCode,
+            procurementType: item.procurementType,
+            consignee: item.consignee,
+          }),
+          ...(item.workflowId === 4 && {
+            // Tender
+            createdBy: item.createdBy,
+            projectName: item.projectName,
+            budgetCode: item.budgetCode,
+            procurementType: item.procurementType,
+            consignee: item.deliveryAddress,
+          }),
+          ...(item.workflowId === 5 && {
+            createdBy: item.createdBy,
+            projectName: item.projectName,
+            budgetCode: item.budgetCode,
+            procurementType: item.procurementType,
+            consignee: item.consignee,
+          }),
+          status: item.nextAction,
+          workflowTransitionId: item.workflowTransitionId,
+        }))
+        .sort((a, b) => b.createdDate - a.createdDate);
       setData(formattedData);
     } catch (err) {
       setError(err.message);
@@ -458,7 +506,7 @@ const QueueRequest = () => {
           indentor: apiData.createdBy,
           amount: apiData.amount,
           project: apiData.projectName,
-          budgetName: "N/A", // Contingency may not have budget
+          budgetName: "-", // Contingency may not have budget
           indentTitle: "Contingency Purchase",
           procurementMode: "Direct Purchase",
           indentor: apiData.vendorsName
@@ -504,7 +552,7 @@ const QueueRequest = () => {
         }[field];
 
       default:
-        return "N/A";
+        return "-";
     }
   };
 
