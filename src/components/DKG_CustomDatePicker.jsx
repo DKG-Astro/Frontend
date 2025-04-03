@@ -103,7 +103,7 @@ import React from 'react';
 import { DatePicker, Form } from 'antd';
 import dayjs from 'dayjs';
 
-const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, required }) => {
+const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, required, className }) => {
   // Convert string date to dayjs object if it exists
   const dateValue = defaultValue ? 
     (dayjs.isDayjs(defaultValue) ? defaultValue : dayjs(defaultValue)) : 
@@ -120,7 +120,7 @@ const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, requi
     required={required}
       label={label}
       name={name}
-      className="mb-4"
+      className={`mb-4 ${className}`}
       rules={[{ required: required, message: `Please select ${label}` }]}
     >
       <DatePicker 

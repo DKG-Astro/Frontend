@@ -160,7 +160,7 @@ label{
   @apply !bg-darkBlue
 }
 
-.ant-dropdown-trigger.active, .ant-dropdown-trigger.active>*{
+.ant-dropdown-trigger.active, .ant-dropdown-trigger.active>*, .ant-dropdown-open, .ant-dropdown-open>*{
   color:#E74C3C !important
 }
 
@@ -195,6 +195,7 @@ label{
 .no-margin{
   @apply !m-0;
 }
+
 
 /* @media print {
   .print-css-tandc{
@@ -413,3 +414,12 @@ input{
 .ant-picker{
   @apply !px-[0.1rem] !py-0
 } */
+
+/* Custom checkbox color */
+.ant-checkbox-checked .ant-checkbox-inner {
+  @apply bg-darkBlueHover border-darkBlueHover  /* Change the border color */
+}
+
+.ant-checkbox-checked:hover .ant-checkbox-inner {
+  @apply bg-darkBlueHover /* Change hover color */
+}

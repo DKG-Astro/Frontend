@@ -1,5 +1,5 @@
 import { Card, message } from "antd";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
 import { renderFormFields } from "../../../utils/CommonFunctions";
@@ -9,6 +9,7 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
+import { useLocation } from "react-router-dom";
 
 const GoodsInspection = () => {
   const printRef = useRef();
@@ -16,10 +17,13 @@ const GoodsInspection = () => {
     content: () => printRef.current,
   });
 
+  const location = useLocation();
+  const processNo = location?.state?.processNo || null;
+
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [formData, setFormData] = useState({
-    gprnNo: "",
+    gprnNo: processNo || "",
     materialDtlList: []
   });
 
@@ -35,16 +39,15 @@ const GoodsInspection = () => {
     }
   }
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     try {
-      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${formData.gprnNo}`);
+      console.log("FROMDATA: ", formData)
+      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${formData?.gprnNo}`);
       setFormData({...data?.responseData, gprnNo: data.responseData?.processId});
     } catch(error) {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
-  }
-
-  console.log("FormData: ", formData)
+  }, [formData.gprnNo])
 
   const {userId, locationId} = useSelector(state => state.auth);
 
@@ -76,6 +79,15 @@ const GoodsInspection = () => {
       message.success("Form loaded from draft.");
     }
   }, []);
+
+  useEffect(() => {
+    if(processNo) {
+      // setFormData({gprnNo: processNo})
+      handleSearch();
+    }
+  }, [processNo, handleSearch])
+
+
 
   return (
     <Card className="a4-container" ref={printRef}>
