@@ -265,10 +265,6 @@ const QueueRequest = () => {
   };
 
   const handleRequestChangeSubmit = async (record) => {
-    if (!selectedRole) {
-      message.warning("Please select a role.");
-      return;
-    }
     if (!requestChangeComment.trim()) {
       message.warning("Please enter request change comments.");
       return;
@@ -282,21 +278,25 @@ const QueueRequest = () => {
       // const workflowTransitionId = await fetchWorkflowTransitionId(
       //   record.requestId
       // );
-      if (record.requestId.startsWith('V')) {
-        await axios.post('/api/vendor-master-util/performAction', {
-          action: "CHANGE_REQUESTED",
+      if (record.requestId.startsWith("V")) {
+        await axios.post("/api/vendor-master-util/performAction", {
+          action: "CHANGE REQUEST",
           actionBy: actionPerformer,
           remarks: requestChangeComment,
-          requestId: record.requestId
+          requestId: record.requestId,
         });
       } else if (record.requestId.startsWith("M")) {
         await axios.post("/api/material-master-util/performActionForMaterial", {
-          action: "CHANGE_REQUESTED",
+          action: "CHANGE REQUEST",
           actionBy: actionPerformer,
           remarks: requestChangeComment,
           requestId: record.requestId,
         });
       } else {
+        if (!selectedRole) {
+          message.warning("Please select a role.");
+          return;
+        }
         const workflowTransitionId = record.workflowTransitionId;
         if (!workflowTransitionId) {
           message.error("Workflow transition ID not found for this request.");
@@ -724,7 +724,15 @@ const QueueRequest = () => {
               trigger="click"
               onVisibleChange={(visible) => {
                 if (visible) {
-                  fetchPreviousRoles(record.workflowId, record.requestId);
+                  if (record.requestId.startsWith("M")) {
+                    // Hardcode for material workflow
+                    setPreviousRoles(["Indent Creator"]);
+                    setSelectedRole("Indent Creator");
+                    setLoadingPreviousRoles(false);
+                  } else {
+                    // Normal workflow - fetch previous roles
+                    fetchPreviousRoles(record.workflowId, record.requestId);
+                  }
                 } else {
                   // Reset when popover closes
                   setPreviousRoles([]);

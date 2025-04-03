@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import { useSelector } from "react-redux";
 import { values } from "lodash";
 import LineItem from "../LineItem";
+import CustomModal from "../../../components/CustomModal";
 
 const Form7b = () => {
   const [form] = Form.useForm();
@@ -272,7 +273,7 @@ const Form7b = () => {
         contingencyId: responseData.responseData.contingencyId,
       });
       setShowSuccessModal(true);
-      setIsPrintEnabled(true);
+    //   setIsPrintEnabled(true);
 
       message.success("Contingency submitted successfully!");
       //   form.resetFields();
@@ -976,6 +977,26 @@ const Form7b = () => {
             ))}
           </Select>
         </Form.Item>
+        <CustomModal
+          open={showSuccessModal}
+          title="CP Created"
+          onCancel={() => setShowSuccessModal(false)}
+          footer={[
+            // <Button
+            //   key="print"
+            //   type="primary"
+            //   onClick={handlePrint}
+            //   disabled={!isPrintEnabled}
+            // >
+            //   Print
+            // </Button>,
+            <Button key="close" onClick={() => setShowSuccessModal(false)}>
+              Close
+            </Button>,
+          ]}
+        >
+          <p>Generated CP ID: {generatedContingencyId}</p>
+        </CustomModal>
 
         <div className="form-section">
           <Button type="default" htmlType="reset">

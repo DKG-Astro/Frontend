@@ -186,18 +186,18 @@ const MaterialForm = () => {
         createdBy: isEditMode ? existingData.createdBy : actionPerformer,
         currency: values.currency,
         description: values.description,
-        estimatedPriceWithCcy: null,
+        estimatedPriceWithCcy: values.estimatedPriceWithCcy,
         indigenousOrImported: values.indigenousOrImported,
         subCategory: values.subCategory,
         unitPrice: values.unitPrice,
         uom: values.uom,
-        updatedBy: actionPerformer,
+        updatedBy: String(actionPerformer), // Convert to string
         uploadImageFileName: uploadedFileName,
       };
 
       const url = isEditMode
         ? `http://103.181.158.220:8081/astro-service/api/material-master/${materialCode}`
-        : "http://103.181.158.220:8081/astro-service/api/material-master";
+        : "http://103.181.158.220:8081/astro-service/api/material-master-util/register";
 
       const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",
@@ -345,6 +345,12 @@ const MaterialForm = () => {
           <FormInputItem
             type="number"
             name="unitPrice"
+            label="Unit Price"
+            required
+          />
+          <FormInputItem
+            type="number"
+            name="estimatedPriceWithCcy"
             label="Estimated Price with CCY"
             required
           />
@@ -414,7 +420,7 @@ const MaterialForm = () => {
             <Upload
               beforeUpload={() => false}
               maxCount={1}
-            //   accept="image/*"
+              //   accept="image/*"
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}
             >
