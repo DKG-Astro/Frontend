@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 const { Option } = Select;
 
 const LineItem = ({
+  setHasProprietaryItem,
   form,
   materialList,
   projects,
@@ -134,6 +135,16 @@ const LineItem = ({
     }
   };
   const handleModeOfProcurementChange = (value, index) => {
+    if(value === "Proprietary/Single Tender"){
+      // setHasProprietaryItem(true);
+      console.log("HERE")
+
+      setHasProprietaryItem(true);
+    }
+
+    const str = "Proprietary/Single Tender"
+
+    console.log("Called", value.length, str.length)
     const lineItems = form.getFieldValue("lineItems");
     const currentItem = lineItems[index];
 
@@ -143,6 +154,8 @@ const LineItem = ({
       form.setFieldsValue({ lineItems });
     }
   };
+
+  console.log("PROP: ", )
 
   const fetchInitialData = async () => {
     try {
@@ -490,7 +503,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "modeOfProcurement"]}
+                          name={[name, index, "modeOfProcurement"]}
                           label="Mode of Procurement"
                           rules={[
                             {

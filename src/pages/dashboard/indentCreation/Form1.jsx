@@ -35,6 +35,28 @@ dayjs.extend(customParseFormat);
 
 const { Option } = Select;
 
+const quarterDropdownOptions = [
+  {label: "Q1", value: "Q1"},
+  {label: "Q2", value: "Q2"},
+  {label: "Q3", value: "Q3"},
+  {label: "Q4", value: "Q4"},
+]
+
+const reasonDropdownOptions = [
+  {
+    label: "It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods",
+    value: "It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods"
+  },
+  {
+    label: "In a case of emergency, the required goods are necessarily to be purchased from a particular source",
+    value: "In a case of emergency, the required goods are necessarily to be purchased from a particular source"
+  },
+  {
+    label: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm",
+    value: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm",
+  }
+]
+
 const Form1 = () => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -53,6 +75,9 @@ const Form1 = () => {
   const [isBrandPac, setIsBrandPac] = useState(false);
 
   const { userName, email, mobileNumber } = useSelector((state) => state.auth);
+
+  const [hasProprietaryItem, setHasProprietaryItem] = useState(false);
+
 
   const printRef = useRef();
   const handlePrint = useReactToPrint({
@@ -363,6 +388,8 @@ const Form1 = () => {
         return;
       }
 
+      
+
       // Continue with file uploads and payload construction as before
       const uploadFiles = async (fileList, fieldName) => {
         if (!fileList || fileList.length === 0) return "";
@@ -436,6 +463,12 @@ const Form1 = () => {
         isPreBidMeetingRequired: values.preBidMeetingRequired,
         periodOfContract: values.periodOfRateContract || 0,
         singleAndMultipleJob: values.singleOrMultipleJob || null,
+
+
+         reason: hasProprietaryItem ? values.proprietaryReason : null,
+        justification: hasProprietaryItem ? values.proprietaryJustification : null,
+        quarter: values.quarter || null,
+        purpose: values.purpose || null,
 
         // Maintain existing fields that match
         createdBy: actionPerformer || 0,
@@ -644,6 +677,14 @@ const Form1 = () => {
     handleMaterialSelect(index, materialCode); // Reuse the same handler
   };
 
+  const checkForProprietaryItems = (lineItems) => {
+    if (!lineItems) return false;
+    return lineItems.some(item => 
+      item.modeOfProcurement === "Proprietary/Single Tender"
+    );
+  };
+
+
   useEffect(() => {
     form.setFieldsValue({
       indentorEmail: email,
@@ -651,6 +692,8 @@ const Form1 = () => {
       indentorName: userName,
     });
   }, []);
+
+  console.log("HWJR: ", hasProprietaryItem)
 
   return (
     <PrintableContent ref={printRef}>
@@ -784,6 +827,7 @@ const Form1 = () => {
 
             <div className="print-section">
             <LineItem
+            setHasProprietaryItem={setHasProprietaryItem}
             form={form}
             materialList={materialList}
             projects={projects}
@@ -879,11 +923,41 @@ const Form1 = () => {
             )}
             </div>
 
-            <Form.Item name="rateContractIndent" valuePropName="checked">
-            <Checkbox onChange={handleCheckboxChange2}>
-                Is it a rate contract indent
-            </Checkbox>
-            </Form.Item>
+            {hasProprietaryItem && (
+    <div className="form-section">
+      <Form.Item
+        name="reason"
+        label="Reason for Proprietary/Single Tender"
+        rules={[{ required: true, message: "Please select a reason" }]}
+      >
+        <Select placeholder="Select reason">
+          <Option value="1">It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods</Option>
+          <Option value="2">In a case of emergency, the required goods are necessarily to be purchased from a particular source</Option>
+          <Option value="3">For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm</Option>
+        </Select>
+      </Form.Item>
+      
+      <Form.Item
+        name="justification"
+        label="Justification"
+        rules={[{ required: true, message: "Please provide justification" }]}
+      >
+        <Input.TextArea rows={4} placeholder="Enter detailed justification for proprietary procurement" />
+      </Form.Item>
+    </div>
+  )}
+            <div className="grid grid-cols-2 gap-x-8">
+
+
+            <Form.Item name="quarter" label="Quarter">
+                <Select options={quarterDropdownOptions} />
+              </Form.Item>
+
+            <Form.Item name="purpose" label="Purpose">
+                <Input />
+              </Form.Item>
+            </div>
+
             <div className="form-section">
             {rateContractIndent && (
                 <Row gutter={24}>
@@ -952,6 +1026,13 @@ const Form1 = () => {
                 Is it a brand PAC
             </Checkbox>
             </Form.Item>
+
+            <Form.Item name="rateContractIndent" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange2}>
+                Is it a rate contract indent
+            </Checkbox>
+            </Form.Item>
+
             <div className="form-section">
             {isBrandPac && (
                 <>
