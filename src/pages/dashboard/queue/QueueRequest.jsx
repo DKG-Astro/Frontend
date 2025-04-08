@@ -10,6 +10,8 @@ import {
   message,
   Spin,
   Select,
+  Descriptions, Badge,
+  Modal
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -18,6 +20,68 @@ import QueueModal from "./QueueModal";
 // import { render } from "@testing-library/react";
 
 const { Text } = Typography;
+
+
+const MaterialDetailModal = ({ visible, setVisible, materialData }) => {
+  if (!materialData) return null;
+  
+  return (
+    <Modal
+      title="Material Details"
+      open={visible}
+      onCancel={() => setVisible(false)}
+      footer={[
+        <Button key="close" onClick={() => setVisible(false)}>
+          Close
+        </Button>
+      ]}
+      width={700}
+    >
+      <Descriptions bordered column={2}>
+        <Descriptions.Item label="Material Code" span={2}>
+          {materialData.materialCode}
+        </Descriptions.Item>
+        <Descriptions.Item label="Description" span={2}>
+          {materialData.description}
+        </Descriptions.Item>
+        <Descriptions.Item label="Category">
+          {materialData.category}
+        </Descriptions.Item>
+        <Descriptions.Item label="Sub Category">
+          {materialData.subCategory}
+        </Descriptions.Item>
+        <Descriptions.Item label="UOM">
+          {materialData.uom}
+        </Descriptions.Item>
+        <Descriptions.Item label="Unit Price">
+          {materialData.currency} {materialData.unitPrice}
+        </Descriptions.Item>
+        <Descriptions.Item label="Origin">
+          {materialData.indigenousOrImported ? "Indigenous" : "Imported"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Created By">
+          {materialData.createdBy}
+        </Descriptions.Item>
+        <Descriptions.Item label="Created Date">
+          {new Date(materialData.createdDate).toLocaleString()}
+        </Descriptions.Item>
+        <Descriptions.Item label="Updated Date">
+          {new Date(materialData.updatedDate).toLocaleString()}
+        </Descriptions.Item>
+        <Descriptions.Item label="Status" span={2}>
+          <Badge 
+            status={materialData.approvalStatus === "APPROVED" ? "success" : 
+                   materialData.approvalStatus === "REJECTED" ? "error" : "warning"} 
+            text={materialData.approvalStatus.replace("_", " ")} 
+          />
+        </Descriptions.Item>
+        <Descriptions.Item label="Comments" span={2}>
+          {materialData.comments || "No comments"}
+        </Descriptions.Item>
+      </Descriptions>
+    </Modal>
+  );
+};
 
 const FilterComponent = (
   { onSearch, searchTerm, onReset } // Changed prop name
@@ -333,11 +397,23 @@ const QueueRequest = () => {
     }
   };
 
+  const [materialModalOpen, setMaterialModalOpen] = useState(false);
+  const [materialDtl, setMaterialDtl] = useState(null);
+
   // --- Fetch details based on workflowId ---
   const fetchWorkflowDetails = async (record) => {
     if (!record.requestId) {
       message.error("No ID found.");
       return;
+    }
+
+    if(record.requestId.startsWith("M")) {
+      const {data} = await axios.get(
+        `/api/material-master-util/${record.requestId}`
+      )
+      setMaterialDtl(data.responseData)
+      setMaterialModalOpen(true)
+      return
     }
     // Save the selected record so we can use its details in the Modal
     setSelectedRecord(record);
@@ -787,6 +863,11 @@ const QueueRequest = () => {
         detailsData={detailsData}
         historyVisible={historyVisible}
         setHistoryVisible={setHistoryVisible}
+      />
+      <MaterialDetailModal 
+        visible={materialModalOpen}
+        setVisible={setMaterialModalOpen}
+        materialData={materialDtl}
       />
     </div>
   );
