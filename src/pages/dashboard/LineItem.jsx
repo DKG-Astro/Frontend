@@ -49,7 +49,7 @@ const LineItem = ({
     fetchVendors();
   }, []);
   const vendorOptions = vendors.map((vendor) => ({
-    label: vendor.vendorName,
+    label: `${vendor.vendorId} - ${vendor.vendorName}`,
     value: vendor.vendorName,
     // Include additional fields if needed:
     vendorId: vendor.vendorId,
@@ -87,6 +87,10 @@ const LineItem = ({
               placeholder="Select Vendor"
               showSearch
               optionFilterProp="label"
+              filterOption={(input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase()) ||
+                option.vendorCode.toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Form.Item>
         );
@@ -122,6 +126,10 @@ const LineItem = ({
               placeholder="Select at least 4 vendors"
               showSearch
               optionFilterProp="label"
+              filterOption={(input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase()) ||
+                option.vendorCode.toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Form.Item>
         );
@@ -135,16 +143,16 @@ const LineItem = ({
     }
   };
   const handleModeOfProcurementChange = (value, index) => {
-    if(value === "Proprietary/Single Tender"){
+    if (value === "Proprietary/Single Tender") {
       // setHasProprietaryItem(true);
-      console.log("HERE")
+      console.log("HERE");
 
       setHasProprietaryItem(true);
     }
 
-    const str = "Proprietary/Single Tender"
+    const str = "Proprietary/Single Tender";
 
-    console.log("Called", value.length, str.length)
+    console.log("Called", value.length, str.length);
     const lineItems = form.getFieldValue("lineItems");
     const currentItem = lineItems[index];
 
@@ -155,7 +163,7 @@ const LineItem = ({
     }
   };
 
-  console.log("PROP: ", )
+  console.log("PROP: ");
 
   const fetchInitialData = async () => {
     try {
@@ -399,6 +407,7 @@ const LineItem = ({
                           <Input
                             type="number"
                             placeholder="Enter Quantity"
+                            min="1"
                             onChange={(e) =>
                               handlePriceCalculation(
                                 index,
@@ -432,6 +441,15 @@ const LineItem = ({
                               )
                             }
                           />
+                        </Form.Item>
+                        <Form.Item
+                          label="Currency"
+                          name={[name, "currency"]}
+                          rules={[
+                            { required: true, message: "Currency is required" },
+                          ]}
+                        >
+                          <Input disabled />
                         </Form.Item>
                       </Col>
                       <Col span={8}>
@@ -569,7 +587,7 @@ const LineItem = ({
                             //   },
                             // ]}
                           >
-                            <Input disabled placeholder="Enter vendor name"/>
+                            <Input disabled placeholder="Enter vendor name" />
                           </Form.Item>
                         )}
 
@@ -657,3 +675,20 @@ const LineItem = ({
 };
 
 export default LineItem;
+
+// In the handleMaterialSelect function, add currency update:
+// const handleMaterialSelect = (index, materialCode) => {
+//   const materialData = materialDetailsMap[materialCode] || {};
+//   const lineItems = form.getFieldValue("lineItems") || [];
+//   const updatedItems = [...lineItems];
+
+//   updatedItems[index] = {
+//     ...updatedItems[index],
+//     currency: materialData.currency || "", // Add this line
+//     // ... rest of existing fields
+//   };
+
+//   form.setFieldsValue({ lineItems: updatedItems });
+// };
+
+// In the form fields rendering section, add:

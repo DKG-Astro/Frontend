@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import { modeOfProcurementList } from "../../utils/Constants";
 import { useLocation, useParams } from "react-router-dom";
 import dayjs from "dayjs";
+import TextAreaComponent from "../../components/DKG_TextAreaComponent";
 
 const MaterialForm = ({materialCode}) => {
   const auth = useSelector((state) => state.auth);
@@ -407,18 +408,17 @@ const MaterialForm = ({materialCode}) => {
             </Select>
           </Form.Item>
 
-          {/* <FormInputItem
-            label="Estimated Price with CCY"
-            name="estimatedPriceWithCcy"
+          <TextAreaComponent
+            label="Brief Description of Material"
+            name="briefDescription"
             required
-          /> */}
+          />
         </div>
 
         <div className="form-section">
           <Form.Item label="Upload Document">
             <Upload
               beforeUpload={() => false}
-              maxCount={1}
               //   accept="image/*"
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}
