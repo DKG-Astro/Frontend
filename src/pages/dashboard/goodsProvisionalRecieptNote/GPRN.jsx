@@ -140,7 +140,10 @@ const GPRN = () => {
             project: data?.responseData?.projectName || "N/A",
             indentorName: indentData?.responseData?.indentorName,
             consigneeDetail: data?.responseData?.consignesAddress,
-            materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity}))
+            materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity})),
+            date: dayjs().format('DD/MM/YYYY'),
+            deliveryDate: dayjs().format('DD/MM/YYYY'),
+            supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
           })
         }
         catch(error){
