@@ -565,6 +565,8 @@ const QueueRequest = () => {
     }
   };
 
+const {userId} = useSelector(state => state.auth)
+
   const getCommonField = (workflowId, apiData, field) => {
     switch (workflowId) {
       // Indent (workflowId=1)
@@ -722,7 +724,19 @@ const QueueRequest = () => {
       fixed: "right",
       render: (_, record) => {
         // For Material requests (IDs starting with 'M'), show only Edit button
-        if (record.requestId.startsWith('M')) {
+        // if (record.requestId.startsWith('M')) {
+        //   return (
+        //     <Button 
+        //       type="primary" 
+        //       onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
+        //     >
+        //       Edit
+        //     </Button>
+        //   );
+        // }
+        
+        // For user ID 18, only show edit button for all request types
+        if ((userId === 18) && record.requestId.startsWith('M')) {
           return (
             <Button 
               type="primary" 
@@ -730,10 +744,154 @@ const QueueRequest = () => {
             >
               Edit
             </Button>
+          )
+        }
+
+        if((userId === 18) && !record.requestId.startsWith('M')) {
+          return (
+            <Button
+              type="primary"
+              onClick={() => fetchWorkflowDetails(record)}
+            >
+              Edit
+            </Button>
+          )
+        }
+        
+        // For user ID 29, show all options
+        if (userId === 29) {
+
+          if (record.status === "Approved") return null;
+          return (
+            <Space>
+              {
+                record.requestId.startsWith('M') ? (
+                  <Button
+                    type="primary"
+                    onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <Button
+                    type="primary"
+                    onClick={() => fetchWorkflowDetails(record)}
+                  >
+                    Edit
+                  </Button>
+                )
+              }
+              {/* <Button 
+                type="primary" 
+                onClick={() => fetchWorkflowDetails(record)}
+                style={{ marginRight: 8 }}
+              >
+                Editss
+              </Button> */}
+              <Button type="link" onClick={() => handleApprove(record)}>
+                Approve
+              </Button>
+              <Popover
+                content={
+                  <div style={{ padding: 12 }}>
+                    <Input.TextArea
+                      placeholder="Reject Comments"
+                      rows={3}
+                      value={rejectComment}
+                      onChange={(e) => setRejectComment(e.target.value)}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => handleReject(record)}
+                      style={{ marginTop: 8 }}
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                }
+                title="Reject"
+                trigger="click"
+              >
+                <Button danger type="link">
+                  Reject
+                </Button>
+              </Popover>
+              <Popover
+                content={
+                  <div style={{ padding: 12, width: 300 }}>
+                    <Select
+                      placeholder={
+                        loadingPreviousRoles
+                          ? "Loading roles..."
+                          : "Select a role"
+                      }
+                      value={selectedRole}
+                      onChange={setSelectedRole}
+                      style={{ width: "100%", marginBottom: 8 }}
+                      loading={loadingPreviousRoles}
+                      disabled={
+                        loadingPreviousRoles || previousRoles.length === 0
+                      }
+                    >
+                      {previousRoles.map((role) => (
+                        <Select.Option key={role} value={role}>
+                          {role}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                    {previousRoles.length === 0 && !loadingPreviousRoles && (
+                      <Text type="secondary">No previous roles available.</Text>
+                    )}
+                    <Input.TextArea
+                      placeholder="Request Change Comments"
+                      rows={3}
+                      value={requestChangeComment}
+                      onChange={(e) => setRequestChangeComment(e.target.value)}
+                      style={{ marginTop: 8 }}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => handleRequestChangeSubmit(record)}
+                      style={{ marginTop: 8 }}
+                      disabled={
+                        !selectedRole ||
+                        !requestChangeComment.trim() ||
+                        loadingPreviousRoles
+                      }
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                }
+                title="Request Change"
+                trigger="click"
+                onVisibleChange={(visible) => {
+                  if (visible) {
+                    if (record.requestId.startsWith("M")) {
+                      // Hardcode for material workflow
+                      setPreviousRoles(["Indent Creator"]);
+                      setSelectedRole("Indent Creator");
+                      setLoadingPreviousRoles(false);
+                    } else {
+                      // Normal workflow - fetch previous roles
+                      fetchPreviousRoles(record.workflowId, record.requestId);
+                    }
+                  } else {
+                    // Reset when popover closes
+                    setPreviousRoles([]);
+                    setSelectedRole(null);
+                    setRequestChangeComment("");
+                    setLoadingPreviousRoles(false);
+                  }
+                }}
+              >
+                <Button type="link">Request Change</Button>
+              </Popover>
+            </Space>
           );
         }
         
-        // For other request types, show the existing buttons
+        // For other users, show the default options
         if (record.status === "Approved") return null;
         return (
           <Space>
