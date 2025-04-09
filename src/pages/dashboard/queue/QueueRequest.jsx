@@ -17,6 +17,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import QueueModal from "./QueueModal";
+import { useNavigate } from "react-router-dom";
 // import { render } from "@testing-library/react";
 
 const { Text } = Typography;
@@ -241,6 +242,8 @@ const QueueRequest = () => {
       console.error("Approval error:", error);
     }
   };
+
+  const navigate = useNavigate()
 
   const fetchWorkflowTransitionHistory = async (requestId) => {
     try {
@@ -718,6 +721,19 @@ const QueueRequest = () => {
       key: "actions",
       fixed: "right",
       render: (_, record) => {
+        // For Material requests (IDs starting with 'M'), show only Edit button
+        if (record.requestId.startsWith('M')) {
+          return (
+            <Button 
+              type="primary" 
+              onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
+            >
+              Edit
+            </Button>
+          );
+        }
+        
+        // For other request types, show the existing buttons
         if (record.status === "Approved") return null;
         return (
           <Space>
