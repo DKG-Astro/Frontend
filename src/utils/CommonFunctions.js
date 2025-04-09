@@ -231,7 +231,7 @@ export const apiCall = async (method, url, token, payload = null) => {
               label={field?.label}
               required={field?.required}
             >
-              <Select options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} />
+              <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} />
             </Form.Item>
           )
   
