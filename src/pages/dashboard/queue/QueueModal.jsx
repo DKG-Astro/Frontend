@@ -123,6 +123,9 @@ const QueueModal = ({
                         : "N/A"}
                     </div>
                     <div className="detail-item">
+    <strong>Purpose:</strong> {detailsData.purpose || "N/A"}
+  </div>
+                    <div className="detail-item">
                       <strong>Prior Approvals:</strong>
                       {detailsData.uploadingPriorApprovalsFileName
                         ? detailsData.uploadingPriorApprovalsFileName
@@ -388,6 +391,9 @@ const QueueModal = ({
                       <strong>Created By:</strong>{" "}
                       {detailsData.createdBy || "N/A"}
                     </div>
+                    <div className="detail-item">
+    <strong>Quarter:</strong> {detailsData.quarter || "N/A"}
+  </div>
                   </Col>
                   <Col span={12}>
                     <div className="detail-item">
