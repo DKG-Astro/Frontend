@@ -765,17 +765,10 @@ const {userId} = useSelector(state => state.auth)
           return (
             <Space>
               {
-                record.requestId.startsWith('M') ? (
+                record.requestId.startsWith('M') && (
                   <Button
                     type="primary"
                     onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
-                  >
-                    Edit
-                  </Button>
-                ) : (
-                  <Button
-                    type="primary"
-                    onClick={() => fetchWorkflowDetails(record)}
                   >
                     Edit
                   </Button>
