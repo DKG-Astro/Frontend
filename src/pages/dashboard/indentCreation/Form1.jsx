@@ -863,13 +863,13 @@ const Form1 = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label="Purpose"
               name="purpose"
               rules={[{ required: true, message: "Purpose is required" }]}
             >
               <Input placeholder="Enter purpose" />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item
               label="Upload Technical Specifications"
               name="technicalSpecificationsFileName"
