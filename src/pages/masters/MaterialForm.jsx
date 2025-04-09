@@ -26,10 +26,10 @@ import { modeOfProcurementList } from "../../utils/Constants";
 import { useLocation, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 
-const MaterialForm = () => {
+const MaterialForm = ({materialCode}) => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
-  const { materialCode } = useParams(); // Get material code from URL
+  // const { materialCode } = useParams(); // Get material code from URL
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingData, setExistingData] = useState(null);
   const location = useLocation();
@@ -49,7 +49,7 @@ const MaterialForm = () => {
       const fetchMaterialData = async () => {
         try {
           const response = await fetch(
-            `http://103.181.158.220:8081/astro-service/api/material-master/${materialCode}`
+            `http://103.181.158.220:8081/astro-service/api/material-master-util/${materialCode}`
           );
           const data = await response.json();
 
@@ -195,16 +195,15 @@ const MaterialForm = () => {
         uploadImageFileName: uploadedFileName,
       };
 
+      // Updated URL for PUT request
       const url = isEditMode
-        ? `http://103.181.158.220:8081/astro-service/api/material-master/${materialCode}`
+        ? `http://103.181.158.220:8081/astro-service/api/material-master-util/update/${materialCode}`
         : "http://103.181.158.220:8081/astro-service/api/material-master-util/register";
 
       const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: isEditMode
-          ? JSON.stringify({ materialMasterDto: payload })
-          : JSON.stringify(payload),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -453,7 +452,9 @@ const MaterialForm = () => {
             Reset
           </Button>
           <Button type="primary" htmlType="submit" loading={loading}>
-            <SendOutlined /> Submit
+            <SendOutlined /> {
+              materialCode ? "Update" : "Create"
+            }
           </Button>
           <Button type="dashed" htmlType="button">
             <SaveOutlined />
