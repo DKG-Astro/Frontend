@@ -2,29 +2,30 @@
 export const ogpFields = [
     {
         // heading: "OGP Details",
-        colCnt: 5,
+        colCnt: 4,
         fieldList: [
-            // {
-            //     name: "type",
-            //     label: "Type",
-            //     type: "select",
-            //     required: true,
-            //     options: [
-            //         {
-            //             value: "Goods Issue",
-            //             label: "Goods Issue"
-            //         },
-            //         {
-            //             value: "PO",
-            //             label: "PO"
-            //         }
-            //     ],
-            // },
+            {
+                name: "ogpType",
+                label: "OGP Type",
+                type: "select",
+                required: true,
+                // span: 2,
+                options: [
+                    {
+                        value: "Returnable",
+                        label: "Returnable"
+                    },
+                    {
+                        value: "Non Returnable",
+                        label: "Non Returnable"
+                    }
+                ],
+            },
             {
                 name: "issueNoteId",
                 label: "Process No",
                 type: "search",
-                span: 2,
+                // span: 2,
                 required: true
             },
             {
@@ -32,7 +33,7 @@ export const ogpFields = [
                 label: "OGP No",
                 type: "text",
                 disabled: true,
-                span: 2,
+                // span: 2,
                 // required: true
             },
             {
@@ -86,29 +87,30 @@ export const ogpFields = [
 export const ogpFieldsPo = [
     {
         // heading: "OGP Details",
-        colCnt: 5,
+        colCnt: 4,
         fieldList: [
-            // {
-            //     name: "type",
-            //     label: "Type",
-            //     type: "select",
-            //     required: true,
-            //     options: [
-            //         {
-            //             value: "Goods Issue",
-            //             label: "Goods Issue"
-            //         },
-            //         {
-            //             value: "PO",
-            //             label: "PO"
-            //         }
-            //     ],
-            // },
+            {
+                name: "ogpType",
+                label: "OGP Type",
+                type: "select",
+                required: true,
+                // span: 2,
+                options: [
+                    {
+                        value: "Returnable",
+                        label: "Returnable"
+                    },
+                    {
+                        value: "Non Returnable",
+                        label: "Non Returnable"
+                    }
+                ],
+            },
             {
                 name: "issueNoteId",
                 label: "Process No",
                 type: "search",
-                span: 2,
+                // span: 2,
                 required: true
             },
             {
@@ -116,7 +118,7 @@ export const ogpFieldsPo = [
                 label: "OGP No",
                 type: "text",
                 disabled: true,
-                span: 2,
+                // span: 2,
                 // required: true
             },
             {
