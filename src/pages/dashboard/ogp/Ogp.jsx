@@ -1,4 +1,4 @@
-import { Card, message } from "antd";
+import { Card, Form, message, Select } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
@@ -8,7 +8,8 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
-import { ogpFields } from "./InputFields";
+import { ogpFields, ogpFieldsPo } from "./InputFields";
+import { set } from "lodash";
 
 const Ogp = () => {
   const printRef = useRef();
@@ -47,6 +48,20 @@ const Ogp = () => {
 
 
   const handleSearch = async () => {
+    if(formData.type === "PO"){
+      const {data} = await axios.get(`api/purchase-orders/${formData.issueNoteId}`)
+          const {data: vendorData} = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
+          const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentIds[0]}`)
+          setFormData(prev => ({
+            ...data?.responseData,
+            type: "PO",
+            issueNoteId: data.responseData?.poId,
+            ogpDate: prev.ogpDate,
+            materialDtlList: data?.responseData?.purchaseOrderAttributes || []
+          }));
+
+          return;
+    }
     try {
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.issueNoteId}&processStage=ISN`);
       setFormData(prev => ({
@@ -67,7 +82,9 @@ const Ogp = () => {
 
     try {
       setSubmitBtnLoading(true);
-      const {data} = await axios.post("/api/process-controller/saveOgp", payload);
+      
+      const endpoint = formData.type === "PO" ? "/api/process-controller/savePoOgp" : "/api/process-controller/saveOgp";
+      const {data} = await axios.post(endpoint, payload);
 
       setFormData(prev => ({
         ...prev,
@@ -91,11 +108,24 @@ const Ogp = () => {
     }
   }, []);
 
+  // console.log("FormData type: ", )
+
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Outward Gate Pass" />
       <CustomForm formData={formData} onFinish={onFinish}>
-        {renderFormFields(ogpFields, handleChange, formData, "", null, setFormData, handleSearch)}
+        <h1 className="font-semibold">Order Details</h1>
+        <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
+          <Form.Item name="type" label="Type">
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("type", val)}/>
+          </Form.Item>
+        </div>
+        {
+          formData.type === "PO" && renderFormFields(ogpFieldsPo, handleChange, formData, "", null, setFormData, handleSearch)
+        }
+        {
+          formData.type === "Goods Issue" && renderFormFields(ogpFields, handleChange, formData, "", null, setFormData, handleSearch)
+        }
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}
