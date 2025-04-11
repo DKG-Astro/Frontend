@@ -51,7 +51,7 @@ const QueueTable = () => {
         </Tabs.TabPane>
 
         {
-          (role === "Indent Creator" || role === "Store Purchase Officer") &&
+          (role === "Indent Creator" || role === "Store Purchase Officer" || role === "Store Person") &&
           <Tabs.TabPane tab="Queue3" key="inventory">
           <PendingGi />
           </Tabs.TabPane>

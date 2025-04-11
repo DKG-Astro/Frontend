@@ -184,6 +184,7 @@ export const generalDtls = [
                 name: "receivedQuantity",
                 label: "Received Quantity",
                 type: "text",
+                disabled: true,
                 required: true
             },
             {
@@ -196,7 +197,19 @@ export const generalDtls = [
                 name: "rejectedQuantity",
                 label: "Rejected Quantity",
                 type: "text",
+                disabled: true,
                 required: true
+            },
+            {
+                name: "rejectionReason",
+                label: "Reason for Rejection",
+                type: "text",
+                span: 3,
+                required: true,
+                disabled: (formData, index) => {
+                    const materialList = formData?.materialDtlList || [];
+                    return !materialList[index]?.rejectedQuantity || materialList[index]?.rejectedQuantity <= 0;
+                }
             },
             {
                 name: "installationRepostBase64",
