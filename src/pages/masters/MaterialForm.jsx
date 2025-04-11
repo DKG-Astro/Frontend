@@ -194,6 +194,7 @@ const MaterialForm = ({materialCode}) => {
         uom: values.uom,
         updatedBy: String(actionPerformer), // Convert to string
         uploadImageFileName: uploadedFileName,
+        briefDescription: values.briefDescription
       };
 
       // Updated URL for PUT request
@@ -348,10 +349,9 @@ const MaterialForm = ({materialCode}) => {
             label="Unit Price"
             required
           /> */}
-          <FormInputItem
-            type="number"
-            name="unitPrice"
-            label="Estimated Price with CCY"
+          <TextAreaComponent
+            label="Brief Description of Material"
+            name="briefDescription"
             required
           />
         </div>
@@ -395,6 +395,12 @@ const MaterialForm = ({materialCode}) => {
         <div className="form-section">
           {/* <FormInputItem label="Condition of Goods" name="conditionOfGoods" />
           <FormInputItem label="Shelf Life" name="shelfLife" /> */}
+          <FormInputItem
+            type="number"
+            name="unitPrice"
+            label="Estimated Price"
+            required
+          />
           <Form.Item
             name="currency"
             label="Currency"
@@ -408,11 +414,17 @@ const MaterialForm = ({materialCode}) => {
             </Select>
           </Form.Item>
 
-          <TextAreaComponent
-            label="Brief Description of Material"
-            name="briefDescription"
-            required
-          />
+          <Form.Item
+            name="indigenousOrImported"
+            label="Origin"
+            rules={[{ required: true }]}
+            valuePropName="checked"
+          >
+            <Radio.Group>
+              <Radio value="indigenous">Indigenous</Radio>
+              <Radio value="imported">Imported</Radio>
+            </Radio.Group>
+          </Form.Item>
         </div>
 
         <div className="form-section">
@@ -425,18 +437,6 @@ const MaterialForm = ({materialCode}) => {
             >
               <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
-          </Form.Item>
-
-          <Form.Item
-            name="indigenousOrImported"
-            label="Origin"
-            rules={[{ required: true }]}
-            valuePropName="checked"
-          >
-            <Radio.Group>
-              <Radio value={true}>Indigenous</Radio>
-              <Radio value={false}>Imported</Radio>
-            </Radio.Group>
           </Form.Item>
         </div>
 

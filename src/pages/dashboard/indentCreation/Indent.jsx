@@ -40,86 +40,61 @@ const Indent = () => {
   // Main form data state
   const [formData, setFormData] = useState({ materialDtlList: [{}] });
   const [searchIndentId, setSearchIndentId] = useState("");
+  const [materialOptions, setMaterialOptions] = useState([]);
+const [uomOptions, setUomOptions] = useState([]);
+const [budgetCodes, setBudgetCodes] = useState([]);
+const [procurementModes, setProcurementModes] = useState([]);
 
   // --- Data Fetching Functions ---
 
   // Fetch Locations
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const res = await axios.get(
-          "api/location-master"
-        );
-        if (
-          res.data.responseStatus.statusCode === 0 &&
-          Array.isArray(res.data.responseData)
-        ) {
-          setLocations(res.data.responseData);
-        } else {
-          message.error("Failed to load locations");
+  const populateInitialData = async () => {
+    try {
+      const [locationsRes, projectsRes, materialsRes] = await Promise.all([
+        axios.get("api/location-master"),
+        axios.get("api/project-master"),
+        axios.get("api/material-master")
+      ]);
+  
+      // Process locations
+      const locationsData = locationsRes.data.responseData || [];
+      setLocations(locationsData.map(l => ({value: l.locationName, label: l.locationName})));
+  
+      // Process projects
+      const projectsData = projectsRes.data.responseData || [];
+      setProjects(projectsData.map(p => ({value: p.projectName, label: p.projectName})));
+  
+      // Process materials
+      const materialsData = materialsRes.data?.responseData || [];
+      const matOptions = materialsData.map(m => ({value: m.materialCode, label: m.materialCode}));
+      setMaterialOptions(matOptions);
+      
+      // Process material details
+      const materialMap = materialsData.reduce((acc, material) => ({
+        ...acc,
+        [material.materialCode]: {
+          description: material.description,
+          unitPrice: material.unitPrice,
+          uom: material.uom,
+          materialCategory: material.category,
+          materialSubCategory: material.subCategory
         }
-      } catch (error) {
-        console.error("Error fetching locations:", error);
-        message.error("Failed to fetch locations");
-      }
-    };
-    fetchLocations();
-  }, []);
-
-  // Fetch Projects
+      }), {});
+      setMaterialDetailsMap(materialMap);
+  
+      // Process UOM options
+      const uoms = [...new Set(materialsData.map(m => m.uom))].map(u => ({value: u, label: u}));
+      setUomOptions(uoms);
+  
+    } catch (error) {
+      console.error("Initial data load failed:", error);
+      message.error("Failed to load initial form data");
+    }
+  };
+  
+  // Single useEffect to load all initial data
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await axios.get(
-          "api/project-master"
-        );
-        if (
-          res.data.responseStatus.statusCode === 0 &&
-          Array.isArray(res.data.responseData)
-        ) {
-          setProjects(res.data.responseData);
-        } else {
-          message.error("Failed to load projects");
-        }
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        message.error("Failed to fetch projects");
-      }
-    };
-    fetchProjects();
-  }, []);
-
-  // Fetch Materials & build material lookup map
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        const res = await axios.get(
-          "api/material-master"
-        );
-        if (res.data.responseData) {
-          const materials = res.data.responseData;
-          const materialMap = materials.reduce((acc, material) => {
-            acc[material.materialCode] = {
-              description: material.description,
-              unitPrice: material.unitPrice,
-              uom: material.uom,
-              vendorNames: material.vendorNames,
-              materialCategory: material.category,
-              materialSubCategory: material.subCategory,
-            };
-            return acc;
-          }, {});
-          setMaterialDetailsMap(materialMap);
-          setMaterialList(Object.keys(materialMap));
-        } else {
-          message.error("Failed to load materials");
-        }
-      } catch (error) {
-        console.error("Error fetching materials:", error);
-        message.error("Failed to fetch materials");
-      }
-    };
-    fetchMaterials();
+    populateInitialData();
   }, []);
 
   // Auto-populate indentor details from Redux on mount
@@ -139,9 +114,7 @@ const Indent = () => {
       return;
     }
     try {
-      const res = await axios.get(
-        `api/indents/${searchIndentId}`
-      );
+      const res = await axios.get(`api/indents/${searchIndentId}`);
       if (!res.data.responseData) {
         throw new Error("No data found for the provided Indent ID");
       }
@@ -210,33 +183,6 @@ const Indent = () => {
       });
     } else {
       setFormData((prev) => ({ ...prev, [fieldName]: value }));
-    }
-  };
-
-  // When a material is selected, auto-fill its details
-  const handleMaterialSelect = (index, selectedMaterialCode) => {
-    const materialData = materialDetailsMap[selectedMaterialCode];
-    if (materialData) {
-      setFormData((prev) => {
-        const list = prev.materialDtlList || [];
-        const updatedItem = {
-          ...list[index],
-          materialCode: selectedMaterialCode,
-          materialDesc: materialData.description,
-          unitPrice: materialData.unitPrice,
-          uom: materialData.uom,
-          materialCategory: materialData.materialCategory,
-          materialSubCategory: materialData.materialSubCategory,
-          vendorName: Array.isArray(materialData.vendorNames)
-            ? materialData.vendorNames.join(", ")
-            : materialData.vendorNames,
-        };
-        const quantity = Number(updatedItem.quantity) || 0;
-        updatedItem.totalPrice = quantity * Number(updatedItem.unitPrice || 0);
-        const updatedList = [...list];
-        updatedList[index] = updatedItem;
-        return { ...prev, materialDtlList: updatedList };
-      });
     }
   };
 
@@ -331,71 +277,74 @@ const Indent = () => {
         }}
       >
         {renderFormFields(
-          IndentDetails,
-          (fieldName, value) => handleChange(fieldName, value),
-          formData,
-          "",
-          { locations, projects },
-          setFormData,
-          () => {}
-        )}
+  IndentDetails,
+  (fieldName, value) => handleChange(fieldName, value),
+  formData,
+  "",
+  null,  // Keep index as null
+  setFormData,  // Proper position for setFormData
+  null,  // No search handler needed here
+  {  // New options parameter at correct position
+    locations: locations,
+    projects: projects,
+    materials: materialOptions,
+    uoms: uomOptions,
+    materialCategories: [...new Set(Object.values(materialDetailsMap)
+      .map(m => m.materialCategory))].map(c => ({value: c, label: c})),
+    materialSubCategories: [...new Set(Object.values(materialDetailsMap)
+      .map(m => m.materialSubCategory))].map(s => ({value: s, label: s})),
+    procurementModes: [
+      {value: "GEM", label: "GEM"},
+      {value: "Brand PAC", label: "Brand PAC"},
+      {value: "Proprietary/Single Tender", label: "Proprietary/Single Tender"}
+    ]
+  }
+)}
         {/* Dynamic Material Details Section */}
-        <Form.List name="materialDtlList">
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map(({ key, name, ...restField }, index) => (
-                <div
-                  key={key}
-                  style={{ position: "relative", marginBottom: 16 }}
+        <div className="material-details-section">
+          <Form.List name="materialDtlList">
+            {(fields, { add }) => (
+              <>
+                {/* Place the Add Material button right below the heading */}
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    add();
+                    setFormData((prev) => ({
+                      ...prev,
+                      materialDtlList: [...(prev.materialDtlList || []), {}],
+                    }));
+                  }}
+                  icon={<PlusOutlined />}
+                  style={{ marginBottom: 16, width: "150px" }}
                 >
-                  {renderFormFields(
-                    IndentDetails[1].children,
-                    (fieldName, value) => {
-                      if (fieldName[0] === "materialCode") {
-                        handleMaterialSelect(index, value);
-                      }
-                      handleChange(
-                        ["materialDtlList", index, ...fieldName],
-                        value
-                      );
-                    },
-                    formData.materialDtlList[index],
-                    index
-                  )}
-                  <Button
-                    danger
-                    type="link"
-                    onClick={() => {
-                      remove(name);
-                      setFormData((prev) => {
-                        const updatedList = prev.materialDtlList.filter(
-                          (_, i) => i !== index
+                  Add Material
+                </Button>
+                {fields.map(({ key, name, ...restField }, index) => (
+                  <div
+                    key={key}
+                    style={{ position: "relative", marginBottom: 16 }}
+                  >
+                    {renderFormFields(
+                      IndentDetails[1].children,
+                      (fieldName, value) => {
+                        if (fieldName[0] === "materialCode") {
+                          handleMaterialSelect(index, value);
+                        }
+                        handleChange(
+                          ["materialDtlList", index, ...fieldName],
+                          value
                         );
-                        return { ...prev, materialDtlList: updatedList };
-                      });
-                    }}
-                    icon={<DeleteOutlined />}
-                    style={{ position: "absolute", right: 0, top: 0 }}
-                  />
-                </div>
-              ))}
-              <Button
-                type="dashed"
-                onClick={() => {
-                  add();
-                  setFormData((prev) => ({
-                    ...prev,
-                    materialDtlList: [...(prev.materialDtlList || []), {}],
-                  }));
-                }}
-                icon={<PlusOutlined />}
-                style={{ marginTop: 16, width: "150px" }}
-              >
-                Add Material
-              </Button>
-            </>
-          )}
-        </Form.List>
+                      },
+                      formData.materialDtlList[index],
+                      index
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+          </Form.List>
+        </div>
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}

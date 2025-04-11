@@ -123,9 +123,6 @@ const QueueModal = ({
                         : "N/A"}
                     </div>
                     <div className="detail-item">
-    <strong>Purpose:</strong> {detailsData.purpose || "N/A"}
-  </div>
-                    <div className="detail-item">
                       <strong>Prior Approvals:</strong>
                       {detailsData.uploadingPriorApprovalsFileName
                         ? detailsData.uploadingPriorApprovalsFileName
@@ -255,6 +252,27 @@ const QueueModal = ({
                   ]}
                 />
               </div>
+              <div className="detail-section">
+              <div className="detail-item">
+              <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Additional Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <strong>Purpose:</strong> {detailsData.purpose || "N/A"}
+                    <div className="detail-item">
+                      <strong>Quarter:</strong> {detailsData.quarter || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Reason:</strong> {detailsData.reason || "N/A"}
+                    </div>
+                    <div>
+                        <strong>Justification</strong> {detailsData.proprietaryJustification || "N/A"}
+                    </div>
+                    </Col>
+                    </Row>
+                </div>
+                </div>
               {detailsData.brandPac && (
                 <div className="detail-section">
                   <Typography.Title level={5} className="section-title">
@@ -391,9 +409,6 @@ const QueueModal = ({
                       <strong>Created By:</strong>{" "}
                       {detailsData.createdBy || "N/A"}
                     </div>
-                    <div className="detail-item">
-    <strong>Quarter:</strong> {detailsData.quarter || "N/A"}
-  </div>
                   </Col>
                   <Col span={12}>
                     <div className="detail-item">

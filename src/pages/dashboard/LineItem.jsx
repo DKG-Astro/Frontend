@@ -134,6 +134,20 @@ const LineItem = ({
           </Form.Item>
         );
 
+        case "GEM":  // Add this case to return null
+      return null;
+
+
+        case "BRAND PAC":  // Add this case to return null
+      return null;
+
+      case "OPEN TENDER":  // Add this case to return null
+      return null;
+
+      case "GLOBAL TENDER":  // Add this case to return null
+      return null;
+
+
       default:
         return (
           <Form.Item name={[name, "vendorNames"]}>
@@ -536,6 +550,7 @@ const LineItem = ({
                               handleModeOfProcurementChange(value, index)
                             }
                           >
+                            <Option value="GEM">GEM</Option>
                             <Option value="BRAND PAC">Brand PAC</Option>
                             <Option value="Proprietary/Single Tender">
                               Proprietary/Single Tender

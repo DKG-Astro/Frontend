@@ -48,47 +48,37 @@ export const IndentDetails = [
     name: "materialDtlList",
     colCnt: 8,
     children: [
+      // Update materialCode field options to be populated dynamically
       {
         name: "materialCode",
         label: "Material Code",
         type: "select",
         span: 2,
         required: true,
-        options: [
-          {
-            value: "1",
-            label: "Material 1",
-          },
-          {
-            value: "2",
-            label: "Material 2",
-          },
-          {
-            value: "3",
-            label: "Material 3",
-          },
-        ],
+        options: [], // Will be populated from API data
+        showSearch: true,
+        filterOption: (input, option) =>
+          option.label.toLowerCase().includes(input.toLowerCase())
       },
+      
+      // Update description field to show API data
       {
         name: "materialDesc",
         label: "Description",
-        type: "select",
+        type: "text",
         span: 3,
         required: true,
-        options: [
-          {
-            value: "1",
-            label: "Description 1",
-          },
-          {
-            value: "2",
-            label: "Description 2",
-          },
-          {
-            value: "3",
-            label: "Description 3",
-          },
-        ],
+        disabled: true // Becomes read-only as it's auto-populated
+      },
+      
+      // Update UOM field with dynamic options
+      {
+        name: "uom",
+        label: "UOM",
+        type: "select",
+        required: true,
+        options: [], // Populated from API's uom values
+        showSearch: true
       },
       {
         name: "quantity",
@@ -101,46 +91,12 @@ export const IndentDetails = [
         type: "text",
       },
       {
-        name: "uom",
-        label: "UOM",
-        type: "select",
-        required: true,
-        // disabled: true,
-        options: [
-          {
-            value: "1",
-            label: "UOM 1",
-          },
-          {
-            value: "2",
-            label: "UOM 2",
-          },
-          {
-            value: "3",
-            label: "UOM 3",
-          },
-        ],
-      },
-      {
         name: "budgetCode",
         label: "Budget Code",
         type: "select",
         required: true,
         span: 2,
-        options: [
-          {
-            value: "1",
-            label: "Budget Code 1",
-          },
-          {
-            value: "2",
-            label: "Budget Code 2",
-          },
-          {
-            value: "3",
-            label: "Budget Code 3",
-          },
-        ],
+        options: [],
       },
       {
         name: "totalPrice",
@@ -152,58 +108,42 @@ export const IndentDetails = [
       {
         name: "materialCategory",
         label: "Material Category",
-        type: "select",
+        type: "text",
         span: 2,
         required: true,
-        options: [
-          {
-            value: "1",
-            label: "Material Category 1",
-          },
-          {
-            value: "2",
-            label: "Material Category 2",
-          }, 
-        ]
       },
       {
         name: "materialSubCategory",
         label: "Material Sub Category",
-        type: "select", 
+        type: "text", 
         span: 2,
-        options: [
-          {
-            value: "1",
-            label: "Material Sub Category 1",
-          },
-          {
-            value: "2",
-            label: "Material Sub Category 2",
-          },
-          {
-            value: "3",
-            label: "Material Sub Category 3",
-          },
-        ],
       },
       {
         name: "modeOfProcurement",
         label: "Mode of Procurement",
         type: "select",
-        span: 2,
+        span: 3,
         required: true, 
         options: [
           {
-            value: "1",
-            label: "Mode of Procurement 1",
+            value: "GEM",
+            label: "GEM",
           },
           {
-            value: "2",
-            label: "Mode of Procurement 2",
+            value: "Brand PAC",
+            label: "Brand PAC",
           },
           {
-            value: "3",
-            label: "Mode of Procurement 3",
+            value: "Proprietary/Single Tender",
+            label: "Proprietary/Single Tender",
+          },
+          {
+            value: "Open Tender",
+            label: "Open Tender",
+          },
+          {
+            value: "Global Tender",
+            label: "Global Tender",
           },
         ],
       },
@@ -301,6 +241,29 @@ export const IndentDetails = [
         ]
       }
     ]
+  },
+  {
+    heading: "Additional Details",
+    colCnt: 4,
+    fieldList: [
+       {
+         name: "quarter",
+         label: "Quarter",
+         type: "select",
+         span: 2,
+         options: [
+           { value: "Q1", label: "Q1" },
+           { value: "Q2", label: "Q2" },
+           { value: "Q3", label: "Q3" },
+           { value: "Q4", label: "Q4" }
+         ]
+       },{
+         name: "purpose",
+         label: "Purpose",
+         type: "text",
+         span: 2,
+       } 
+    ]  
   },
   {
     heading: "Attachments",
