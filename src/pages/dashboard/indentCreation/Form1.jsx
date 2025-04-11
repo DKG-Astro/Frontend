@@ -635,6 +635,7 @@ const Form1 = () => {
 
   // ✅ When a material is selected, auto-fill the other fields
   const handleMaterialSelect = (index, materialCode) => {
+    console.log("MATERIAL SELECT: called")
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
     const updatedItems = [...lineItems];
@@ -655,6 +656,25 @@ const Form1 = () => {
     };
 
     form.setFieldsValue({ lineItems: updatedItems });
+
+        // Check if any material has Proprietary/Single Tender mode
+        const hasProprietaryMode = updatedItems.some(
+          item => item.modeOfProcurement === "Proprietary/Single Tender"
+        );
+
+        console.log("Has Proprietary Mode:", hasProprietaryMode); // Debugging inf
+    
+        // If no proprietary items, reset the proprietary fields
+        if (!hasProprietaryMode) {
+          form.setFieldsValue({
+            reason: "",
+            proprietaryJustification: "",
+            vendorNames: ""
+          });
+          setHasProprietaryItem(false);
+        } else {
+          setHasProprietaryItem(true);
+        }
 
     // Category validation
     const categories = updatedItems
@@ -720,7 +740,7 @@ const Form1 = () => {
     <PrintableContent ref={printRef}>
       <FormContainer>
         {/* <div className="form-container"> */}
-        <Heading title={"Indent Creation"} />
+        <Heading title={"Indent Creationaa"} />
         <Row justify="end">
           <Col>
             <Form form={form} layout="inline" style={{ marginBottom: 16 }}>
