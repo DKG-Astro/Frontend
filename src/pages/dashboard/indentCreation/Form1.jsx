@@ -30,7 +30,6 @@ import LineItem from "../LineItem";
 import FormContainer from "../../../components/DKG_FormContainer";
 import Heading from "../../../components/DKG_Heading";
 import { useReactToPrint } from "react-to-print";
-import "./printStyle.css";
 dayjs.extend(customParseFormat);
 
 const { Option } = Select;
@@ -153,6 +152,7 @@ const Form1 = () => {
     };
     fetchProjects();
   }, []);
+  
 
   //   const handleSaveDraft = () => {
   //     try {
@@ -469,8 +469,8 @@ const Form1 = () => {
         periodOfContract: values.periodOfRateContract || 0,
         singleAndMultipleJob: values.singleOrMultipleJob || null,
 
-        reason: hasProprietaryItem ? values.proprietaryReason : null,
-        justification: hasProprietaryItem
+        reason: hasProprietaryItem ? values.reason : null,
+        proprietaryJustification: hasProprietaryItem
           ? values.proprietaryJustification
           : null,
         quarter: values.quarter || null,
@@ -702,7 +702,11 @@ const Form1 = () => {
   }, []);
 
   console.log("HWJR: ", hasProprietaryItem);
-
+  const { vendorMaster } = useSelector((state) => state.masters);
+  const vendorMasterMod = vendorMaster?.map((vendor) => ({
+    label: vendor.vendorName,
+    value: vendor.vendorName,
+  }));
   return (
     <PrintableContent ref={printRef}>
       <FormContainer>
@@ -998,42 +1002,67 @@ const Form1 = () => {
           </div>
 
           {hasProprietaryItem && (
-            <div className="form-section">
-              <Form.Item
-                name="reason"
-                label="Reason for Proprietary/Single Tender"
-                rules={[{ required: true, message: "Please select a reason" }]}
-              >
-                <Select placeholder="Select reason">
-                  <Option value="1">
-                    It is in the knowledge of the user department that only a
-                    particular firm is the manufacturer of the required goods
-                  </Option>
-                  <Option value="2">
-                    In a case of emergency, the required goods are necessarily
-                    to be purchased from a particular source
-                  </Option>
-                  <Option value="3">
-                    For standardization of machinery or spare parts to be
-                    compatible to the existing sets of equipment, the required
-                    item is to be purchased only from a selected firm
-                  </Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="proprietaryJustification"
-                label="Justification"
-                rules={[
-                  { required: true, message: "Please provide justification" },
-                ]}
-              >
-                <Input.TextArea
-                  rows={4}
-                  placeholder="Enter detailed justification for proprietary procurement"
-                />
-              </Form.Item>
-            </div>
+            <>
+                <Form.Item
+                    name="reason"
+                    label="Reason for Proprietary/Single Tender"
+                    rules={[{ required: true, message: "Please select a reason" }]}
+                >
+                    <Select placeholder="Select reason">
+                    <Option value="It is in the knowledge of the user department that only a
+                        particular firm is the manufacturer of the required goods">
+                        It is in the knowledge of the user department that only a
+                        particular firm is the manufacturer of the required goods
+                    </Option>
+                    <Option value="In a case of emergency, the required goods are necessarily
+                        to be purchased from a particular source">
+                        In a case of emergency, the required goods are necessarily
+                        to be purchased from a particular source
+                    </Option>
+                    <Option value="For standardization of machinery or spare parts to be
+                        compatible to the existing sets of equipment, the required
+                        item is to be purchased only from a selected firm">
+                        For standardization of machinery or spare parts to be
+                        compatible to the existing sets of equipment, the required
+                        item is to be purchased only from a selected firm
+                    </Option>
+                    </Select>
+                </Form.Item>
+                
+                <div className="form-section">
+                <Form.Item
+                    name="proprietaryJustification"
+                    label="Justification"
+                    rules={[
+                    { required: true, message: "Please provide justification" },
+                    ]}
+                >
+                    <Input.TextArea
+                    rows={4}
+                    placeholder="Enter detailed justification for proprietary procurement"
+                    />
+                </Form.Item>
+                <Form.Item
+                                
+                                name="vendorNames"
+                                label="Vendor Name"
+                                rules={[
+                                {
+                                    required: true,
+                                    message: "Vendor name is required",
+                                },
+                                ]}
+                            >
+                                <Select placeholder="Select vendor">
+                                {vendorMasterMod?.map((vendor) => (
+                                    <Option key={vendor.value} value={vendor.value}>
+                                    {vendor.label}
+                                    </Option>
+                                ))}
+                                </Select>
+                            </Form.Item>
+                </div>
+            </>
           )}
           <div className="grid grid-cols-2 gap-x-8">
             <Form.Item name="quarter" label="Quarter">
