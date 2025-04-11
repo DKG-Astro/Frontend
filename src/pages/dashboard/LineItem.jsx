@@ -421,7 +421,7 @@ const LineItem = ({
                           <Input
                             type="number"
                             placeholder="Enter Quantity"
-                            min="1"
+                            min={1}
                             onChange={(e) =>
                               handlePriceCalculation(
                                 index,
@@ -447,6 +447,7 @@ const LineItem = ({
                           <Input
                             type="number"
                             placeholder="Enter Unit Price"
+                            min = {1}
                             onChange={(e) =>
                               handlePriceCalculation(
                                 index,
@@ -456,6 +457,8 @@ const LineItem = ({
                             }
                           />
                         </Form.Item>
+                        </Col>
+                        <Col span={8}>
                         <Form.Item
                           label="Currency"
                           name={[name, "currency"]}
@@ -476,30 +479,6 @@ const LineItem = ({
                           ]}
                         >
                           <Input placeholder="Enter UOM" disabled />
-                        </Form.Item>
-                      </Col>
-                      <Col span={8}>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "budgetCode"]}
-                          label="Budget Code"
-                          rules={[
-                            {
-                              required: true,
-                              message: "Please select a budget code!",
-                            },
-                          ]}
-                        >
-                          <Select placeholder="Select Budget Code">
-                            {projects.map((project) => (
-                              <Option
-                                key={project.projectCode}
-                                value={project.projectCode}
-                              >
-                                {project.budgetType}
-                              </Option>
-                            ))}
-                          </Select>
                         </Form.Item>
                       </Col>
                       <Col span={8}>
@@ -530,6 +509,30 @@ const LineItem = ({
                           ]}
                         >
                           <Input placeholder="Enter Material Subcategory" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "budgetCode"]}
+                          label="Budget Code"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select a budget code!",
+                            },
+                          ]}
+                        >
+                          <Select placeholder="Select Budget Code">
+                            {projects.map((project) => (
+                              <Option
+                                key={project.projectCode}
+                                value={project.projectCode}
+                              >
+                                {project.budgetType}
+                              </Option>
+                            ))}
+                          </Select>
                         </Form.Item>
                       </Col>
                       <Col span={8}>
