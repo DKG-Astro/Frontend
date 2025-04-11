@@ -186,6 +186,33 @@ const [procurementModes, setProcurementModes] = useState([]);
     }
   };
 
+  // When a material is selected, auto-fill its details
+  const handleMaterialSelect = (index, selectedMaterialCode) => {
+    const materialData = materialDetailsMap[selectedMaterialCode];
+    if (materialData) {
+      setFormData((prev) => {
+        const list = prev.materialDtlList || [];
+        const updatedItem = {
+          ...list[index],
+          materialCode: selectedMaterialCode,
+          materialDesc: materialData.description,
+          unitPrice: materialData.unitPrice,
+          uom: materialData.uom,
+          materialCategory: materialData.materialCategory,
+          materialSubCategory: materialData.materialSubCategory,
+          vendorName: Array.isArray(materialData.vendorNames)
+            ? materialData.vendorNames.join(", ")
+            : materialData.vendorNames,
+        };
+        const quantity = Number(updatedItem.quantity) || 0;
+        updatedItem.totalPrice = quantity * Number(updatedItem.unitPrice || 0);
+        const updatedList = [...list];
+        updatedList[index] = updatedItem;
+        return { ...prev, materialDtlList: updatedList };
+      });
+    }
+  };
+
   // --- Print Functionality ---
   const handlePrint = useReactToPrint({
     content: () => printRef.current,

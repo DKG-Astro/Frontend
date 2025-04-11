@@ -78,6 +78,7 @@ const Form1 = () => {
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
   const [showDraftSavedModal, setShowDraftSavedModal] = useState(false);
   const [isBrandPac, setIsBrandPac] = useState(false);
+  const [buyBackOption, setBuyBackOption] = useState(false);
 
   const { userName, email, mobileNumber } = useSelector((state) => state.auth);
 
@@ -152,7 +153,9 @@ const Form1 = () => {
     };
     fetchProjects();
   }, []);
-  
+  const handleCheckboxChange4 = (e) => {
+    setBuyBackOption(e.target.checked);
+  };
 
   //   const handleSaveDraft = () => {
   //     try {
@@ -411,11 +414,13 @@ const Form1 = () => {
         technicalSpecifications,
         draftEOIOrRFP,
         uploadPACOrBrandPAC,
+        buyBackDocuments
       ] = await Promise.all([
         uploadFiles(values.uploadingPriorApprovalsFileName, "Prior Approvals"),
         uploadFiles(values.technicalSpecificationsFileName, "Tender Documents"),
         uploadFiles(values.draftEOIOrRFPFileName, "EOI/RFP"),
         uploadFiles(values.uploadPACOrBrandPACFileName, "Brand PAC"),
+        uploadFiles(values.buyBackDocumentsFileName, "Buyback Documents")
       ]);
       const preBidMeetingDate =
         values.preBidMeetingRequired && values.preBidMeetingDetails
@@ -492,6 +497,8 @@ const Form1 = () => {
         uploadPACOrBrandPACFileName: uploadPACOrBrandPAC || null,
         technicalSpecificationsFileName: technicalSpecifications || null,
         uploadingPriorApprovalsFileName: priorApprovalsFile || null,
+        uploadBuyBackFileNames: buyBackDocuments || null,
+        buyBack: values.buyBackOption || null,
 
         // Material details adjustments
         materialDetails: materialDetails.map((item) => ({
@@ -540,7 +547,9 @@ const Form1 = () => {
       setShowSuccessModal(true);
       setIsPrintEnabled(true);
       message.success("Indent submitted successfully!");
-      //   form.resetFields();
+      form.resetFields();
+      setBuyBackOption(false);
+      setIsBrandPac(false);
     } catch (error) {
       message.error(`Submission Error: ${error.message}`);
       console.error("Detailed Error:", error);
@@ -945,6 +954,26 @@ const Form1 = () => {
             )}
           </div>
 
+          <Form.Item name="buyBackOption" valuePropName="checked">
+            <Checkbox onChange={handleCheckboxChange4}>
+              Buy Back
+            </Checkbox>
+          </Form.Item>
+          {buyBackOption && (
+            <Form.Item
+              label="Upload Buyback Documents"
+              name="buyBackDocuments"
+              valuePropName="fileList"
+              getValueFromEvent={normFile}
+            >
+              <Upload beforeUpload={() => false}>
+                <Button icon={<UploadOutlined />}>
+                  Upload Buyback Documents
+                </Button>
+              </Upload>
+            </Form.Item>
+          )}
+
           <Form.Item name="rateContractIndent" valuePropName="checked">
             <Checkbox onChange={handleCheckboxChange2}>
               Is it a rate contract indent
@@ -1003,65 +1032,70 @@ const Form1 = () => {
 
           {hasProprietaryItem && (
             <>
-                <Form.Item
-                    name="reason"
-                    label="Reason for Proprietary/Single Tender"
-                    rules={[{ required: true, message: "Please select a reason" }]}
-                >
-                    <Select placeholder="Select reason">
-                    <Option value="It is in the knowledge of the user department that only a
-                        particular firm is the manufacturer of the required goods">
-                        It is in the knowledge of the user department that only a
-                        particular firm is the manufacturer of the required goods
-                    </Option>
-                    <Option value="In a case of emergency, the required goods are necessarily
-                        to be purchased from a particular source">
-                        In a case of emergency, the required goods are necessarily
-                        to be purchased from a particular source
-                    </Option>
-                    <Option value="For standardization of machinery or spare parts to be
+              <Form.Item
+                name="reason"
+                label="Reason for Proprietary/Single Tender"
+                rules={[{ required: true, message: "Please select a reason" }]}
+              >
+                <Select placeholder="Select reason">
+                  <Option
+                    value="It is in the knowledge of the user department that only a
+                        particular firm is the manufacturer of the required goods"
+                  >
+                    It is in the knowledge of the user department that only a
+                    particular firm is the manufacturer of the required goods
+                  </Option>
+                  <Option
+                    value="In a case of emergency, the required goods are necessarily
+                        to be purchased from a particular source"
+                  >
+                    In a case of emergency, the required goods are necessarily
+                    to be purchased from a particular source
+                  </Option>
+                  <Option
+                    value="For standardization of machinery or spare parts to be
                         compatible to the existing sets of equipment, the required
-                        item is to be purchased only from a selected firm">
-                        For standardization of machinery or spare parts to be
-                        compatible to the existing sets of equipment, the required
-                        item is to be purchased only from a selected firm
-                    </Option>
-                    </Select>
-                </Form.Item>
-                
-                <div className="form-section">
+                        item is to be purchased only from a selected firm"
+                  >
+                    For standardization of machinery or spare parts to be
+                    compatible to the existing sets of equipment, the required
+                    item is to be purchased only from a selected firm
+                  </Option>
+                </Select>
+              </Form.Item>
+
+              <div className="form-section">
                 <Form.Item
-                    name="proprietaryJustification"
-                    label="Justification"
-                    rules={[
+                  name="proprietaryJustification"
+                  label="Justification"
+                  rules={[
                     { required: true, message: "Please provide justification" },
-                    ]}
+                  ]}
                 >
-                    <Input.TextArea
+                  <Input.TextArea
                     rows={4}
                     placeholder="Enter detailed justification for proprietary procurement"
-                    />
+                  />
                 </Form.Item>
                 <Form.Item
-                                
-                                name="vendorNames"
-                                label="Vendor Name"
-                                rules={[
-                                {
-                                    required: true,
-                                    message: "Vendor name is required",
-                                },
-                                ]}
-                            >
-                                <Select placeholder="Select vendor">
-                                {vendorMasterMod?.map((vendor) => (
-                                    <Option key={vendor.value} value={vendor.value}>
-                                    {vendor.label}
-                                    </Option>
-                                ))}
-                                </Select>
-                            </Form.Item>
-                </div>
+                  name="vendorNames"
+                  label="Vendor Name"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Vendor name is required",
+                    },
+                  ]}
+                >
+                  <Select placeholder="Select vendor">
+                    {vendorMasterMod?.map((vendor) => (
+                      <Option key={vendor.value} value={vendor.value}>
+                        {vendor.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
             </>
           )}
           <div className="grid grid-cols-2 gap-x-8">
