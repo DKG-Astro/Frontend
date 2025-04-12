@@ -566,84 +566,81 @@ const LineItem = ({
                           </Select>
                         </Form.Item>
                         {form.getFieldValue([
-                          "lineItems",
-                          index,
-                          "modeOfProcurement",
-                        ]) === "Proprietary/Single Tender" && (
-                          <Form.Item
-                            {...restField}
-                            name={[name, "vendorNames"]}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Vendor name is required",
-                              },
-                            ]}
-                          >
-                            <Select placeholder="Select vendor">
-                              {vendorMasterMod?.map((vendor) => (
-                                <Option key={vendor.value} value={vendor.value}>
-                                  {vendor.label}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        )}
+  "lineItems",
+  index,
+  "modeOfProcurement",
+]) === "Proprietary/Single Tender" && (
+  <>
+    <Form.Item
+      {...restField}
+      name={[name, "vendorNames"]}
+      rules={[{
+        required: true,
+        message: "Vendor name is required",
+      }]}
+    >
+      <Select placeholder="Select vendor">
+        {vendorMasterMod?.map((vendor) => (
+          <Option key={vendor.value} value={vendor.value}>
+            {vendor.label}
+          </Option>
+        ))}
+      </Select>
+    </Form.Item>
 
-                        {form.getFieldValue([
-                          "lineItems",
-                          index,
-                          "modeOfProcurement",
-                        ]) === "BRAND PAC" && (
-                          <Form.Item
-                            {...restField}
-                            name={[name, "vendorNames"]}
-                            // rules={[
-                            //   {
-                            //     required: true,
-                            //     message: "Vendor name is required",
-                            //   },
-                            // ]}
-                          >
-                            <Input disabled placeholder="Enter vendor name" />
-                          </Form.Item>
-                        )}
+    <Form.Item
+      label="Reason for Proprietary/Single Tender"
+      name={[name, "reason"]}
+      rules={[{ required: true }]}
+    >
+      <Select placeholder="Select reason">
+        <Option value="It is in the knowledge...">Manufacturer knowledge</Option>
+        <Option value="In a case of emergency...">Emergency purchase</Option>
+        <Option value="For standardization...">Standardization</Option>
+      </Select>
+    </Form.Item>
 
-                        {form.getFieldValue([
-                          "lineItems",
-                          index,
-                          "modeOfProcurement",
-                        ]) === "Limited Pre Approved Vendor Tender" && (
-                          <Form.Item
-                            {...restField}
-                            name={[name, "vendorNames"]}
-                            rules={[
-                              {
-                                required: true,
-                                validator: (_, value) => {
-                                  if (!value || value.length < 4) {
-                                    return Promise.reject(
-                                      "Please select at least 4 vendors"
-                                    );
-                                  }
-                                  return Promise.resolve();
-                                },
-                              },
-                            ]}
-                          >
-                            <Select
-                              mode="multiple"
-                              placeholder="Select vendors"
-                              maxTagCount={4}
-                            >
-                              {vendorMasterMod?.map((vendor) => (
-                                <Option key={vendor.value} value={vendor.value}>
-                                  {vendor.label}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        )}
+    <Form.Item
+      label="Justification"
+      name={[name, "proprietaryJustification"]}
+      rules={[{ required: true }]}
+    >
+      <Input.TextArea rows={4} />
+    </Form.Item>
+  </>
+)}
+
+{form.getFieldValue([
+  "lineItems",
+  index,
+  "modeOfProcurement",
+]) === "Limited Pre Approved Vendor Tender" && (
+  <Form.Item
+    {...restField}
+    name={[name, "vendorNames"]}
+    rules={[{
+      required: true,
+      validator: (_, value) => {
+        if (!value || value.length < 4) {
+          return Promise.reject("Minimum 4 vendors required");
+        }
+        return Promise.resolve();
+      },
+    }]}
+  >
+    <Select
+      mode="multiple"
+      placeholder="Select at least 4 vendors"
+      maxTagCount={4}
+    >
+      {vendorMasterMod?.map((vendor) => (
+        <Option key={vendor.value} value={vendor.value}>
+          {vendor.label}
+        </Option>
+      ))}
+    </Select>
+  </Form.Item>
+)}
                       </Col>
                       <Col span={8}>
                         <Form.Item

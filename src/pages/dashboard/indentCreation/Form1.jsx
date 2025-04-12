@@ -1077,7 +1077,7 @@ const Form1 = () => {
                     placeholder="Enter detailed justification for proprietary procurement"
                   />
                 </Form.Item>
-                <Form.Item
+                {/* <Form.Item
                   name="vendorNames"
                   label="Vendor Name"
                   rules={[
@@ -1094,7 +1094,7 @@ const Form1 = () => {
                       </Option>
                     ))}
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
               </div>
             </>
           )}
