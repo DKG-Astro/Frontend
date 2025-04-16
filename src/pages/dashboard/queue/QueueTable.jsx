@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import QueueRequest from "./QueueRequest";
 import QueueAction from "./QueueAction";
 import PendingGi from "./PendingGi";
+import Queue3 from "./Queue3";
 
 const { Text } = Typography;
 const RESTRICTED_USER_IDS = new Set([25, 31, 34, 36]);
@@ -53,7 +54,7 @@ const QueueTable = () => {
         {
           (role === "Indent Creator" || role === "Store Purchase Officer" || role === "Store Person") &&
           <Tabs.TabPane tab="Queue3" key="inventory">
-          <PendingGi />
+          <Queue3 />
           </Tabs.TabPane>
         }
         

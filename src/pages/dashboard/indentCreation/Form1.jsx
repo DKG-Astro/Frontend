@@ -225,8 +225,6 @@ const Form1 = () => {
 
       const data = await response.json();
 
-      console.log("API Response:", data); // Debugging log
-
       if (!data.responseData) {
         throw new Error("Invalid API response: responseData is missing");
       }
@@ -284,8 +282,6 @@ const Form1 = () => {
             }))
           : [],
       };
-
-      console.log("Final Form Data:", formData); // Debugging log
 
       // ✅ Update form fields safely
       form.setFieldsValue(formData);
@@ -515,8 +511,6 @@ const Form1 = () => {
       };
       delete payload.lineItems;
 
-      console.log("Final Payload:", JSON.stringify(payload, null, 2));
-
       // Submit request with authentication headers
       const response = await fetch(
         "http://103.181.158.220:8081/astro-service/api/indents",
@@ -635,7 +629,6 @@ const Form1 = () => {
 
   // ✅ When a material is selected, auto-fill the other fields
   const handleMaterialSelect = (index, materialCode) => {
-    console.log("MATERIAL SELECT: called")
     const materialData = materialDetailsMap[materialCode] || {};
     const lineItems = form.getFieldValue("lineItems") || [];
     const updatedItems = [...lineItems];
@@ -661,20 +654,18 @@ const Form1 = () => {
         const hasProprietaryMode = updatedItems.some(
           item => item.modeOfProcurement === "Proprietary/Single Tender"
         );
-
-        console.log("Has Proprietary Mode:", hasProprietaryMode); // Debugging inf
     
-        // If no proprietary items, reset the proprietary fields
-        if (!hasProprietaryMode) {
-          form.setFieldsValue({
-            reason: "",
-            proprietaryJustification: "",
-            vendorNames: ""
-          });
-          setHasProprietaryItem(false);
-        } else {
-          setHasProprietaryItem(true);
-        }
+        // // If no proprietary items, reset the proprietary fields
+        // if (!hasProprietaryMode) {
+        //   form.setFieldsValue({
+        //     reason: "",
+        //     proprietaryJustification: "",
+        //     vendorNames: ""
+        //   });
+        //   setHasProprietaryItem(false);
+        // } else {
+        //   setHasProprietaryItem(true);
+        // }
 
     // Category validation
     const categories = updatedItems
@@ -708,7 +699,12 @@ const Form1 = () => {
         },
       ]);
     }
+
+    // const propPresent = checkForProprietaryItems(updatedItems);
+    // setHasProprietaryItem(propPresent);
   };
+
+  // console.log("PROP PRESETN: ", hasProprietaryItem)
 
   // Add this handler in Form1
   const handleMaterialDescriptionSelect = (index, materialCode) => {
@@ -729,8 +725,6 @@ const Form1 = () => {
       indentorName: userName,
     });
   }, []);
-
-  console.log("HWJR: ", hasProprietaryItem);
   const { vendorMaster } = useSelector((state) => state.masters);
   const vendorMasterMod = vendorMaster?.map((vendor) => ({
     label: vendor.vendorName,
