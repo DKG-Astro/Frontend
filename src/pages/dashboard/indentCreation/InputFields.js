@@ -26,20 +26,8 @@ export const IndentDetails = [
         label: "Consignee Location",
         type: "select",
         required: true,
-        options: [
-          {
-            value: "1",
-            label: "Locator 1",
-          },
-          {
-            value: "2",
-            label: "Locator 2",
-          },
-          {
-            value: "3",
-            label: "Locator 3",
-          },
-        ],
+        options: (props) => props.locations,
+        showSearch: true,
       },
     ],
   },
@@ -55,7 +43,7 @@ export const IndentDetails = [
         type: "select",
         span: 2,
         required: true,
-        options: [], // Will be populated from API data
+        options: (props) => props.materialOptions, // Will be populated from API data
         showSearch: true,
         filterOption: (input, option) =>
           option.label.toLowerCase().includes(input.toLowerCase())
@@ -77,8 +65,10 @@ export const IndentDetails = [
         label: "UOM",
         type: "select",
         required: true,
-        options: [], // Populated from API's uom values
-        showSearch: true
+        span: 2,
+        // options: (props) => props.uomOptions, // Populated from API's uom values
+        // showSearch: true
+        disabled: true
       },
       {
         name: "quantity",
@@ -96,7 +86,7 @@ export const IndentDetails = [
         type: "select",
         required: true,
         span: 2,
-        options: [],
+        options: (props) => props.budgetCodes,
       },
       {
         name: "totalPrice",
@@ -166,16 +156,7 @@ export const IndentDetails = [
         label: "Project Name",
         type: "select",
         // required: true,
-        options: [
-          {
-            value: "1",
-            label: "Project 1", 
-          },
-          {
-            value: "2",
-            label: "Project 2", 
-          }
-        ],
+        options: (props) => props.projects,
         span: 2
       },
     ]

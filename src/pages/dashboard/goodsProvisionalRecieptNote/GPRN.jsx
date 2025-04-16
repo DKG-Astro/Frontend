@@ -405,11 +405,12 @@ const GPRN = () => {
               },
               {
                   name: "imageBase64",
-                  label: "Material Photograph",
-                  type: "image",
+                  label: "Material Photographs",
+                  type: "multiImage",  // changed from "image" to "multiImage"
                   span: 3,
                   required: true,
-                  accept: "image/*"
+                  accept: "image/*",
+                  multiple: true  // added multiple property
               }
               // {
               //     name: "photographPath",
@@ -477,8 +478,7 @@ const GPRN = () => {
           ]
       }
   ]
-  
-  
+
     
   return (
     <Card className='a4-container' ref={printRef}>

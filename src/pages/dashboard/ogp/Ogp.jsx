@@ -55,6 +55,7 @@ const Ogp = () => {
           setFormData(prev => ({
             ...data?.responseData,
             type: "PO",
+            ogpType: prev.ogpType,
             issueNoteId: data.responseData?.poId,
             ogpDate: prev.ogpDate,
             materialDtlList: data?.responseData?.purchaseOrderAttributes || []
@@ -67,6 +68,8 @@ const Ogp = () => {
       setFormData(prev => ({
         ...data?.responseData,
         issueNoteId: data.responseData?.issueNoteNo,
+        type: "Goods Issue",
+        ogpType: prev.ogpType,
         ogpDate: prev.ogpDate,
         materialDtlList: data?.responseData?.materialDtlList?.map(item => ({...item, locatorDesc: locatorMasterObj[parseInt(item.locatorId)]}))
       }));
@@ -108,7 +111,7 @@ const Ogp = () => {
     }
   }, []);
 
-  // console.log("FormData type: ", )
+  console.log("FOrmdata: ", formData)
 
   return (
     <Card className="a4-container" ref={printRef}>

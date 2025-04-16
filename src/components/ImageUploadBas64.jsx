@@ -1,79 +1,10 @@
-// import React, { useState } from 'react';
-// import { Upload, Button, Form } from 'antd';
-// import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
-
-// const ImageUploadBase64 = ({ value, onChange, required, label, name }) => {
-//   const [preview, setPreview] = useState(value || '');
-
-//   const handleImageChange = (info) => {
-//     if (info.file) {
-//       const reader = new FileReader();
-//       reader.onloadend = () => {
-//         const base64String = reader.result;
-//         setPreview(base64String);
-//         onChange(name, base64String);
-//       };
-//       reader.readAsDataURL(info.file.originFileObj);
-//     }
-//   };
-
-//   const handleDelete = () => {
-//     setPreview('');
-//     onChange('');
-//   };
-
-//   return (
-//     <Form.Item
-//       label={label}
-//       name={name}
-//       required={required}
-//       className="mb-0"
-//     >
-//       <div className="flex flex-col gap-2">
-//         <Upload
-//           accept="application/pdf,image/*"
-//           showUploadList={false}
-//           beforeUpload={(file) => {
-//             handleImageChange({ file: { originFileObj: file } });
-//             return false;
-//           }}
-//         >
-//           <Button icon={<UploadOutlined />}>
-//             {preview ? 'Change Image' : 'Upload Image'}
-//           </Button>
-//         </Upload>
-        
-//         {preview && (
-//           <div className="relative mt-2">
-//             <img 
-//               src={preview} 
-//               alt="Preview" 
-//               className="max-w-[200px] max-h-[200px] object-contain border rounded"
-//             />
-//             <Button
-//               type="primary"
-//               danger
-//               icon={<DeleteOutlined />}
-//               size="small"
-//               onClick={handleDelete}
-//               className="absolute top-2 right-2"
-//             />
-//           </div>
-//         )}
-//       </div>
-//     </Form.Item>
-//   );
-// };
-
-// export default ImageUploadBase64;
-
 import React, { useState } from 'react';
 import { Upload, Button, Form } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 
-const ImageUploadBase64 = ({ value, onChange, required, label, name }) => {
-  const [previewData, setPreviewData] = useState(value || '');
-  const [fileName, setFileName] = useState('');
+const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = false }) => {
+  const [previewData, setPreviewData] = useState(multiple ? (value || []) : (value || ''));
+  const [fileNames, setFileNames] = useState(multiple ? [] : '');
 
   const handleFileChange = (info) => {
     if (info.file) {
@@ -82,19 +13,35 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name }) => {
 
       reader.onloadend = () => {
         const base64String = reader.result;
-        setPreviewData(base64String);
-        setFileName(file.name);
-        onChange(name, base64String);
+        if (multiple) {
+          const newPreviewData = [...previewData, base64String];
+          const newFileNames = [...fileNames, file.name];
+          setPreviewData(newPreviewData);
+          setFileNames(newFileNames);
+          onChange(name, newPreviewData);
+        } else {
+          setPreviewData(base64String);
+          setFileNames(file.name);
+          onChange(name, base64String);
+        }
       };
 
       reader.readAsDataURL(file);
     }
   };
 
-  const handleDelete = () => {
-    setPreviewData('');
-    setFileName('');
-    onChange(name, '');
+  const handleDelete = (index) => {
+    if (multiple) {
+      const newPreviewData = previewData.filter((_, i) => i !== index);
+      const newFileNames = fileNames.filter((_, i) => i !== index);
+      setPreviewData(newPreviewData);
+      setFileNames(newFileNames);
+      onChange(name, newPreviewData);
+    } else {
+      setPreviewData('');
+      setFileNames('');
+      onChange(name, '');
+    }
   };
 
   return (
@@ -106,7 +53,8 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name }) => {
     >
       <div className="flex flex-col gap-2">
         <Upload
-          accept="application/pdf,image/*"
+          accept="image/*"
+          multiple={multiple}
           showUploadList={false}
           beforeUpload={(file) => {
             handleFileChange({ file: { originFileObj: file } });
@@ -114,39 +62,55 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name }) => {
           }}
         >
           <Button icon={<UploadOutlined />}>
-            {previewData ? 'Change File' : 'Upload File'}
+            {multiple ? 'Add Images' : (previewData ? 'Change Image' : 'Upload Image')}
           </Button>
         </Upload>
 
-        {previewData && (
-          <div className="relative mt-2">
-            {previewData.startsWith('data:application/pdf') ? (
-              <iframe
-                src={previewData}
-                title="PDF Preview"
-                className="w-full h-[400px] border rounded"
-              />
-            ) : (
-              <img
-                src={previewData}
-                alt="Preview"
-                className="max-w-[200px] max-h-[200px] object-contain border rounded"
-              />
-            )}
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={handleDelete}
-              className="absolute top-2 right-2"
-            />
-          </div>
-        )}
-
-        {fileName && (
-          <div className="text-sm text-gray-600 mt-1">{fileName}</div>
-        )}
+        <div className="grid grid-cols-2 gap-4">
+          {multiple ? (
+            previewData.map((preview, index) => (
+              <div key={index} className="relative mt-2">
+                <img
+                  src={preview}
+                  alt={`Preview ${index + 1}`}
+                  className="max-w-[200px] max-h-[200px] object-contain border rounded"
+                />
+                <Button
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  onClick={() => handleDelete(index)}
+                  className="absolute top-2 right-2"
+                />
+                {fileNames[index] && (
+                  <div className="text-sm text-gray-600 mt-1">{fileNames[index]}</div>
+                )}
+              </div>
+            ))
+          ) : (
+            previewData && (
+              <div className="relative mt-2">
+                <img
+                  src={previewData}
+                  alt="Preview"
+                  className="max-w-[200px] max-h-[200px] object-contain border rounded"
+                />
+                <Button
+                  type="primary"
+                  danger
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  onClick={() => handleDelete()}
+                  className="absolute top-2 right-2"
+                />
+                {fileNames && (
+                  <div className="text-sm text-gray-600 mt-1">{fileNames}</div>
+                )}
+              </div>
+            )
+          )}
+        </div>
       </div>
     </Form.Item>
   );
