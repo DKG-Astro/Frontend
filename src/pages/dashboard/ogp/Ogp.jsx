@@ -68,6 +68,8 @@ const Ogp = () => {
       setFormData(prev => ({
         ...data?.responseData,
         issueNoteId: data.responseData?.issueNoteNo,
+        type: "Goods Issue",
+        ogpType: prev.ogpType,
         ogpDate: prev.ogpDate,
         materialDtlList: data?.responseData?.materialDtlList?.map(item => ({...item, locatorDesc: locatorMasterObj[parseInt(item.locatorId)]}))
       }));
