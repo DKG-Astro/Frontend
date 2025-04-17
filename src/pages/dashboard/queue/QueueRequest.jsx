@@ -79,6 +79,31 @@ const MaterialDetailModal = ({ visible, setVisible, materialData }) => {
         <Descriptions.Item label="Comments" span={2}>
           {materialData.comments || "No comments"}
         </Descriptions.Item>
+        <Descriptions.Item label="Upload Documents" span={2}>
+        <div className="detail-item">
+                      {materialData.uploadImageFileName
+                        ? materialData.uploadImageFileName
+                            .split(",")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Material/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  materialData.uploadImageFileName.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                  </div>
+        </Descriptions.Item>
+          
       </Descriptions>
     </Modal>
   );
@@ -110,7 +135,7 @@ const FilterComponent = (
   </div>
 );
 
-const QueueRequest = () => {
+const QueueRequest = ({ workflowId, requestType }) => {
   // Get the logged-in user's role details from Redux
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -157,7 +182,7 @@ const QueueRequest = () => {
     if (auth && auth.role) {
       fetchData(auth.role);
     }
-  }, [auth.role]);
+  }, [auth.role, workflowId]);
 
   // // --- Helper function: Fetch workflowTransitionId for a given requestId ---
   // const fetchWorkflowTransitionId = async (requestId) => {
@@ -555,7 +580,24 @@ const QueueRequest = () => {
           workflowTransitionId: item.workflowTransitionId,
         }))
         .sort((a, b) => b.createdDate - a.createdDate);
-      setData(formattedData);
+        let filteredData = [];
+
+
+      if (workflowId != null) {
+        filteredData = formattedData.filter(item => item.workflowId === workflowId);
+      } else if (requestType === "V") {
+        filteredData = formattedData.filter(item => item.requestId?.startsWith("V"));
+      } else if (requestType === "M") {
+      filteredData = formattedData.filter(item => item.requestId?.startsWith("M"));
+      } else if(requestType === "Tender") {
+      // Check for both workflowId 4 or 7
+       filteredData = formattedData.filter(
+      item => item.workflowId === 4 || item.workflowId === 7
+      )
+     }
+
+     setData(filteredData);
+     // setData(formattedData);
     } catch (err) {
       setError(err.message);
       message.error("Failed to fetch queue data from the API.");
