@@ -1,4 +1,4 @@
-import { Form, message, Select } from "antd";
+import { Checkbox, Form, message, Select } from "antd";
 import { DeleteOutlined } from '@ant-design/icons';
 import FormItemInput from "antd/es/form/FormItemInput";
 import axios from "axios";
@@ -247,7 +247,23 @@ export const apiCall = async (method, url, token, payload = null) => {
             >
               <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} />
             </Form.Item>
-          )
+        );
+
+        case "checkbox":
+    return (
+      <Form.Item
+        name={field?.name}
+        label={field?.label}
+        valuePropName="checked"
+        required={field?.required}
+      >
+        <Checkbox 
+          disabled={field?.disabled}
+          onChange={(e) => handleChange(field?.name, e.target.checked)}
+          checked={formData[field.name]}
+        />
+      </Form.Item>
+    );
   
       default:
         throw new Error("Provided field type doesn't exist.");
@@ -292,21 +308,24 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
           
           {section?.fieldList ? (
             <div className={`grid md:gap-x-4 md:gap-y-2 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
-              {section.fieldList.map((field, fieldIndex) => (
-                <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
-                  {conditonalRender(
-                    {
-                      ...field,
-                      name: parentName && index !== null 
-                        ? `${parentName}[${index}].${field.name}` 
-                        : field.name,
-                    }, 
-                    handleChange, 
-                    formData,
-                    handleSearch
-                  )}
-                </div>
-              ))}
+              {section.fieldList.map((field, fieldIndex) => {
+                if (field.shouldShow && !field.shouldShow(formData)) return null;
+                return(
+                    <div key={fieldIndex} className={`col-span-${field?.span || 1}`}>
+                    {conditonalRender(
+                        {
+                        ...field,
+                        name: parentName && index !== null 
+                            ? `${parentName}[${index}].${field.name}` 
+                            : field.name,
+                        }, 
+                        handleChange, 
+                        formData,
+                        handleSearch
+                    )}
+                    </div>
+                );
+              })}
             </div>
           ) : section?.children ? (
             // Recursively render children if present

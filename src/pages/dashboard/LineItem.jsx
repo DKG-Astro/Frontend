@@ -610,83 +610,6 @@ const propPresent = lineItems?.some(item => {
                           </Select>
                         </Form.Item>
                         {form.getFieldValue([
-<<<<<<< HEAD
-  "lineItems",
-  index,
-  "modeOfProcurement",
-]) === "Proprietary/Single Tender" && (
-  <>
-    <Form.Item
-      {...restField}
-      name={[name, "vendorNames"]}
-      rules={[{
-        required: true,
-        message: "Vendor name is required",
-      }]}
-    >
-      <Select placeholder="Select vendor">
-        {vendorMasterMod?.map((vendor) => (
-          <Option key={vendor.value} value={vendor.value}>
-            {vendor.label}
-          </Option>
-        ))}
-      </Select>
-    </Form.Item>
-
-    <Form.Item
-      label="Reason for Proprietary/Single Tender"
-      name={[name, "reason"]}
-      rules={[{ required: true }]}
-    >
-      <Select placeholder="Select reason">
-        <Option value="It is in the knowledge...">Manufacturer knowledge</Option>
-        <Option value="In a case of emergency...">Emergency purchase</Option>
-        <Option value="For standardization...">Standardization</Option>
-      </Select>
-    </Form.Item>
-
-    <Form.Item
-      label="Justification"
-      name={[name, "proprietaryJustification"]}
-      rules={[{ required: true }]}
-    >
-      <Input.TextArea rows={4} />
-    </Form.Item>
-  </>
-)}
-
-{form.getFieldValue([
-  "lineItems",
-  index,
-  "modeOfProcurement",
-]) === "Limited Pre Approved Vendor Tender" && (
-  <Form.Item
-    {...restField}
-    name={[name, "vendorNames"]}
-    rules={[{
-      required: true,
-      validator: (_, value) => {
-        if (!value || value.length < 4) {
-          return Promise.reject("Minimum 4 vendors required");
-        }
-        return Promise.resolve();
-      },
-    }]}
-  >
-    <Select
-      mode="multiple"
-      placeholder="Select at least 4 vendors"
-      maxTagCount={4}
-    >
-      {vendorMasterMod?.map((vendor) => (
-        <Option key={vendor.value} value={vendor.value}>
-          {vendor.label}
-        </Option>
-      ))}
-    </Select>
-  </Form.Item>
-)}
-=======
                           "lineItems",
                           index,
                           "modeOfProcurement",
@@ -786,7 +709,6 @@ const propPresent = lineItems?.some(item => {
                             </Select>
                           </Form.Item>
                         )}
->>>>>>> b8ad90d2abbd5b1f0ce78e79c5d3951946fda9d3
                       </Col>
                       <Col span={8}>
                         <Form.Item
@@ -836,20 +758,3 @@ const propPresent = lineItems?.some(item => {
 };
 
 export default LineItem;
-
-// In the handleMaterialSelect function, add currency update:
-// const handleMaterialSelect = (index, materialCode) => {
-//   const materialData = materialDetailsMap[materialCode] || {};
-//   const lineItems = form.getFieldValue("lineItems") || [];
-//   const updatedItems = [...lineItems];
-
-//   updatedItems[index] = {
-//     ...updatedItems[index],
-//     currency: materialData.currency || "", // Add this line
-//     // ... rest of existing fields
-//   };
-
-//   form.setFieldsValue({ lineItems: updatedItems });
-// };
-
-// In the form fields rendering section, add:
