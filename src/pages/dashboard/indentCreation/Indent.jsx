@@ -60,7 +60,7 @@ const Indent = () => {
         locationResponse.data?.responseData || []
       ).map((location) => ({
         label: location.locationName,
-        value: location.locationCode,
+        value: location.locationName,
       }));
 
       const formattedProjects = (projectResponse.data?.responseData || []).map(
@@ -284,7 +284,7 @@ const Indent = () => {
       return {
         ...section,
         fieldList: section.fieldList.map((field) => {
-          if (field.name === "consigneeLocation")
+          if (field.name === "consignesLocation")
             return { ...field, options: locations };
           if (field.name === "projectName")
             return { ...field, options: projects };
