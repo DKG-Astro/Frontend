@@ -15,7 +15,9 @@ import { renderFormFields } from "../../../utils/CommonFunctions";
 import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
+
 import dayjs from "dayjs";
+import { modeOfProcurementList } from "../../../utils/Constants";
 
 const { Option } = Select;
 
@@ -24,12 +26,16 @@ const Indent = () => {
   const [form] = Form.useForm();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
+  const [materialDescriptionMap, setMaterialDescriptionMap] = useState({});
   const [generatedIndentId, setGeneratedIndentId] = useState("");
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
 
   // Redux selectors for user and location details
-  const { userName, email, mobileNumber, token, userId, locationId } =
-    useSelector((state) => state.auth);
+  const { userName, email, mobileNumber, token } = useSelector(
+    (state) => state.auth
+  );
+  const auth = useSelector((state) => state.auth);
+  const actionPerformer = auth.userId;
 
   // Data states for fetched data
   const [locations, setLocations] = useState([]);
@@ -38,54 +44,81 @@ const Indent = () => {
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
 
   // Main form data state
-  const [formData, setFormData] = useState({ materialDtlList: [{}] });
+  const [formData, setFormData] = useState({ materialDetails: [{}] });
   const [searchIndentId, setSearchIndentId] = useState("");
   const [materialOptions, setMaterialOptions] = useState([]);
-const [uomOptions, setUomOptions] = useState([]);
-const [budgetCodes, setBudgetCodes] = useState([]);
-const [procurementModes, setProcurementModes] = useState([]);
-
-  // --- Data Fetching Functions ---
+  const [materialDescriptionOptions, setMaterialDescriptionOptions] = useState([]);
+  const [uomOptions, setUomOptions] = useState([]);
+  const [materials, setMaterials] = useState([]);
 
   // Fetch Locations
   const populateInitialData = async () => {
     try {
-      const [locationsRes, projectsRes, materialsRes] = await Promise.all([
-        axios.get("api/location-master"),
-        axios.get("api/project-master"),
-        axios.get("api/material-master")
-      ]);
-  
-      // Process locations
-      const locationsData = locationsRes.data.responseData || [];
-      setLocations(locationsData.map(l => ({value: l.locationName, label: l.locationName})));
-  
-      // Process projects
-      const projectsData = projectsRes.data.responseData || [];
-      setProjects(projectsData.map(p => ({value: p.projectName, label: p.projectName})));
-  
-      // Process materials
-      const materialsData = materialsRes.data?.responseData || [];
-      const matOptions = materialsData.map(m => ({value: m.materialCode, label: m.materialCode}));
-      setMaterialOptions(matOptions);
+      const [locationResponse, projectResponse, materialResponse] =
+        await Promise.all([
+          axios.get("/api/location-master"),
+          axios.get("/api/project-master"),
+          axios.get("/api/material-master"),
+        ]);
+
+      // Format options for dropdowns
+      const formattedLocations = (
+        locationResponse.data?.responseData || []
+      ).map((location) => ({
+        label: location.locationName,
+        value: location.locationCode,
+      }));
+
+      const formattedProjects = (projectResponse.data?.responseData || []).map(
+        (project) => ({
+          label: project.projectNameDescription,
+          value: project.projectCode,
+        })
+      );
+
+      const materials = materialResponse.data?.responseData || [];
+      setMaterials(materials);
+      const formattedMaterials = materials.map((material) => ({
+        label: material.materialName,
+        value: material.materialCode,
+      }));
+      const formattedMaterialDescriptions = materials.map((material) => ({
+        label: material.description,
+        value: material.description,
+      }));
       
-      // Process material details
-      const materialMap = materialsData.reduce((acc, material) => ({
-        ...acc,
-        [material.materialCode]: {
-          description: material.description,
-          unitPrice: material.unitPrice,
+
+      const materialMap = {};
+      materials.forEach((material) => {
+        materialMap[material.materialCode] = {
+          materialDescription: material.description,
           uom: material.uom,
+          unitPrice: material.unitPrice,
           materialCategory: material.category,
-          materialSubCategory: material.subCategory
-        }
-      }), {});
-      setMaterialDetailsMap(materialMap);
-  
-      // Process UOM options
-      const uoms = [...new Set(materialsData.map(m => m.uom))].map(u => ({value: u, label: u}));
-      setUomOptions(uoms);
-  
+          materialSubCategory: material.subCategory,
+          currency: material.currency,
+        };
+      });
+      const materialDescriptionMap = {};
+      materials.forEach((material) => {
+        materialDescriptionMap[material.description] = {
+          materialCode: material.materialCode,
+          uom: material.uom,
+          unitPrice: material.unitPrice,
+          materialCategory: material.category,
+          materialSubCategory: material.subCategory,
+          currency: material.currency,
+        };
+      });
+      setMaterialDetailsMap(materialMap); // Already done
+      setMaterialDescriptionMap(materialDescriptionMap); // NEW STATE
+      setMaterialOptions(formattedMaterials);
+      setMaterialDescriptionOptions(formattedMaterialDescriptions);
+
+      // Set options in state
+      setLocations(formattedLocations);
+      setProjects(formattedProjects);
+      //   setMaterialOptions(formattedMaterials);
     } catch (error) {
       console.error("Initial data load failed:", error);
       message.error("Failed to load initial form data");
@@ -163,98 +196,110 @@ const [procurementModes, setProcurementModes] = useState([]);
     }
   };
 
-  // --- Handlers for Form Data Updates ---
-  const handleChange = (fieldName, value) => {
-    if (Array.isArray(fieldName)) {
-      const [listName, index, field] = fieldName;
-      setFormData((prev) => {
-        const list = prev[listName] || [];
-        const updatedItem = { ...list[index], [field]: value };
-        // Auto-calculate totalPrice if quantity or unitPrice change
-        if (field === "quantity" || field === "unitPrice") {
-          const quantity = Number(updatedItem.quantity) || 0;
-          const unitPrice = Number(updatedItem.unitPrice) || 0;
-          updatedItem.totalPrice = quantity * unitPrice;
+  // --- handleChange Function ---
+  const handleChange = async (name, value) => {
+    if (Array.isArray(name)) {
+      const [section, index, field] = name;
+
+      if (section === "materialDetails") {
+        const updatedMaterials = [...formData.materialDetails];
+
+        // If field is materialCode, auto-fill other fields
+        if (field === "materialCode") {
+          const materialData = materialDetailsMap[value] || {};
+          const quantity = updatedMaterials[index].quantity || 0;
+
+          updatedMaterials[index] = {
+            ...updatedMaterials[index],
+            materialCode: value,
+            materialDescription: materialData.materialDescription || "",
+            materialCategory: materialData.materialCategory || "",
+            materialSubCategory: materialData.materialSubCategory || "",
+            uom: materialData.uom || "",
+            unitPrice: materialData.unitPrice || 0,
+            currency: materialData.currency || "",
+            totalPrice: (materialData.unitPrice || 0) * quantity,
+          };
         }
-        const updatedList = list.map((item, i) =>
-          i === index ? updatedItem : item
-        );
-        return { ...prev, [listName]: updatedList };
-      });
+
+        else if (field === "materialDescription") {
+            const materialData = materialDescriptionMap[value] || {};
+            const quantity = updatedMaterials[index].quantity || 0;
+          
+            updatedMaterials[index] = {
+              ...updatedMaterials[index],
+              materialDescription: value,
+              materialCode: materialData.materialCode || "",
+              materialCategory: materialData.materialCategory || "",
+              materialSubCategory: materialData.materialSubCategory || "",
+              uom: materialData.uom || "",
+              unitPrice: materialData.unitPrice || 0,
+              currency: materialData.currency || "",
+              totalPrice: (materialData.unitPrice || 0) * quantity,
+            };
+          }          
+
+        // If field is quantity, update total price
+        else if (field === "quantity") {
+          const quantity = parseFloat(value || 0);
+          const unitPrice = parseFloat(updatedMaterials[index].unitPrice || 0);
+
+          updatedMaterials[index] = {
+            ...updatedMaterials[index],
+            quantity,
+            totalPrice: unitPrice * quantity,
+          };
+        }
+
+        // If field is unitPrice (user edits manually), recalculate total
+        else if (field === "unitPrice") {
+          const unitPrice = parseFloat(value || 0);
+          const quantity = parseFloat(updatedMaterials[index].quantity || 0);
+
+          updatedMaterials[index] = {
+            ...updatedMaterials[index],
+            unitPrice,
+            totalPrice: unitPrice * quantity,
+          };
+        }
+
+        // All other fields
+        else {
+          updatedMaterials[index] = {
+            ...updatedMaterials[index],
+            [field]: value,
+          };
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          materialDetails: updatedMaterials,
+        }));
+      }
     } else {
-      setFormData((prev) => ({ ...prev, [fieldName]: value }));
+      // Top-level fields
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
-  // When a material is selected, auto-fill its details
-  const handleMaterialSelect = (index, selectedMaterialCode) => {
-    const materialData = materialDetailsMap[selectedMaterialCode];
-    if (materialData) {
-      setFormData((prev) => {
-        const list = prev.materialDtlList || [];
-        const updatedItem = {
-          ...list[index],
-          materialCode: selectedMaterialCode,
-          materialDesc: materialData.description,
-          unitPrice: materialData.unitPrice,
-          uom: materialData.uom,
-          materialCategory: materialData.materialCategory,
-          materialSubCategory: materialData.materialSubCategory,
-          vendorName: Array.isArray(materialData.vendorNames)
-            ? materialData.vendorNames.join(", ")
-            : materialData.vendorNames,
-        };
-        const quantity = Number(updatedItem.quantity) || 0;
-        updatedItem.totalPrice = quantity * Number(updatedItem.unitPrice || 0);
-        const updatedList = [...list];
-        updatedList[index] = updatedItem;
-        return { ...prev, materialDtlList: updatedList };
-      });
-    }
-  };
-
-  // --- Print Functionality ---
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-  });
-
-  // --- Form Submission ---
+  // --- onFinish Function ---
   const onFinish = async () => {
-    // Build payload using current formData along with auth details.
-    const payload = {
-      ...formData,
-      indentorName: userName,
-      indentorEmail: email,
-      indentorMobileNo: mobileNumber,
-      materialDetails: formData.materialDtlList,
-      locationId,
-      createdBy: userId,
-    };
+    const payload = { ...formData, createdBy: actionPerformer };
 
     try {
       setSubmitBtnLoading(true);
-      const { data } = await axios.post("api/indents", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const { data } = await axios.post("/api/indents", payload);
+
+      setFormData({
+        ...formData,
+        indentId: data?.responseData?.indentId,
       });
-      // Instead of checking data.responseStatus, we check if data exists.
-      if (data) {
-        message.success("Indent created successfully!");
-        // If the API returns an indent ID, update accordingly.
-        // (Update 'indentId' property name if your API returns something different.)
-        setFormData((prev) => ({
-          ...prev,
-          indentId: data?.responseData?.indentId,
-        }));
-        setGeneratedIndentId(data.indentId || "");
-        setIsPrintEnabled(true);
-        localStorage.removeItem("indentDraft");
-        setModalOpen(true);
-      } else {
-        throw new Error("Submission failed");
-      }
+
+      localStorage.removeItem("indentDraft");
+      setModalOpen(true);
     } catch (error) {
       let errorMessage = "Failed to submit indent";
       if (
@@ -274,6 +319,85 @@ const [procurementModes, setProcurementModes] = useState([]);
       setSubmitBtnLoading(false);
     }
   };
+
+  // --- handleSearch Function ---
+  const handleSearch = async (value) => {
+    try {
+      const { data } = await axios.get(
+        `/api/indents/${value ? value : formData.indentId}`
+      );
+
+      setFormData({
+        ...data?.responseData,
+      });
+    } catch (error) {
+      console.log("ERROR: ", error);
+      message.error(
+        error?.response?.data?.responseStatus?.message || "Error fetching data."
+      );
+    }
+  };
+
+  // --- Draft Saving and Loading ---
+  useEffect(() => {
+    const indentDraft = localStorage.getItem("indentDraft");
+    if (indentDraft) {
+      setFormData(JSON.parse(indentDraft));
+      message.success("Form loaded from draft.");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("indentDraft", JSON.stringify(formData));
+  }, [formData]);
+
+  // --- Printing Function ---
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
+
+  // --- Populate Dropdowns on Mount ---
+  useEffect(() => {
+    populateDropdowns();
+  }, []);
+
+  // --- Prepare Hydrated Indent Details ---
+  const hydratedIndentDetails = IndentDetails.map((section) => {
+    if (section.fieldList) {
+      return {
+        ...section,
+        fieldList: section.fieldList.map((field) => {
+          if (field.name === "consigneeLocation")
+            return { ...field, options: locations };
+          if (field.name === "projectName")
+            return { ...field, options: projects };
+          return field;
+        }),
+      };
+    }
+    if (section.children) {
+      return {
+        ...section,
+        children: section.children.map((child) => {
+          if (child.name === "materialCode")
+            return { ...child, options: materialOptions };
+          else if (child.name === "materialDescription")
+            return {...child, options: materialDescriptionOptions };
+          return child;
+        }),
+      };
+    }
+    return section;
+  });
+  // --- Auto Populate Indentor Information Based on Login Info--
+  useEffect(() => {
+    setFormData({
+      ...formData,
+      indentorEmailAddress: email,
+      indentorMobileNo: mobileNumber,
+      indentorName: userName,
+    });
+  }, []);
 
   return (
     <Card className="a4-container" ref={printRef}>

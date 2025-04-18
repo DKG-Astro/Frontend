@@ -16,36 +16,24 @@ export const IndentDetails = [
         required: true,
       },
       {
-        name: "indentorEmailId",
+        name: "indentorEmailAddress",
         label: "Indentor Email Id",
         type: "text",
         required: true,
       },
       {
-        name: "consigneeLocation",
+        name: "consignesLocation",
         label: "Consignee Location",
         type: "select",
         required: true,
-        options: [
-          {
-            value: "1",
-            label: "Locator 1",
-          },
-          {
-            value: "2",
-            label: "Locator 2",
-          },
-          {
-            value: "3",
-            label: "Locator 3",
-          },
-        ],
+        // options: (props) => props.locations,
+        showSearch: true,
       },
     ],
   },
   {
     heading: "Material Details",
-    name: "materialDtlList",
+    name: "materialDetails",
     colCnt: 8,
     children: [
       // Update materialCode field options to be populated dynamically
@@ -58,27 +46,29 @@ export const IndentDetails = [
         options: [], // Will be populated from API data
         showSearch: true,
         filterOption: (input, option) =>
-          option.label.toLowerCase().includes(input.toLowerCase())
+          option.label.toLowerCase().includes(input.toLowerCase()),
       },
-      
+
       // Update description field to show API data
       {
-        name: "materialDesc",
+        name: "materialDescription",
         label: "Description",
-        type: "text",
+        type: "select",
         span: 3,
+        options: [], // Will be populated from API data
+        showSearch: true,
+        filterOption: (input, option) =>
+          option.label.toLowerCase().includes(input.toLowerCase()),
         required: true,
-        disabled: true // Becomes read-only as it's auto-populated
       },
-      
+
       // Update UOM field with dynamic options
       {
         name: "uom",
         label: "UOM",
-        type: "select",
+        type: "text",
         required: true,
-        options: [], // Populated from API's uom values
-        showSearch: true
+        disabled: true,
       },
       {
         name: "quantity",
@@ -91,19 +81,40 @@ export const IndentDetails = [
         type: "text",
       },
       {
+        name: "currency",
+        label: "Currency",
+        type: "text",
+        required: true,
+        span: 1,
+        disabled: true,
+      },
+      {
         name: "budgetCode",
         label: "Budget Code",
         type: "select",
         required: true,
-        span: 2,
-        options: [],
+        span: 3,
+        options: [
+          {
+            value: "Capital",
+            label: "Capital",
+          },
+          {
+            value: "Consumable",
+            label: "Consumable",
+          },
+          {
+            value: "Instrument and Accessories",
+            label: "Instrument and Accessories",
+          },
+        ],
       },
       {
         name: "totalPrice",
         label: "Total Price",
         type: "text",
         span: 2,
-        // disabled: true,
+        disabled: true,
       },
       {
         name: "materialCategory",
@@ -115,7 +126,7 @@ export const IndentDetails = [
       {
         name: "materialSubCategory",
         label: "Material Sub Category",
-        type: "text", 
+        type: "text",
         span: 2,
       },
       {
@@ -123,7 +134,7 @@ export const IndentDetails = [
         label: "Mode of Procurement",
         type: "select",
         span: 3,
-        required: true, 
+        required: true,
         options: [
           {
             value: "GEM",
@@ -166,19 +177,10 @@ export const IndentDetails = [
         label: "Project Name",
         type: "select",
         // required: true,
-        options: [
-          {
-            value: "1",
-            label: "Project 1", 
-          },
-          {
-            value: "2",
-            label: "Project 2", 
-          }
-        ],
-        span: 2
+        // options: (props) => props.projects,
+        span: 2,
       },
-    ]
+    ],
   },
   {
     heading: "Pre-Bid Meeting Details",
@@ -187,15 +189,16 @@ export const IndentDetails = [
       {
         name: "preBidMeetingRequired",
         label: "Pre-Bid Meeting Required?",
-        type: "text",
-        span: 1
+        type: "checkbox", //should be a checkbox field (true or false)
+        span: 1,
       },
       {
         name: "preBidMeetingDetails",
         label: "Pre-Bid Meeting Date",
         type: "date",
-        span: 2,
-        dependencies: ["preBidMeetingRequired"]
+        span: 1,
+        dependencies: ["preBidMeetingRequired"],
+        shouldShow: (formData) => formData.preBidMeetingRequired === true,
       },
       {
         name: "preBidMeetingLocation",
@@ -203,13 +206,10 @@ export const IndentDetails = [
         type: "select",
         span: 2,
         dependencies: ["preBidMeetingRequired"],
-        options: [
-          { value: "Location 1", label: "Location 1" },
-          { value: "Location 2", label: "Location 2" },
-          { value: "Location 3", label: "Location 3" }
-        ]
-      }
-    ]
+        options: [],
+        shouldShow: (formData) => formData.preBidMeetingRequired === true,
+      },
+    ],
   },
   {
     heading: "Rate Contract Indent Details",
@@ -217,9 +217,9 @@ export const IndentDetails = [
     fieldList: [
       {
         name: "rateContractIndent",
-        label: "Rate Contract Indent",
-        type: "text",
-        span: 3
+        label: "Is it a Rate Contract Indent?",
+        type: "checkbox", //should be a checkbox field (true or false)
+        span: 3,
       },
       {
         name: "periodOfRateContract",
@@ -227,7 +227,8 @@ export const IndentDetails = [
         type: "text",
         // required: true,
         span: 3,
-        dependencies: ["rateContractIndent"]
+        dependencies: ["rateContractIndent"],
+        shouldShow: (formData) => formData.rateContractIndent === true,
       },
       {
         name: "singleOrMultipleJob",
@@ -237,33 +238,76 @@ export const IndentDetails = [
         span: 3,
         options: [
           { value: "Single", label: "Single" },
-          { value: "Multiple", label: "Multiple" }
-        ]
-      }
-    ]
+          { value: "Multiple", label: "Multiple" },
+        ],
+        shouldShow: (formData) => formData.rateContractIndent === true,
+      },
+    ],
   },
   {
     heading: "Additional Details",
     colCnt: 4,
     fieldList: [
-       {
-         name: "quarter",
-         label: "Quarter",
-         type: "select",
-         span: 2,
-         options: [
-           { value: "Q1", label: "Q1" },
-           { value: "Q2", label: "Q2" },
-           { value: "Q3", label: "Q3" },
-           { value: "Q4", label: "Q4" }
-         ]
-       },{
-         name: "purpose",
-         label: "Purpose",
-         type: "text",
-         span: 2,
-       } 
-    ]  
+      {
+        name: "quarter",
+        label: "Quarter",
+        type: "select",
+        span: 2,
+        options: [
+          { value: "Q1", label: "Q1" },
+          { value: "Q2", label: "Q2" },
+          { value: "Q3", label: "Q3" },
+          { value: "Q4", label: "Q4" },
+        ],
+      },
+      {
+        name: "purpose",
+        label: "Purpose",
+        type: "text",
+        span: 2,
+      },
+    ],
+  },
+  {
+    heading: "Proprietary Details",
+    colCnt: 4,
+    fieldList: [
+      {
+        name: "proprietary",
+        label: "Is Proprietary?",
+        type: "checkbox", //should be a checkbox field (true or false)
+        span: 1,
+      },
+      {
+        name: "reason",
+        label: "Reason for Proprietary",
+        type: "select",
+        span: 4,
+        options: [
+          {
+            value:"It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods",
+            label:"It is in the knowledge of the user department that only aparticular firm is the manufacturer of the required goods",
+          },
+          {
+            value:"In a case of emergency, the required goods are necessarily to be purchased from a particular source",
+            label:"In a case of emergency, the required goods are necessarily to be purchased from a particular source",
+          },
+          { value: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm", 
+            label: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm" 
+          },
+        ],
+        dependencies: ["proprietary"],
+        shouldShow: (formData) => formData.proprietary === true,
+      },
+      {
+        name: "proprietaryJustification",
+        label: "Justification",
+        type: "text",
+        span: 4,
+        dependencies: ["proprietary"],
+        shouldShow: (formData) => formData.proprietary === true,
+      }
+    ],
   },
   {
     heading: "Attachments",
@@ -272,22 +316,41 @@ export const IndentDetails = [
       {
         name: "uploadingPriorApprovalsFileName",
         label: "Prior Approvals",
-        type: "image",
-        span: 2
+        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        span: 2,
       },
       {
         name: "technicalSpecificationsFileName",
         label: "Technical Specs",
-        type: "image",
-        span: 2
+        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        span: 2,
       },
       {
         name: "draftEOIOrRFPFileName",
         label: "Draft EOI/RFP",
-        type: "image",
-        span: 2
+        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        span: 2,
       },
-    ]
+    ],
+  },
+  {
+    heading: "Buy Back Details",
+    colCnt: 4,
+    fieldList: [
+      {
+        name: "buyBack",
+        label: "Is Buy Back Required?",
+        type: "checkbox", //should be a checkbox field (true or false)
+        span: 1,
+      },
+      {
+        name: "uploadBuyBackFileNames",
+        label: "Buy Back File",
+        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        dependencies: ["buyBack"],
+        shouldShow: (formData) => formData.buyBack === true,
+      },
+    ],
   },
   {
     heading: "Brand PAC Details",
@@ -295,31 +358,35 @@ export const IndentDetails = [
     fieldList: [
       {
         name: "brandPac",
-        label: "Brand PAC Required",
-        type: "text",
-        span: 1
+        label: "Is Brand PAC Required?",
+        type: "checkbox", //should be a checkbox field (true or false)
+        span: 1,
       },
       {
         name: "brandAndModel",
         label: "Brand & Model",
         type: "text",
         span: 2,
-        dependencies: ["brandPac"]
+        dependencies: ["brandPac"],
+        shouldShow: (formData) => formData.brandPac === true,
       },
       {
         name: "uploadPACOrBrandPACFileName",
         label: "Brand PAC",
-        type: "image",
+        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 1,
-        dependencies: ["brandPac"]
+        dependencies: ["brandPac"],
+        shouldShow: (formData) => formData.brandPac === true,
       },
       {
         name: "justification",
-        label: "It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand. However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:",
+        label:
+          "It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand. However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:",
         type: "text",
         span: 4,
-        dependencies: ["brandPac"]
-      }
-    ]
-  }
+        dependencies: ["brandPac"],
+        shouldShow: (formData) => formData.brandPac === true,
+      },
+    ],
+  },
 ];
