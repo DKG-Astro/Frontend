@@ -92,6 +92,14 @@ const GPRN = () => {
         setFormData(prev => {
           const prevMaterialDtlList = prev.materialDtlList
           prevMaterialDtlList[fieldName[1]][fieldName[2]] = value
+          
+          // Calculate total amount when receivedQuantity changes
+          if(fieldName[2] === 'receivedQuantity') {
+            const unitPrice = parseFloat(prevMaterialDtlList[fieldName[1]].unitPrice || 0);
+            const quantity = parseFloat(value || 0);
+            prevMaterialDtlList[fieldName[1]].totalAmount = (unitPrice * quantity).toFixed(2);
+          }
+          
           return {...prev, materialDtlList: prevMaterialDtlList}  
         })
       }
@@ -371,6 +379,13 @@ const GPRN = () => {
                   type: "text",
                   required: true,
                   disabled: true
+              },
+              {
+                  name: "totalAmount",
+                  label: "Total Amount",
+                  type: "text",
+                  required: true,
+                  disabled: true,
               },
               {
                   name: "makeNo",
