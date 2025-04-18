@@ -513,7 +513,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
+       // `http://103.181.158.220:8081/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
+          `/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
           roleName
         )}`
       );
@@ -575,6 +576,10 @@ const QueueRequest = ({ workflowId, requestType }) => {
             budgetCode: item.budgetCode,
             procurementType: item.procurementType,
             consignee: item.consignee,
+          }),
+          ...(item.workflowId === 9 && {
+            indentorName: item.indentorName,
+            amount: item.amount,
           }),
           status: item.nextAction,
           workflowTransitionId: item.workflowTransitionId,
@@ -673,6 +678,17 @@ const {userId} = useSelector(state => state.auth)
           procurementMode: apiData.procurementType,
           consignee: apiData.consignee,
         }[field];
+      case 9:
+          return {
+            indentor: apiData.indentorName,
+            //   amount: apiData.totalValueOfPo,
+           // project: apiData.projectName,
+            budgetName: apiData.budgetCode,
+            indentTitle: "Material",
+            amount: apiData.amount,
+          //  procurementMode: apiData.procurementType,
+           // consignee: apiData.consignee,
+          }[field];
 
       default:
         return "-";
