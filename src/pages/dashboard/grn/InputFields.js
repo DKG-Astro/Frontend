@@ -107,11 +107,24 @@ export const grvFields = [
                 required: true
             },
             {
+                name: "unitPrice",
+                label: "Unit Price",
+                type: "text",
+                required: true
+            },
+            {
+                name: "depriciationRate",
+                label: "Depreciation Rate",
+                type: "text",
+                required: true
+            },
+            {
                 name: "bookValue",
                 label: "Book Value",
                 type: "text",
                 required: true
             },
+            
             {
                 name: "receivedQuantity",
                 label: "Received Quantity",
@@ -124,11 +137,16 @@ export const grvFields = [
                 type: "text",
                 required: true
             },
+        ]
+    },
+    {
+        heading: "Custodian Details",
+        fieldList: [
             {
-                name: "depriciationRate",
-                label: "Depreciation Rate",
-                type: "text",
-                required: true
+                label: "Custodian Name",
+                name: "indentorName",
+                disabled: true,
+                type: "text"
             }
         ]
     }
@@ -247,6 +265,17 @@ export const igpGrnFields = [
             //     type: "text",
             //     required: true
             // }
+        ]
+    },
+    {
+        heading: "Custodian Details",
+        fieldList: [
+            {
+                label: "Custodian Name",
+                name: "indentorName",
+                type: "text",
+                disabled: true
+            }
         ]
     }
 ]

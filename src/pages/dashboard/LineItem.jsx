@@ -157,69 +157,28 @@ const LineItem = ({
         );
     }
   };
-
-  const [showVendorDd, setShowVendorDd] = useState({});
-
   const handleModeOfProcurementChange = (value, index) => {
-    // if (value === "Proprietary/Single Tender"
-    // || value === "Limited Pre Approved Vendor Tender"
-    // || value === "Brand PAC"
-    // ) {
+    if (value === "Proprietary/Single Tender") {
       // setHasProprietaryItem(true);
-     setShowVendorDd(prev => {
-      const upd = { ...prev , [index]: value};
-      console.log("UOD: ", upd)
-      return upd;
-     })
-    // }
-    const lineItems = form.getFieldValue("lineItems");
+      console.log("HERE");
 
-    // const propPresent = lineItems?.some(
-    //   (item) => item.modeOfProcurement === "Proprietary/Single Tender"
-    // );
-    // setHasProprietaryItem(propPresent);
-
-    // const currentItem = lineItems[index];
-
-    // // Clear vendor names when mode changes
-    // if (currentItem) {
-    //   currentItem.vendorNames = undefined;
-    //   form.setFieldsValue({ lineItems });
-    // }
-
-const propPresent = lineItems?.some(item => {
-  if (Array.isArray(item)) {
-    // Handle case: [null, { modeOfProcurement: "..." }]
-    return item.some(subItem => subItem?.modeOfProcurement === "Proprietary/Single Tender");
-  }
-
-  if (typeof item === 'object' && item !== null) {
-    // Handle case: { "0": { modeOfProcurement: "..." } }
-    const values = Object.values(item);
-    return values.some(subItem => subItem?.modeOfProcurement === "Proprietary/Single Tender");
-  }
-
-  return false;
-});
-
-
-    setHasProprietaryItem(propPresent)
-
-    // Clear vendor names when mode changes
-    if (lineItems[index]) {
-      if (Array.isArray(lineItems[index])) {
-        lineItems[index] = lineItems[index].map(subItem => ({
-          ...subItem,
-          vendorNames: undefined
-        }));
-      } else {
-        lineItems[index].vendorNames = undefined;
-      }
-      form.setFieldsValue({ lineItems });
+      setHasProprietaryItem(true);
     }
 
+    const str = "Proprietary/Single Tender";
 
+    console.log("Called", value.length, str.length);
+    const lineItems = form.getFieldValue("lineItems");
+    const currentItem = lineItems[index];
+
+    // Clear vendor names when mode changes
+    if (currentItem) {
+      currentItem.vendorNames = undefined;
+      form.setFieldsValue({ lineItems });
+    }
   };
+
+  console.log("PROP: ");
 
   const fetchInitialData = async () => {
     try {
@@ -275,8 +234,6 @@ const propPresent = lineItems?.some(item => {
       console.error("Material fetch error:", error);
     }
   };
-
-  console.log("SHOW VENDOR DD: ", showVendorDd)
 
   useEffect(() => {
     fetchInitialData();
@@ -335,7 +292,7 @@ const propPresent = lineItems?.some(item => {
                     <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
-                          name={[name, index, "materialCode"]}
+                          name={[name, "materialCode"]}
                           label="Material Code"
                           rules={[
                             {
@@ -385,7 +342,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "materialDescription"]}
+                          name={[name, "materialDescription"]}
                           label="Material Description"
                           rules={[
                             {
@@ -453,7 +410,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "quantity"]}
+                          name={[name, "quantity"]}
                           label="Quantity"
                           rules={[
                             {
@@ -479,7 +436,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "unitPrice"]}
+                          name={[name, "unitPrice"]}
                           label="Unit Price"
                           rules={[
                             {
@@ -505,7 +462,7 @@ const propPresent = lineItems?.some(item => {
                         <Col span={8}>
                         <Form.Item
                           label="Currency"
-                          name={[name, index, "currency"]}
+                          name={[name, "currency"]}
                           rules={[
                             { required: true, message: "Currency is required" },
                           ]}
@@ -516,7 +473,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "uom"]}
+                          name={[name, "uom"]}
                           label="UOM"
                           rules={[
                             { required: true, message: "Please select UOM!" },
@@ -528,7 +485,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "materialCategory"]}
+                          name={[name, "materialCategory"]}
                           label="Material Category"
                           rules={[
                             {
@@ -543,7 +500,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "materialSubcategory"]}
+                          name={[name, "materialSubcategory"]}
                           label="Material Subcategory"
                           rules={[
                             {
@@ -558,7 +515,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "budgetCode"]}
+                          name={[name, "budgetCode"]}
                           label="Budget Code"
                           rules={[
                             {
@@ -615,7 +572,8 @@ const propPresent = lineItems?.some(item => {
                           "modeOfProcurement",
                         ]) === "Proprietary/Single Tender" && (
                           <Form.Item
-                            name={[name, index, "vendorNames"]}
+                            {...restField}
+                            name={[name, "vendorNames"]}
                             rules={[
                               {
                                 required: true,
@@ -633,28 +591,6 @@ const propPresent = lineItems?.some(item => {
                           </Form.Item>
                         )}
 
-                        {
-                          showVendorDd[index] === "Proprietary/Single Tender" && (
-                            <Form.Item
-                            name={[name, index, "vendorNames"]}
-                            rules={[
-                              {
-                                required: true,
-                                message: "Vendor name is required",
-                              },
-                            ]}
-                          >
-                            <Select placeholder="Select vendor">
-                              {vendorMasterMod?.map((vendor) => (
-                                <Option key={vendor.value} value={vendor.value}>
-                                  {vendor.label}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                          )
-                        }
-
                         {form.getFieldValue([
                           "lineItems",
                           index,
@@ -662,7 +598,7 @@ const propPresent = lineItems?.some(item => {
                         ]) === "BRAND PAC" && (
                           <Form.Item
                             {...restField}
-                            name={[name, index, "vendorNames"]}
+                            name={[name, "vendorNames"]}
                             // rules={[
                             //   {
                             //     required: true,
@@ -681,7 +617,7 @@ const propPresent = lineItems?.some(item => {
                         ]) === "Limited Pre Approved Vendor Tender" && (
                           <Form.Item
                             {...restField}
-                            name={[name, index, "vendorNames"]}
+                            name={[name, "vendorNames"]}
                             rules={[
                               {
                                 required: true,
@@ -713,7 +649,7 @@ const propPresent = lineItems?.some(item => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, index, "totalPrice"]}
+                          name={[name, "totalPrice"]}
                           label="Total Price"
                           shouldUpdate
                         >

@@ -168,7 +168,7 @@ const MaterialForm = ({materialCode}) => {
       ) {
         vendorNames = values.vendorNames;
       }
-
+/*
       let uploadedFileName = values.uploadImageFileName;
       if (fileList.length > 0 && fileList[0].originFileObj) {
         const formData = new FormData();
@@ -181,6 +181,38 @@ const MaterialForm = ({materialCode}) => {
         const uploadResult = await uploadResponse.json();
         uploadedFileName = uploadResult.fileName;
       }
+        */
+      let uploadedFileNames = [];
+
+      if (fileList.length > 0) {
+        for (const file of fileList) {
+          if (file.originFileObj) {
+            const formData = new FormData();
+            formData.append("file", file.originFileObj);
+      
+            const uploadResponse = await fetch(
+              "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
+              { method: "POST", body: formData }
+            );
+      
+            const uploadResult = await uploadResponse.json();
+            if (uploadResult?.responseData?.fileName) {
+              uploadedFileNames.push(uploadResult.responseData.fileName);
+            }
+      
+      
+           // if (uploadResult.fileName) {
+             // uploadedFileNames.push(uploadResult.fileName);
+            //}
+      
+            console.log("Uploaded:", uploadResult.fileName);
+          }
+        }
+      }
+      
+            
+            // Convert array to comma-separated string
+     const uploadedFileNameString = uploadedFileNames.join(",");
 
       const payload = {
         category: values.category,
@@ -193,7 +225,7 @@ const MaterialForm = ({materialCode}) => {
         unitPrice: values.unitPrice,
         uom: values.uom,
         updatedBy: String(actionPerformer), // Convert to string
-        uploadImageFileName: uploadedFileName,
+        uploadImageFileName: uploadedFileNameString,
         briefDescription: values.briefDescription
       };
 
@@ -431,6 +463,7 @@ const MaterialForm = ({materialCode}) => {
           <Form.Item label="Upload Document">
             <Upload
               beforeUpload={() => false}
+              multiple={true}
               //   accept="image/*"
               fileList={fileList}
               onChange={({ fileList }) => setFileList(fileList)}

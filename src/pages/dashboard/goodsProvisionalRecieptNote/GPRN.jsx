@@ -493,7 +493,6 @@ const GPRN = () => {
           ]
       }
   ]
-
     
   return (
     <Card className='a4-container' ref={printRef}>

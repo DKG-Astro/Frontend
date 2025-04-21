@@ -5,6 +5,7 @@ import QueueRequest from "./QueueRequest";
 import QueueAction from "./QueueAction";
 import PendingGi from "./PendingGi";
 import Queue3 from "./Queue3";
+import Queue1 from "./Queue1";
 
 const { Text } = Typography;
 const RESTRICTED_USER_IDS = new Set([25, 31, 34, 36]);
@@ -44,7 +45,7 @@ const QueueTable = () => {
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
       {!isRestricted && (
           <Tabs.TabPane tab="Queue1" key="request">
-            <QueueRequest />
+            <Queue1/>
           </Tabs.TabPane>
         )}
         <Tabs.TabPane tab="Queue2" key="action">
