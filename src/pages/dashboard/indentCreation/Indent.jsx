@@ -10,19 +10,13 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
 
-import dayjs from "dayjs";
-import { modeOfProcurementList } from "../../../utils/Constants";
-
 const { Option } = Select;
 
 const Indent = () => {
   const printRef = useRef();
-  const [form] = Form.useForm();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [materialDescriptionMap, setMaterialDescriptionMap] = useState({});
-  const [generatedIndentId, setGeneratedIndentId] = useState("");
-  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
 
   // Redux selectors for user and location details
   const { userName, email, mobileNumber, token } = useSelector(
@@ -34,7 +28,6 @@ const Indent = () => {
   // Data states for fetched data
   const [locations, setLocations] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
 
   // Main form data state
@@ -44,15 +37,17 @@ const Indent = () => {
   const [materialDescriptionOptions, setMaterialDescriptionOptions] = useState([]);
   const [uomOptions, setUomOptions] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [vendors, setVendors] = useState([]);
 
   // --- Dynamic Field Population ---
   const populateDropdowns = async () => {
     try {
-      const [locationResponse, projectResponse, materialResponse] =
+      const [locationResponse, projectResponse, materialResponse, vendorResponse] =
         await Promise.all([
           axios.get("/api/location-master"),
           axios.get("/api/project-master"),
           axios.get("/api/material-master"),
+          axios.get("/api/vendor-master"),
         ]);
 
       // Format options for dropdowns
@@ -69,6 +64,13 @@ const Indent = () => {
           value: project.projectCode,
         })
       );
+
+      // Format vendors
+    const formattedVendors = (vendorResponse.data?.responseData || []).map(vendor => ({
+        label: vendor.vendorName,
+        value: vendor.vendorId,
+      }));
+      setVendors(formattedVendors);
 
       const materials = materialResponse.data?.responseData || [];
       setMaterials(materials);
@@ -203,6 +205,15 @@ const Indent = () => {
         }));
       }
     } else {
+        if (name === "modeOfProcurement") {
+            setFormData(prev => ({
+              ...prev,
+              [name]: value,
+              // Force a new object reference to trigger re-render
+              _version: prev._version ? prev._version + 1 : 1
+            }));
+            return;
+          }
       // Top-level fields
       setFormData((prev) => ({
         ...prev,
@@ -284,10 +295,9 @@ const Indent = () => {
       return {
         ...section,
         fieldList: section.fieldList.map((field) => {
-          if (field.name === "consignesLocation")
-            return { ...field, options: locations };
-          if (field.name === "projectName")
-            return { ...field, options: projects };
+          if (field.name === "consignesLocation") return { ...field, options: locations };
+          if (field.name === "projectName") return { ...field, options: projects };
+          if (field.name === "preBidMeetingLocation") return { ...field, options: locations };
           return field;
         }),
       };
@@ -296,10 +306,9 @@ const Indent = () => {
       return {
         ...section,
         children: section.children.map((child) => {
-          if (child.name === "materialCode")
-            return { ...child, options: materialOptions };
-          else if (child.name === "materialDescription")
-            return {...child, options: materialDescriptionOptions };
+          if (child.name === "vendorName") { return {...child, options: vendors, props: { vendors }};}
+          if (child.name === "materialCode") return { ...child, options: materialOptions };
+          if (child.name === "materialDescription") return { ...child, options: materialDescriptionOptions };
           return child;
         }),
       };
@@ -318,7 +327,7 @@ const Indent = () => {
 
   return (
     <Card className="a4-container" ref={printRef}>
-      <Heading title="Indent Form" />
+      <Heading title="Indent Creation" />
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(
           hydratedIndentDetails,

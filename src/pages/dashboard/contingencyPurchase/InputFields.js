@@ -6,7 +6,7 @@ export const CpDetails = [
         name: "date",
         label: "Date",
         type: "date",
-        // required: true,
+        required: true,
       },
     ],
   },
@@ -51,11 +51,13 @@ export const CpDetails = [
         name: "quantity",
         label: "Quantity",
         type: "text",
+        required: true,
       },
       {
         name: "unitPrice",
         label: "Unit Price",
         type: "text",
+        required: true,
       },
       {
         name: "currency",
@@ -98,18 +100,21 @@ export const CpDetails = [
         label: "Material Category",
         type: "text",
         span: 2,
+        required: true,
       },
       {
         name: "materialSubCategory",
         label: "Material Sub Category",
         type: "text",
         span: 2,
+        required: true,
       },
       {
         name: "modeOfProcurement",
         label: "Mode of Procurement",
         type: "select",
         span: 3,
+        required: true,
         options: [
           {
             value: "GEM",
@@ -150,6 +155,7 @@ export const CpDetails = [
         name: "vendorInvoiceNo",
         label: "Vendor Invoice No.",
         type: "text",
+        required: true,
       },
     ],
   },
@@ -161,6 +167,7 @@ export const CpDetails = [
         name: "remarks",
         label: "Remarks For Purchase",
         type: "text",
+        required: true,
       },
       {
         name: "amountToBePaid",
