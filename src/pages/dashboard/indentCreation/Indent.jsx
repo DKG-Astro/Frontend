@@ -42,17 +42,18 @@ const Indent = () => {
   const [searchIndentId, setSearchIndentId] = useState("");
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescriptionOptions, setMaterialDescriptionOptions] = useState([]);
-  const [uomOptions, setUomOptions] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [vendors, setVendors] = useState([]);
 
-  // Fetch Locations
-  const populateInitialData = async () => {
+  // --- Dynamic Field Population ---
+  const populateDropdowns = async () => {
     try {
-      const [locationResponse, projectResponse, materialResponse] =
+      const [locationResponse, projectResponse, materialResponse, vendorResponse] =
         await Promise.all([
           axios.get("/api/location-master"),
           axios.get("/api/project-master"),
           axios.get("/api/material-master"),
+          axios.get("/api/vendor-master")
         ]);
 
       // Format options for dropdowns
@@ -62,6 +63,12 @@ const Indent = () => {
         label: location.locationName,
         value: location.locationName,
       }));
+
+      const formattedVendors = (vendorResponse.data?.responseData || []).map(vendor => ({
+        label: vendor.vendorName,
+        value: vendor.vendorId,
+      }));
+      setVendors(formattedVendors);
 
       const formattedProjects = (projectResponse.data?.responseData || []).map(
         (project) => ({
@@ -114,81 +121,13 @@ const Indent = () => {
       setProjects(formattedProjects);
       //   setMaterialOptions(formattedMaterials);
     } catch (error) {
-      console.error("Initial data load failed:", error);
-      message.error("Failed to load initial form data");
+      console.error("Error fetching dropdown data:", error);
+      message.error(
+        error?.response?.data?.responseStatus?.message ||
+          "Failed to fetch dropdown data."
+      );
     }
   };
-  
-  // Single useEffect to load all initial data
-  useEffect(() => {
-    populateInitialData();
-  }, []);
-
-  // Auto-populate indentor details from Redux on mount
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      indentorName: userName,
-      indentorEmailId: email,
-      indentorMobileNo: mobileNumber,
-    }));
-  }, [userName, email, mobileNumber]);
-
-  // --- Search Functionality ---
-//   const handleSearch = async () => {
-//     if (!searchIndentId) {
-//       message.error("Please enter an Indent ID to search");
-//       return;
-//     }
-//     try {
-//       const res = await axios.get(`api/indents/${searchIndentId}`);
-//       if (!res.data.responseData) {
-//         throw new Error("No data found for the provided Indent ID");
-//       }
-//       const data = res.data.responseData;
-//       const updatedData = {
-//         indentorName: data.indentorName,
-//         indentorMobileNo: data.indentorMobileNo,
-//         indentorEmailId: data.indentorEmailAddress,
-//         consigneeLocation: data.consignesLocation,
-//         projectName: data.projectName,
-//         preBidMeetingRequired: data.isPreBidMeetingRequired,
-//         preBidMeetingDetails: data.preBidMeetingDate
-//           ? dayjs(data.preBidMeetingDate, "DD/MM/YYYY")
-//           : null,
-//         preBidMeetingLocation: data.preBidMeetingVenue,
-//         rateContractIndent: data.isItARateContractIndent,
-//         periodOfRateContract: data.periodOfContract,
-//         singleOrMultipleJob: data.singleAndMultipleJob,
-//         uploadingPriorApprovalsFileName: data.uploadingPriorApprovalsFileName,
-//         technicalSpecificationsFileName: data.technicalSpecificationsFileName,
-//         draftEOIOrRFPFileName: data.draftEOIOrRFPFileName,
-//         uploadPACOrBrandPACFileName: data.uploadPACOrBrandPACFileName,
-//         materialDtlList: Array.isArray(data.materialDetails)
-//           ? data.materialDetails.map((item) => ({
-//               materialCode: item.materialCode,
-//               materialDesc: item.materialDescription,
-//               quantity: item.quantity,
-//               unitPrice: item.unitPrice,
-//               totalPrice: Number(item.quantity) * Number(item.unitPrice),
-//               uom: item.uom,
-//               budgetCode: item.budgetCode,
-//               materialCategory: item.materialCategory,
-//               materialSubCategory: item.materialSubCategory,
-//               modeOfProcurement: item.modeOfProcurement,
-//               vendorName: Array.isArray(item.vendorNames)
-//                 ? item.vendorNames.join(", ")
-//                 : item.vendorNames,
-//             }))
-//           : [{}],
-//       };
-//       setFormData(updatedData);
-//       message.success("Form data fetched successfully");
-//     } catch (error) {
-//       console.error("Search error:", error);
-//       message.error(`Failed to fetch form data: ${error.message}`);
-//     }
-//   };
 
   // --- handleChange Function ---
   const handleChange = async (name, value) => {
@@ -364,6 +303,13 @@ const Indent = () => {
       return {
         ...section,
         children: section.children.map((child) => {
+            if (child.name === "vendorName") {
+                return {
+                  ...child,
+                  options: vendors,  // Remove this line
+                  props: { vendors }
+                };
+              }
           if (child.name === "materialCode")
             return { ...child, options: materialOptions };
           else if (child.name === "materialDescription")
