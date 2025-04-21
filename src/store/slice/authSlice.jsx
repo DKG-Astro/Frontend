@@ -9,7 +9,11 @@ const initialState = {
   readPermission: false,
   writePermission: false,
   loading: false,
-  error: null
+  error: null,
+  locationId: null,
+  userName: null,
+  mobileNumber: null,
+  email: null
 };
 
 export const login = createAsyncThunk(
@@ -17,7 +21,7 @@ export const login = createAsyncThunk(
   async (formData, thunkAPI) => {
     try {
       const response = await axios.post(
-        'http://103.181.158.220:8081/astro-service/login',
+        '/login',
         formData
       );
       const data = response.data;
@@ -53,6 +57,10 @@ const authSlice = createSlice({
       state.writePermission = false;
       state.loading = false;
       state.error = null;
+      state.userName = null;
+      state.mobileNumber = null;
+      state.email = null;
+      state.locationId = null;
     }
   },
   extraReducers: (builder) => {
@@ -77,6 +85,10 @@ const authSlice = createSlice({
         state.userId = userId;
         state.readPermission = readPermission;
         state.writePermission = writePermission;
+        state.locationId = "BNG"
+        state.userName = action?.payload?.userName;
+        state.email = action?.payload?.email;
+        state.mobileNumber = action?.payload?.mobileNumber;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

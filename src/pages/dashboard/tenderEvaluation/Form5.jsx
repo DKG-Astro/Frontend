@@ -1,19 +1,8 @@
-// import React from 'react'
-
-// const DataAnalysis = () => {
-//   return (
-//     <div>
-//       Data Analysis
-//     </div>
-//   )
-// }
-
-// export default DataAnalysis
-
 import { Button, Form, Input, Select, Table, Upload } from "antd";
 import React from "react";
 import { UploadOutlined } from "@ant-design/icons";
 import { Option } from "antd/es/mentions";
+import { useLocation } from "react-router-dom";
 const Form5 = () => {
   const onFinish = (values) => {
     console.log("Evaluation Data:", values);

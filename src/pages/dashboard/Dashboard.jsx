@@ -10,13 +10,13 @@ import { Input } from 'antd';
 // import Admin from './admin/Admin';
 import { ActiveTabContext } from '../../context/dashboardActiveTabContext';
 import Form1 from './indentCreation/Form1';
-import Form2 from './indentApproval/Form2';
+// import Form2 from './indentApproval/Form2';
 import Form3 from './indentModification/Form3';
 import Form4 from './tenderRequest/Form4';
 import Form5 from './tenderEvaluation/Form5';
 import Form6 from './communityNomination/Form6';
 import Form7 from './purchaseOrder/Form7';
-import Form8 from './approvalWorkflow/Form8';
+// import Form8 from './approvalWorkflow/Form8';
 import Form9 from './performanceWarranty/Form9';
 import Form10 from './deliveryTracking/Form10';
 import Form11 from './goodsProvisionalRecieptNote/Form11';
@@ -33,9 +33,17 @@ import Form7a from './serviceOrder/Form7a';
 import Form7b from './contingencyPurchase/Form7b';
 import Queue from './queue/Queue';
 import MainDashboard from './newDashboard/MainDashboard';
+import NewCalibrationForm from './duty/calibration/newCalibration/NewCalibrationForm';
+import Form4a from './tenderRequest/Form4a';
+import MaterialForm from './materialDetails/MaterialForm';
+import Temp from './goodsProvisionalRecieptNote/GPRN';
+import GPRN from './goodsProvisionalRecieptNote/GPRN';
+import GoodsInspection from './goodsInspection/GoodsInspection';
+import JobCreation from './jobCreation/JobCreation';
+import WorkCreation from './workCreation/WorkCreation';
 // import Form21 from './lineItems/Form21';
 
-const { Search } = Input;
+// const { Search } = Input;
 
 
 const dashboardTabItems = [
@@ -100,54 +108,60 @@ const Dashboard = () => {
 
     const renderTab = () => {
       switch (activeTab){
-        case 1:
-          return <Form1 />
         case 2:
-          return <Form2 />
-        case 3:
-          return <Form3 />
-        case 4:
-          return <Form4 />
-        case 5:
-          return <Form5 />
-        case 6:
-          return <Form6 />
-        case 7:
-          return <Form7 />
-        case 8:
-            return <Form8/>
-        case 9:
-            return <Form9 />
-        case 10:
-            return <Form10 />
-        case 11:
-            return <Form11 />
-        case 12:
-            return <Form12 />
-        case 13:
-            return <Form13 />
-        case 14:
-            return <Form14 />
-        case 15:
-            return <Form15 />
-        case 16:
-            return <Form16 />
-        case 17:
-            return <Form17 />
-        case 18:
-            return <Form18 />
-        case 19:
-            return <Form19 />
-        case 20:
-            return <Form20 />
-        case 21:
-            return <Form7a />
-        case 22:
-            return <Form7b />
-        case 23:
             return <Queue />
-        case 24:
+        case 1:
             return <MainDashboard />
+        case 3:
+          return <Form1 />
+        // case 4:
+        //   return <Form2 />
+        case 5:
+          return <Form3 />
+        case 6:
+          return <Form4 />
+        case 7:
+          return <Form4a />
+        case 8:
+          return <Form6 />
+        case 9:
+          return <Form7 />
+        // case 10:
+        //     return <Form8/>
+        case 11:
+            return <Form9 />
+        case 12:
+            return <Form10 />
+        case 13:
+            return <GPRN />
+        case 14:
+            return <GoodsInspection />
+        case 15:
+            return <Form13 />
+        case 16:
+            return <Form14 />
+        case 17:
+            return <Form15 />
+        case 18:
+            return <Form16 />
+        case 19:
+            return <Form17 />
+        case 20:
+            return <Form18 />
+        case 21:
+            return <Form19 />
+        case 22:
+            return <Form20 />
+        case 23:
+            return <Form7a />
+        case 24:
+            return <Form7b />
+        case 25:
+            return <MaterialForm />
+        case 26:
+            return <JobCreation />
+        case 27:
+            return <WorkCreation />
         default:
           break
       }

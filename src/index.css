@@ -34,10 +34,11 @@ label{
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('./assets/images/iia-bg-image.PNG'); /* Replace with your image URL */
+  /* background-image: url('./assets/images/iia-bg-image.PNG'); Replace with your image URL */
+  background-color: white;
   background-size: cover; /* Adjust as needed */
   background-position: center; /* Adjust as needed */
-  opacity: 0.2; /* Change this value for desired opacity */
+  opacity: 0; /* Change this value for desired opacity */
   z-index: 0; /* Ensure it's behind the content */
 }
 
@@ -159,15 +160,17 @@ label{
   @apply !bg-darkBlue
 }
 
-.ant-dropdown-trigger.active, .ant-dropdown-trigger.active>*{
+.ant-dropdown-trigger.active, .ant-dropdown-trigger.active>*, .ant-dropdown-open, .ant-dropdown-open>*{
   color:#E74C3C !important
 }
 
 /* ------------------ ASTRO ------------------- */
 
 .a4-container{
-  @apply mx-auto w-full max-w-[210mm] aspect-[210/297] bg-[#e4f2f2] border border-[#ccc] p-6
+  @apply mx-auto w-full max-w-[210mm] border border-[#ccc] h-max;
 }
+/* bg-[#e4f2f2] */
+/* aspect-[210/297] */
 
 .org-dtl-container{
   @apply grid grid-cols-[repeat(auto-fit,minmax(10rem,1fr))] gap-4
@@ -193,7 +196,8 @@ label{
   @apply !m-0;
 }
 
-@media print {
+
+/* @media print {
   .print-css-tandc{
     @apply grid grid-cols-2
   }
@@ -267,7 +271,7 @@ label{
     gap: 50px;
     margin-bottom: 0px;
   }
-}
+} */
 
 .form-container {
     margin: 15px auto;
@@ -330,10 +334,92 @@ label{
     margin-bottom: 0px;
   }
 
-  .login-submit-btn{
+  .custom-btn{
     padding: 50px;
     width: 10%;
     margin-top: -35px;
     margin-bottom: -30px;
   }
+
+  @media print {
+    body {
+      width: 210mm; /* A4 width */
+      height: 297mm; /* A4 height */
+    }
+    
+    /* Hide all buttons in print */
+    button {
+      display: none !important;
+    }
   
+    /* Adjust margins and ensure form prints neatly */
+    .ant-form {
+      margin: 20px;
+      padding: 20px;
+      border: none;
+    }
+  
+    /* Page Break for multi-page forms */
+    .page-break {
+      page-break-before: always;
+    }
+  }  
+
+  .large-container{
+    @apply flex flex-col gap-4 md:gap-8 bg-white p-4 w-full md:w-4/5 mx-auto h-[100vh] md:h-fit overflow-y-auto;
+  }
+  
+
+.no-border .ant-input{
+  @apply !border-0 focus:ring-0;
+}
+.no-border .ant-select-selector{
+  @apply !border-0 focus:ring-0;
+}
+
+.ant-form-item .no-border{
+  @apply !m-0;
+}
+
+.ant-form-item-label > label {
+  @apply !text-sm
+}
+
+.ant-btn-primary{
+  @apply !bg-darkBlue hover:!bg-darkBlueHover !text-offWhite
+}
+
+@media print {
+  /* Simulate `md` breakpoint when printing */
+  html {
+    width: 768px; /* Force medium breakpoint */
+  }
+
+  body {
+    @apply md:text-lg md:p-10 md:bg-white md:text-black;
+  }
+}
+/* .ant-form-item{
+  @apply !m-0
+}
+
+.ant-form-item-label{
+  @apply !p-0
+}
+
+input{
+  @apply !px-2 !py-[0.1rem]
+}
+
+.ant-picker{
+  @apply !px-[0.1rem] !py-0
+} */
+
+/* Custom checkbox color */
+.ant-checkbox-checked .ant-checkbox-inner {
+  @apply bg-darkBlueHover border-darkBlueHover  /* Change the border color */
+}
+
+.ant-checkbox-checked:hover .ant-checkbox-inner {
+  @apply bg-darkBlueHover /* Change hover color */
+}

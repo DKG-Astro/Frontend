@@ -1,0 +1,979 @@
+import React from "react";
+import {
+  Modal,
+  Typography,
+  Row,
+  Col,
+  Tag,
+  Spin,
+  Collapse,
+  Divider,
+  Empty,
+  Button,
+  Table,
+} from "antd";
+import {
+  AuditOutlined,
+  BarsOutlined,
+  CalendarOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  InfoCircleOutlined,
+  ProfileOutlined,
+  ProjectOutlined,
+  ShopOutlined,
+  ShoppingOutlined,
+  SolutionOutlined,
+  ToolOutlined,
+} from "@ant-design/icons";
+import QueueHistory from "./QueueHistory";
+
+const QueueModal = ({
+  modalVisible,
+  setModalVisible,
+  selectedRecord,
+  detailsData,
+  historyVisible,
+  setHistoryVisible,
+}) => {
+  return (
+    <Modal
+      title={
+        <div className="flex items-center justify-between">
+          <span>
+            {`${selectedRecord?.workflowName || "Details"} - ${
+              selectedRecord?.requestId || "N/A"
+            }`}
+          </span>
+          <Button
+            type="link"
+            icon={<HistoryOutlined />}
+            onClick={() => setHistoryVisible(true)}
+          >
+            View History
+          </Button>
+        </div>
+      }
+      open={modalVisible}
+      onCancel={() => setModalVisible(false)}
+      footer={null}
+      width={1000}
+      className="custom-modal"
+      bodyStyle={{ padding: "24px 24px 8px" }}
+    >
+      {detailsData ? (
+        <>
+          <style>{`
+        .custom-modal .ant-modal-title { font-size: 18px; font-weight: 600; }
+        .detail-section { margin-bottom: 24px; padding: 16px; border: 1px solid #f0f0f0; border-radius: 8px; }
+        .detail-item { margin-bottom: 12px; font-size: 14px; }
+        .detail-item strong { display: inline-block; width: 220px; color: rgba(0, 0, 0, 0.85); }
+        .section-title { margin: 16px 0; font-size: 16px; font-weight: 500; }
+        .ant-table-thead > tr > th { background-color: #fafafa; font-weight: 600; }
+        .amount { font-weight: 500; color: #1890ff; }
+      `}</style>
+
+          {parseInt(selectedRecord?.workflowId, 10) === 1 && (
+            <div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <InfoCircleOutlined /> Indent Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Indentor Name:</strong> {detailsData.indentorName}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Email:</strong> {detailsData.indentorEmailAddress}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Mobile No:</strong> {detailsData.indentorMobileNo}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Project Name:</strong> {detailsData.projectName}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Location:</strong> {detailsData.consignesLocation}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Technical Specs:</strong>
+                      {detailsData.technicalSpecificationsFileName
+                        ? detailsData.technicalSpecificationsFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.technicalSpecificationsFileName.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Prior Approvals:</strong>
+                      {detailsData.uploadingPriorApprovalsFileName
+                        ? detailsData.uploadingPriorApprovalsFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadingPriorApprovalsFileName.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Draft EOI/RFP:</strong>
+                      {detailsData.draftEOIOrRFPFileName
+                        ? detailsData.draftEOIOrRFPFileName
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.draftEOIOrRFPFileName.split(", ")
+                                    .length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Total Price:</strong> ₹
+                      {detailsData.totalPriceOfAllMaterials?.toFixed(2)}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {detailsData.isPreBidMeetingRequired && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <CalendarOutlined /> Pre-Bid Meeting
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Date:</strong> {detailsData.preBidMeetingDate}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Venue:</strong> {detailsData.preBidMeetingVenue}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <BarsOutlined /> Material Details
+                </Typography.Title>
+                <Table
+                  dataSource={detailsData.materialDetails}
+                  pagination={false}
+                  bordered
+                  scroll={{ x: true }}
+                  rowKey="materialCode"
+                  columns={[
+                    {
+                      title: "Material Code",
+                      dataIndex: "materialCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Description",
+                      dataIndex: "materialDescription",
+                      ellipsis: true,
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      align: "right",
+                    },
+                    {
+                      title: "Unit Price",
+                      dataIndex: "unitPrice",
+                      align: "right",
+                      render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    {
+                      title: "Total Price",
+                      dataIndex: "totalPrice",
+                      align: "right",
+                      render: (text) => (
+                        <span style={{ fontWeight: 500 }}>
+                          ₹{text?.toFixed(2)}
+                        </span>
+                      ),
+                    },
+                    { title: "UOM", dataIndex: "uom", width: 100 },
+                    {
+                      title: "Budget Code",
+                      dataIndex: "budgetCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Vendor Names",
+                      dataIndex: "vendorNames",
+                      width: 120,
+                      render: (text) => (text ? text.join(", ") : "N/A"),
+                    },
+                  ]}
+                />
+              </div>
+              <div className="detail-section">
+              <div className="detail-item">
+              <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Additional Details
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <strong>Purpose:</strong> {detailsData.purpose || "N/A"}
+                    <div className="detail-item">
+                      <strong>Quarter:</strong> {detailsData.quarter || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Reason:</strong> {detailsData.reason || "N/A"}
+                    </div>
+                    <div>
+                        <strong>Justification</strong> {detailsData.proprietaryJustification || "N/A"}
+                    </div>
+                    </Col>
+                    </Row>
+                </div>
+                </div>
+              {detailsData.brandPac && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Brand PAC
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Brand PAC:</strong>{" "}
+                        {String(detailsData.brandPac) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>PAC/Brand PAC:</strong>
+                        {detailsData.uploadPACOrBrandPACFileName
+                          ? detailsData.uploadPACOrBrandPACFileName
+                              .split(", ")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.uploadPACOrBrandPACFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Brand and Model:</strong>{" "}
+                        {detailsData.brandAndModel || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Justification:</strong>{" "}
+                        {detailsData.justification || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+            </div>
+          )}
+
+          {parseInt(selectedRecord?.workflowId, 10) === 2 && (
+            <div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ShoppingOutlined /> Contingency Purchase Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Contingency ID:</strong>{" "}
+                      {detailsData.contigencyId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Vendor Name:</strong>{" "}
+                      {detailsData.vendorsName || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Invoice No:</strong>{" "}
+                      {detailsData.vendorsInvoiceNo || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Amount To Be Paid:</strong>
+                      <span className="amount">
+                        {detailsData.amountToBePaid
+                          ? `₹${detailsData.amountToBePaid.toFixed(2)}`
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <strong>Purchase Statement:</strong>{" "}
+                      {detailsData.predifinedPurchaseStatement || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Invoice Copy:</strong>{" "}
+                      {detailsData.uploadCopyOfInvoice || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ProfileOutlined /> Material Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Material Code:</strong>{" "}
+                      {detailsData.materialCode || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Description:</strong>{" "}
+                      {detailsData.materialDescription || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Quantity:</strong> {detailsData.quantity || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Unit Price:</strong>{" "}
+                      {detailsData.unitPrice
+                        ? `₹${detailsData.unitPrice.toFixed(2)}`
+                        : "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ProjectOutlined /> Project Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Project Name:</strong>{" "}
+                      {detailsData.projectName || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Created By:</strong>{" "}
+                      {detailsData.createdBy || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Last Updated:</strong>{" "}
+                      {detailsData.updatedDate || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Updated By:</strong>{" "}
+                      {detailsData.updatedBy || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+            </div>
+          )}
+
+          {parseInt(selectedRecord?.workflowId, 10) === 3 && (
+            <div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <FileTextOutlined /> PO Basic Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>PO ID:</strong> {detailsData.poId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Tender ID:</strong>{" "}
+                      {detailsData.tenderId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Delivery Period:</strong>{" "}
+                      {detailsData.deliveryPeriod
+                        ? `${detailsData.deliveryPeriod} days`
+                        : "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Total PO Value:</strong>
+                      <span className="amount">
+                        {detailsData.totalValueOfPo !== undefined
+                          ? `₹${detailsData.totalValueOfPo.toFixed(2)}`
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <strong>Payment Terms:</strong>{" "}
+                      {detailsData.paymentTerms || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>LD Clause:</strong>{" "}
+                      {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ShopOutlined /> Vendor Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Vendor Name:</strong>{" "}
+                      {detailsData.vendorName || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Number:</strong>{" "}
+                      {detailsData.vendorAccountNumber || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>IFSC Code:</strong>{" "}
+                      {detailsData.vendorsIfscCode || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Name:</strong>{" "}
+                      {detailsData.vendorAccountName || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <BarsOutlined /> Purchase Order Items
+                </Typography.Title>
+                <Table
+                  dataSource={detailsData.purchaseOrderAttributes}
+                  pagination={false}
+                  bordered
+                  scroll={{ x: true }}
+                  rowKey="materialCode"
+                  columns={[
+                    {
+                      title: "Material Code",
+                      dataIndex: "materialCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Description",
+                      dataIndex: "materialDescription",
+                      ellipsis: true,
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      align: "right",
+                    },
+                    {
+                      title: "Rate",
+                      dataIndex: "rate",
+                      align: "right",
+                      render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    { title: "Currency", dataIndex: "currency", width: 100 },
+                    {
+                      title: "GST",
+                      dataIndex: "gst",
+                      render: (text) => `${text}%`,
+                      align: "right",
+                    },
+                    {
+                      title: "Freight",
+                      dataIndex: "freightCharge",
+                      align: "right",
+                      render: (text) => (text ? `₹${text}` : "N/A"),
+                    },
+                    {
+                      title: "Budget Code",
+                      dataIndex: "budgetCode",
+                      width: 120,
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+
+          {parseInt(selectedRecord?.workflowId, 10) === 4 && (
+            <div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <AuditOutlined /> Tender Overview
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Tender ID:</strong>{" "}
+                      {detailsData.tenderId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Title:</strong>{" "}
+                      {detailsData.titleOfTender || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Bid Type:</strong> {detailsData.bidType || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Opening Date:</strong>{" "}
+                      {detailsData.openingDate || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Closing Date:</strong>{" "}
+                      {detailsData.closingDate || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Total Value:</strong>
+                      <span className="amount">
+                        {detailsData.totalTenderValue
+                          ? `₹${detailsData.totalTenderValue.toFixed(2)}`
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <FilePdfOutlined /> Document Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={8}>
+                    <div className="detail-item">
+                      <strong>Tender Documents:</strong>
+                      {detailsData.uploadTenderDocuments
+                        ? detailsData.uploadTenderDocuments
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadTenderDocuments.split(", ")
+                                    .length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div className="detail-item">
+                      <strong>Specific Terms:</strong>
+                      {detailsData.uploadSpecificTermsAndConditions
+                        ? detailsData.uploadSpecificTermsAndConditions
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadSpecificTermsAndConditions.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={8}>
+                    <div className="detail-item">
+                      <strong>General Terms:</strong>
+                      {detailsData.uploadGeneralTermsAndConditions
+                        ? detailsData.uploadGeneralTermsAndConditions
+                            .split(", ")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.uploadGeneralTermsAndConditions.split(
+                                    ", "
+                                  ).length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+
+              {detailsData.indentResponseDTO &&
+                detailsData.indentResponseDTO.length > 0 && (
+                  <div className="detail-section">
+                    <Typography.Title level={5} className="section-title">
+                      <SolutionOutlined /> Associated Indents (
+                      {detailsData.indentResponseDTO.length})
+                    </Typography.Title>
+
+                    <div style={{ marginBottom: 16 }}>
+                      <strong>Indent IDs: </strong>
+                      {detailsData.indentResponseDTO.map((indent, index) => (
+                        <Tag
+                          color="blue"
+                          key={indent.indentId}
+                          style={{ margin: "4px 4px" }}
+                        >
+                          {indent.indentId || `Indent ${index + 1}`}
+                        </Tag>
+                      ))}
+                    </div>
+
+                    <Collapse accordion defaultActiveKey={["0"]}>
+                      {detailsData.indentResponseDTO.map((indent, index) => (
+                        <Collapse.Panel
+                          key={index}
+                          header={`Indent ${index + 1} - ${
+                            indent.indentId || "N/A"
+                          }`}
+                          extra={
+                            <Tag color={indent.statusColor || "processing"}>
+                              {indent.status || "Pending"}
+                            </Tag>
+                          }
+                        >
+                          <div style={{ padding: "16px 0" }}>
+                            <Row gutter={24}>
+                              <Col span={12}>
+                                <div className="detail-item">
+                                  <strong>Project Name:</strong>{" "}
+                                  {indent.projectName || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Indentor:</strong>{" "}
+                                  {indent.indentorName || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Contact:</strong>{" "}
+                                  {indent.indentorMobileNo || "N/A"}
+                                </div>
+                              </Col>
+                              <Col span={12}>
+                                <div className="detail-item">
+                                  <strong>Email:</strong>{" "}
+                                  {indent.indentorEmailAddress || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Location:</strong>{" "}
+                                  {indent.consignesLocation || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Total Value:</strong> ₹
+                                  {indent.totalPriceOfAllMaterials?.toFixed(
+                                    2
+                                  ) || "N/A"}
+                                </div>
+                              </Col>
+                            </Row>
+
+                            {indent.isPreBidMeetingRequired && (
+                              <div style={{ marginTop: 16 }}>
+                                <Divider orientation="left" plain>
+                                  Pre-Bid Meeting Details
+                                </Divider>
+                                <Row gutter={24}>
+                                  <Col span={12}>
+                                    <div className="detail-item">
+                                      <strong>Date:</strong>{" "}
+                                      {indent.preBidMeetingDate || "N/A"}
+                                    </div>
+                                  </Col>
+                                  <Col span={12}>
+                                    <div className="detail-item">
+                                      <strong>Venue:</strong>{" "}
+                                      {indent.preBidMeetingVenue || "N/A"}
+                                    </div>
+                                  </Col>
+                                </Row>
+                              </div>
+                            )}
+
+                            <Divider orientation="left" plain>
+                              Material Requirements
+                            </Divider>
+
+                            {indent.materialDetails?.length > 0 ? (
+                              <Table
+                                dataSource={indent.materialDetails}
+                                pagination={false}
+                                bordered
+                                size="small"
+                                rowKey="materialCode"
+                                columns={[
+                                  {
+                                    title: "Material Code",
+                                    dataIndex: "materialCode",
+                                    width: 120,
+                                  },
+                                  {
+                                    title: "Description",
+                                    dataIndex: "materialDescription",
+                                    ellipsis: true,
+                                  },
+                                  {
+                                    title: "Quantity",
+                                    dataIndex: "quantity",
+                                    align: "right",
+                                  },
+                                  {
+                                    title: "Unit Price",
+                                    dataIndex: "unitPrice",
+                                    align: "right",
+                                    render: (text) => `₹${text?.toFixed(2)}`,
+                                  },
+                                  {
+                                    title: "Total Price",
+                                    dataIndex: "totalPrice",
+                                    align: "right",
+                                    render: (text) => (
+                                      <span style={{ fontWeight: 500 }}>
+                                        ₹{text?.toFixed(2)}
+                                      </span>
+                                    ),
+                                  },
+                                  {
+                                    title: "UOM",
+                                    dataIndex: "uom",
+                                    width: 100,
+                                  },
+                                  {
+                                    title: "Budget Code",
+                                    dataIndex: "budgetCode",
+                                    width: 120,
+                                  },
+                                ]}
+                              />
+                            ) : (
+                              <div style={{ textAlign: "center", padding: 16 }}>
+                                <Empty
+                                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                  description="No material details found"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </Collapse.Panel>
+                      ))}
+                    </Collapse>
+                  </div>
+                )}
+            </div>
+          )}
+
+          {parseInt(selectedRecord?.workflowId, 10) === 5 && (
+            <div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ToolOutlined /> Service Order Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>SO ID:</strong> {detailsData.soId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Tender ID:</strong>{" "}
+                      {detailsData.tenderId || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Job Completion Period:</strong>{" "}
+                      {detailsData.jobCompletionPeriod
+                        ? `${detailsData.jobCompletionPeriod} days`
+                        : "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Total SO Value:</strong>
+                      <span className="amount">
+                        {detailsData.totalValueOfSo !== undefined
+                          ? `₹${detailsData.totalValueOfSo.toFixed(2)}`
+                          : "N/A"}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <strong>Payment Terms:</strong>{" "}
+                      {detailsData.paymentTerms || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>LD Clause:</strong>{" "}
+                      {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <ShopOutlined /> Vendor Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>Vendor Name:</strong>{" "}
+                      {detailsData.vendorName || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Number:</strong>{" "}
+                      {detailsData.vendorsAccountNo || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="detail-item">
+                      <strong>IFSC Code:</strong>{" "}
+                      {detailsData.vendorsZRSCCode || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Account Name:</strong>{" "}
+                      {detailsData.vendorsAccountName || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+              <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <BarsOutlined /> Purchase Order Items
+                </Typography.Title>
+                <Table
+                  dataSource={detailsData.materials}
+                  pagination={false}
+                  bordered
+                  scroll={{ x: true }}
+                  rowKey="materialCode"
+                  columns={[
+                    {
+                      title: "Material Code",
+                      dataIndex: "materialCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Description",
+                      dataIndex: "materialDescription",
+                      ellipsis: true,
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      align: "right",
+                    },
+                    {
+                      title: "Rate",
+                      dataIndex: "rate",
+                      align: "right",
+                      render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    { title: "Currency", dataIndex: "currency", width: 100 },
+                    {
+                      title: "GST",
+                      dataIndex: "gst",
+                      render: (text) => `${text}%`,
+                      align: "right",
+                    },
+                    {
+                      title: "Freight",
+                      dataIndex: "freightCharge",
+                      align: "right",
+                      render: (text) => (text ? `₹${text}` : "N/A"),
+                    },
+                    {
+                      title: "Budget Code",
+                      dataIndex: "budgetCode",
+                      width: 120,
+                    },
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <Spin tip="Loading details..." size="large" />
+        </div>
+      )}
+      <QueueHistory
+        requestId={selectedRecord?.requestId}
+        open={historyVisible}
+        onCancel={() => setHistoryVisible(false)}
+      />
+    </Modal>
+  );
+};
+
+export default QueueModal;

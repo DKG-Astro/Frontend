@@ -39,54 +39,96 @@
 //   );
 // };
 
-import React from "react";
-import { Form, DatePicker } from "antd";
-import dayjs from "dayjs";
-import FormInputItem from "./DKG_FormInputItem";
+// import React from "react";
+// import { Form, DatePicker } from "antd";
+// import dayjs from "dayjs";
+// import FormInputItem from "./DKG_FormInputItem";
 
-const dateFormat = "DD/MM/YYYY";
+// const dateFormat = "DD/MM/YYYY";
 
-const CustomDatePicker = ({
-  label,
-  name,
-  defaultValue,
-  onChange,
-  readOnly,
-  required,
-  placeholder
-}) => {
-  const initialValue = defaultValue ? dayjs(defaultValue, dateFormat) : null;
+// const CustomDatePicker = ({
+//   label,
+//   name,
+//   defaultValue,
+//   onChange,
+//   readOnly,
+//   required,
+//   placeholder,
+//   ...props
+// }) => {
+//   const initialValue = defaultValue ? dayjs(defaultValue, dateFormat) : null;
 
+//   const handleDateChange = (date) => {
+//     if (date) {
+//       if (dayjs.isDayjs(date)) {
+//         onChange(name, date.format(dateFormat));
+//       } else {
+//         onChange(name, null);
+//       }
+//     } else {
+//       onChange(name, null);
+//     }
+//   };
+
+//   if(readOnly){
+//     return <FormInputItem label={label} value={defaultValue} name={name} readOnly />
+//   }
+
+//   return (
+//     <Form.Item
+//     name={name}
+//       label={label}
+//       rules={[
+//         { required: required ?? false, message: "Please input value!" },
+//       ]}
+//       initialValue={initialValue} // Set initial value
+//       {...props}
+//     >
+//       <DatePicker
+//       placeholder={placeholder}
+//         style={{ width: "100%" }}
+//         format={dateFormat}
+//         onChange={handleDateChange}
+//         value={initialValue} // Control the value of DatePicker
+//       />
+//     </Form.Item>
+//   );
+// };
+
+// export default CustomDatePicker;
+
+
+
+import React from 'react';
+import { DatePicker, Form } from 'antd';
+import dayjs from 'dayjs';
+
+const CustomDatePicker = ({ label, name, disabled, onChange, defaultValue, required, className }) => {
+  // Convert string date to dayjs object if it exists
+  const dateValue = defaultValue ? 
+    (dayjs.isDayjs(defaultValue) ? defaultValue : dayjs(defaultValue)) : 
+    null;
+  
   const handleDateChange = (date) => {
-    if (date) {
-      if (dayjs.isDayjs(date)) {
-        onChange(name, date.format(dateFormat));
-      } else {
-        onChange(name, null);
-      }
-    } else {
-      onChange(name, null);
-    }
+    // Convert dayjs to ISO string for consistent storage
+    const dateString = date ? date.format('DD/MM/YYYY') : null;
+    onChange(name, dateString);
   };
-
-  if(readOnly){
-    return <FormInputItem label={label} value={defaultValue} name={name} readOnly />
-  }
 
   return (
     <Form.Item
+    required={required}
       label={label}
-      rules={[
-        { required: required ?? false, message: "Please input value!" },
-      ]}
-      initialValue={initialValue} // Set initial value
+      name={name}
+      className={`mb-4 ${className}`}
+      rules={[{ required: required, message: `Please select ${label}` }]}
     >
-      <DatePicker
-      placeholder={placeholder}
-        style={{ width: "100%" }}
-        format={dateFormat}
+      <DatePicker 
+        className="w-full" 
+        disabled={disabled}
         onChange={handleDateChange}
-        value={initialValue} // Control the value of DatePicker
+        value={dateValue}
+        format="DD/MM/YYYY"
       />
     </Form.Item>
   );

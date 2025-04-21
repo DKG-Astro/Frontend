@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 import { login } from '../../store/slice/authSlice';
 import { useNavigate } from 'react-router-dom';
 import FormContainer from '../../components/DKG_FormContainer';
+import { fetchMasters } from '../../store/slice/masterSlice';
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -28,8 +29,8 @@ const Login = () => {
   const handleFormSubmit = async () => {
     try {
         const userData = await dispatch(login(formData)).unwrap();
-        console.log('Logged in user:', userData);
-        console.log('User ID:', userData.userId); // Debugging: Ensure userId is returned
+
+        dispatch(fetchMasters());
 
         navigate('/'); // Navigate after successful login
     } catch (error) {
@@ -62,7 +63,7 @@ const Login = () => {
               onChange={handleFormValueChange} 
               required 
             />
-            <div className='login-submit-btn'>
+            <div className='custom-btn'>
               <Btn htmlType="submit" text="Submit"/>
             </div>
           </FormBody>
