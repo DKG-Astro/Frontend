@@ -53,7 +53,7 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     >
       <div className="flex flex-col gap-2">
         <Upload
-          accept="image/*"
+          accept="image/*,.pdf"
           multiple={multiple}
           showUploadList={false}
           beforeUpload={(file) => {
@@ -62,7 +62,7 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           }}
         >
           <Button icon={<UploadOutlined />}>
-            {multiple ? 'Add Images' : (previewData ? 'Change Image' : 'Upload Image')}
+            {multiple ? 'Add Files' : (previewData ? 'Change File' : 'Upload File')}
           </Button>
         </Upload>
 
@@ -70,11 +70,19 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           {multiple ? (
             previewData.map((preview, index) => (
               <div key={index} className="relative mt-2">
-                <img
-                  src={preview}
-                  alt={`Preview ${index + 1}`}
-                  className="max-w-[200px] max-h-[200px] object-contain border rounded"
-                />
+                {fileNames[index]?.toLowerCase().endsWith('.pdf') ? (
+                  <iframe
+                    src={preview}
+                    title={`PDF Preview ${index + 1}`}
+                    className="w-[200px] h-[200px] border rounded"
+                  />
+                ) : (
+                  <img
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
+                    className="max-w-[200px] max-h-[200px] object-contain border rounded"
+                  />
+                )}
                 <Button
                   type="primary"
                   danger
@@ -91,11 +99,19 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           ) : (
             previewData && (
               <div className="relative mt-2">
-                <img
-                  src={previewData}
-                  alt="Preview"
-                  className="max-w-[200px] max-h-[200px] object-contain border rounded"
-                />
+                {fileNames?.toLowerCase().endsWith('.pdf') ? (
+                  <iframe
+                    src={previewData}
+                    title="PDF Preview"
+                    className="w-[200px] h-[200px] border rounded"
+                  />
+                ) : (
+                  <img
+                    src={previewData}
+                    alt="Preview"
+                    className="max-w-[200px] max-h-[200px] object-contain border rounded"
+                  />
+                )}
                 <Button
                   type="primary"
                   danger
