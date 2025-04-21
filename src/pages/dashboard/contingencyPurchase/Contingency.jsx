@@ -176,6 +176,41 @@ const ContingencyPurchase = () => {
     }
   };
   
+  const handleSearch = async (value) => {
+    try {
+      const { data } = await axios.get(
+        `/api/contigency-purchase/${value || formData.cpId}`
+      );
+  
+      const cpData = data.responseData;
+      setFormData({
+        ...cpData,
+        materialDetails: [{
+          materialCode: cpData.materialCode,
+          materialDescription: cpData.materialDescription,
+          quantity: cpData.quantity,
+          unitPrice: cpData.unitPrice,
+          uom: cpData.uom,
+          currency: cpData.currency,
+          materialCategory: cpData.materialCategory,
+          materialSubCategory: cpData.materialSubCategory,
+          totalPrice: cpData.quantity * cpData.unitPrice
+        }],
+        predefinedPurchaseStatement: cpData.predifinedPurchaseStatement,
+        uploadCopyOfInvoice: cpData.uploadCopyOfInvoice,
+        amountToBePaid: cpData.amountToBePaid,
+        remarks: cpData.remarksForPurchase,
+        // date: dayjs(cpData.date, 'DD/MM/YYYY'),
+        vendorName: cpData.vendorsName,
+        vendorInvoiceNo: cpData.vendorsInvoiceNo,
+        projectName: cpData.projectName
+      });
+    } catch (error) {
+      console.error("Search Error:", error);
+      message.error(error?.response?.data?.responseStatus?.message || "Error fetching CP details");
+    }
+  };
+
   // --- Draft Handling ---
   useEffect(() => {
     const draft = localStorage.getItem('cpDraft');
@@ -232,7 +267,8 @@ const ContingencyPurchase = () => {
           formData,
           "",
           null,
-          setFormData
+          setFormData,
+          handleSearch
         )}
         <ButtonContainer
           onFinish={onFinish}

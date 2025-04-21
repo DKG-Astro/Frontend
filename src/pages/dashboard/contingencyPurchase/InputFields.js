@@ -1,4 +1,16 @@
 export const CpDetails = [
+    {
+        heading: "CP Search",
+        colCnt: 4,
+        fieldList: [
+          {
+            name: "cpId",
+            label: "CP ID",
+            type: "search",
+            span: 1,
+          },  
+        ]
+      },
   {
     colCnt: 4,
     fieldList: [
