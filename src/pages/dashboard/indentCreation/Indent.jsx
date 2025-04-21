@@ -45,13 +45,8 @@ const Indent = () => {
   const [uomOptions, setUomOptions] = useState([]);
   const [materials, setMaterials] = useState([]);
 
-<<<<<<< HEAD
-  // --- Dynamic Field Population ---
-  const populateDropdowns = async () => {
-=======
   // Fetch Locations
   const populateInitialData = async () => {
->>>>>>> b9d69a1ebac74fa73f0eec597aed1c36fa3b20af
     try {
       const [locationResponse, projectResponse, materialResponse] =
         await Promise.all([
@@ -119,13 +114,6 @@ const Indent = () => {
       setProjects(formattedProjects);
       //   setMaterialOptions(formattedMaterials);
     } catch (error) {
-<<<<<<< HEAD
-      console.error("Error fetching dropdown data:", error);
-      message.error(
-        error?.response?.data?.responseStatus?.message ||
-          "Failed to fetch dropdown data."
-      );
-=======
       console.error("Initial data load failed:", error);
       message.error("Failed to load initial form data");
     }
@@ -147,61 +135,60 @@ const Indent = () => {
   }, [userName, email, mobileNumber]);
 
   // --- Search Functionality ---
-  const handleSearch = async () => {
-    if (!searchIndentId) {
-      message.error("Please enter an Indent ID to search");
-      return;
-    }
-    try {
-      const res = await axios.get(`api/indents/${searchIndentId}`);
-      if (!res.data.responseData) {
-        throw new Error("No data found for the provided Indent ID");
-      }
-      const data = res.data.responseData;
-      const updatedData = {
-        indentorName: data.indentorName,
-        indentorMobileNo: data.indentorMobileNo,
-        indentorEmailId: data.indentorEmailAddress,
-        consigneeLocation: data.consignesLocation,
-        projectName: data.projectName,
-        preBidMeetingRequired: data.isPreBidMeetingRequired,
-        preBidMeetingDetails: data.preBidMeetingDate
-          ? dayjs(data.preBidMeetingDate, "DD/MM/YYYY")
-          : null,
-        preBidMeetingLocation: data.preBidMeetingVenue,
-        rateContractIndent: data.isItARateContractIndent,
-        periodOfRateContract: data.periodOfContract,
-        singleOrMultipleJob: data.singleAndMultipleJob,
-        uploadingPriorApprovalsFileName: data.uploadingPriorApprovalsFileName,
-        technicalSpecificationsFileName: data.technicalSpecificationsFileName,
-        draftEOIOrRFPFileName: data.draftEOIOrRFPFileName,
-        uploadPACOrBrandPACFileName: data.uploadPACOrBrandPACFileName,
-        materialDtlList: Array.isArray(data.materialDetails)
-          ? data.materialDetails.map((item) => ({
-              materialCode: item.materialCode,
-              materialDesc: item.materialDescription,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-              totalPrice: Number(item.quantity) * Number(item.unitPrice),
-              uom: item.uom,
-              budgetCode: item.budgetCode,
-              materialCategory: item.materialCategory,
-              materialSubCategory: item.materialSubCategory,
-              modeOfProcurement: item.modeOfProcurement,
-              vendorName: Array.isArray(item.vendorNames)
-                ? item.vendorNames.join(", ")
-                : item.vendorNames,
-            }))
-          : [{}],
-      };
-      setFormData(updatedData);
-      message.success("Form data fetched successfully");
-    } catch (error) {
-      console.error("Search error:", error);
-      message.error(`Failed to fetch form data: ${error.message}`);
->>>>>>> b9d69a1ebac74fa73f0eec597aed1c36fa3b20af
-    }
-  };
+//   const handleSearch = async () => {
+//     if (!searchIndentId) {
+//       message.error("Please enter an Indent ID to search");
+//       return;
+//     }
+//     try {
+//       const res = await axios.get(`api/indents/${searchIndentId}`);
+//       if (!res.data.responseData) {
+//         throw new Error("No data found for the provided Indent ID");
+//       }
+//       const data = res.data.responseData;
+//       const updatedData = {
+//         indentorName: data.indentorName,
+//         indentorMobileNo: data.indentorMobileNo,
+//         indentorEmailId: data.indentorEmailAddress,
+//         consigneeLocation: data.consignesLocation,
+//         projectName: data.projectName,
+//         preBidMeetingRequired: data.isPreBidMeetingRequired,
+//         preBidMeetingDetails: data.preBidMeetingDate
+//           ? dayjs(data.preBidMeetingDate, "DD/MM/YYYY")
+//           : null,
+//         preBidMeetingLocation: data.preBidMeetingVenue,
+//         rateContractIndent: data.isItARateContractIndent,
+//         periodOfRateContract: data.periodOfContract,
+//         singleOrMultipleJob: data.singleAndMultipleJob,
+//         uploadingPriorApprovalsFileName: data.uploadingPriorApprovalsFileName,
+//         technicalSpecificationsFileName: data.technicalSpecificationsFileName,
+//         draftEOIOrRFPFileName: data.draftEOIOrRFPFileName,
+//         uploadPACOrBrandPACFileName: data.uploadPACOrBrandPACFileName,
+//         materialDtlList: Array.isArray(data.materialDetails)
+//           ? data.materialDetails.map((item) => ({
+//               materialCode: item.materialCode,
+//               materialDesc: item.materialDescription,
+//               quantity: item.quantity,
+//               unitPrice: item.unitPrice,
+//               totalPrice: Number(item.quantity) * Number(item.unitPrice),
+//               uom: item.uom,
+//               budgetCode: item.budgetCode,
+//               materialCategory: item.materialCategory,
+//               materialSubCategory: item.materialSubCategory,
+//               modeOfProcurement: item.modeOfProcurement,
+//               vendorName: Array.isArray(item.vendorNames)
+//                 ? item.vendorNames.join(", ")
+//                 : item.vendorNames,
+//             }))
+//           : [{}],
+//       };
+//       setFormData(updatedData);
+//       message.success("Form data fetched successfully");
+//     } catch (error) {
+//       console.error("Search error:", error);
+//       message.error(`Failed to fetch form data: ${error.message}`);
+//     }
+//   };
 
   // --- handleChange Function ---
   const handleChange = async (name, value) => {
