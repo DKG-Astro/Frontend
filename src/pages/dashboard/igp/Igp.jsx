@@ -1,4 +1,4 @@
-import { Card, message } from "antd";
+import { Card, Form, message, Select } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
@@ -8,7 +8,7 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
-import { igpFields } from "./InputFields";
+import { igpFields, igpPoFields } from "./InputFields";
 
 const Igp = () => {
   const printRef = useRef();
@@ -46,11 +46,16 @@ const Igp = () => {
 
   const handleSearch = async () => {
     try {
-      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.ogpId}&processStage=OGP`);
+      const endpoint = formData.igpType === "PO" 
+        ? `/api/process-controller/getPoOgp?processNo=${formData.ogpId}`
+        : `/api/process-controller/getSubProcessDtls?processNo=${formData.ogpId}&processStage=OGP`;
+
+      const {data} = await axios.get(endpoint);
       setFormData(prev => ({
         ...data?.responseData,
         ogpId: data.responseData?.ogpId,
         igpDate: prev.igpDate,
+        igpType: prev.igpType,
         materialDtlList: data?.responseData?.materialDtlList?.map(item => ({
           ...item,
           locatorDesc: locatorMasterObj[parseInt(item.locatorId)]
@@ -60,6 +65,8 @@ const Igp = () => {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching OGP data.");
     }
   }
+
+  console.log("Fprmdata: ", formData)
 
   const {userId, locationId} = useSelector(state => state.auth);
 
@@ -96,7 +103,20 @@ const Igp = () => {
     <Card className="a4-container" ref={printRef}>
       <Heading title="Inward Gate Pass" />
       <CustomForm formData={formData} onFinish={onFinish}>
-        {renderFormFields(igpFields, handleChange, formData, "", null, setFormData, handleSearch)}
+        {/* {renderFormFields(igpFields, handleChange, formData, "", null, setFormData, handleSearch)} */}
+        <h1 className="font-semibold">Order Details</h1>
+        <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
+          <Form.Item name="igpType" label="Type">
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("igpType", val)}/>
+          </Form.Item>
+        </div>
+
+        {
+          formData.igpType === "PO" && renderFormFields(igpPoFields, handleChange, formData, "", null, setFormData, handleSearch)
+        }
+        {
+          formData.igpType === "Goods Issue" && renderFormFields(igpFields, handleChange, formData, "", null, setFormData, handleSearch)
+        }
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}

@@ -3,6 +3,7 @@ import { Form, Input, Select, Button, Space, Row, Col, message } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import CustomSelect from "../../components/CustomSelect";
 import { useSelector } from "react-redux";
+import { has } from "lodash";
 
 const { Option } = Select;
 
@@ -156,28 +157,69 @@ const LineItem = ({
         );
     }
   };
+
+  const [showVendorDd, setShowVendorDd] = useState({});
+
   const handleModeOfProcurementChange = (value, index) => {
-    if (value === "Proprietary/Single Tender") {
+    // if (value === "Proprietary/Single Tender"
+    // || value === "Limited Pre Approved Vendor Tender"
+    // || value === "Brand PAC"
+    // ) {
       // setHasProprietaryItem(true);
-      console.log("HERE");
-
-      setHasProprietaryItem(true);
-    }
-
-    const str = "Proprietary/Single Tender";
-
-    console.log("Called", value.length, str.length);
+     setShowVendorDd(prev => {
+      const upd = { ...prev , [index]: value};
+      console.log("UOD: ", upd)
+      return upd;
+     })
+    // }
     const lineItems = form.getFieldValue("lineItems");
-    const currentItem = lineItems[index];
+
+    // const propPresent = lineItems?.some(
+    //   (item) => item.modeOfProcurement === "Proprietary/Single Tender"
+    // );
+    // setHasProprietaryItem(propPresent);
+
+    // const currentItem = lineItems[index];
+
+    // // Clear vendor names when mode changes
+    // if (currentItem) {
+    //   currentItem.vendorNames = undefined;
+    //   form.setFieldsValue({ lineItems });
+    // }
+
+const propPresent = lineItems?.some(item => {
+  if (Array.isArray(item)) {
+    // Handle case: [null, { modeOfProcurement: "..." }]
+    return item.some(subItem => subItem?.modeOfProcurement === "Proprietary/Single Tender");
+  }
+
+  if (typeof item === 'object' && item !== null) {
+    // Handle case: { "0": { modeOfProcurement: "..." } }
+    const values = Object.values(item);
+    return values.some(subItem => subItem?.modeOfProcurement === "Proprietary/Single Tender");
+  }
+
+  return false;
+});
+
+
+    setHasProprietaryItem(propPresent)
 
     // Clear vendor names when mode changes
-    if (currentItem) {
-      currentItem.vendorNames = undefined;
+    if (lineItems[index]) {
+      if (Array.isArray(lineItems[index])) {
+        lineItems[index] = lineItems[index].map(subItem => ({
+          ...subItem,
+          vendorNames: undefined
+        }));
+      } else {
+        lineItems[index].vendorNames = undefined;
+      }
       form.setFieldsValue({ lineItems });
     }
-  };
 
-  console.log("PROP: ");
+
+  };
 
   const fetchInitialData = async () => {
     try {
@@ -233,6 +275,8 @@ const LineItem = ({
       console.error("Material fetch error:", error);
     }
   };
+
+  console.log("SHOW VENDOR DD: ", showVendorDd)
 
   useEffect(() => {
     fetchInitialData();
@@ -291,7 +335,7 @@ const LineItem = ({
                     <Row gutter={16}>
                       <Col span={8}>
                         <Form.Item
-                          name={[name, "materialCode"]}
+                          name={[name, index, "materialCode"]}
                           label="Material Code"
                           rules={[
                             {
@@ -341,7 +385,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "materialDescription"]}
+                          name={[name, index, "materialDescription"]}
                           label="Material Description"
                           rules={[
                             {
@@ -409,7 +453,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "quantity"]}
+                          name={[name, index, "quantity"]}
                           label="Quantity"
                           rules={[
                             {
@@ -435,7 +479,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "unitPrice"]}
+                          name={[name, index, "unitPrice"]}
                           label="Unit Price"
                           rules={[
                             {
@@ -461,7 +505,7 @@ const LineItem = ({
                         <Col span={8}>
                         <Form.Item
                           label="Currency"
-                          name={[name, "currency"]}
+                          name={[name, index, "currency"]}
                           rules={[
                             { required: true, message: "Currency is required" },
                           ]}
@@ -472,7 +516,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "uom"]}
+                          name={[name, index, "uom"]}
                           label="UOM"
                           rules={[
                             { required: true, message: "Please select UOM!" },
@@ -484,7 +528,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "materialCategory"]}
+                          name={[name, index, "materialCategory"]}
                           label="Material Category"
                           rules={[
                             {
@@ -499,7 +543,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "materialSubcategory"]}
+                          name={[name, index, "materialSubcategory"]}
                           label="Material Subcategory"
                           rules={[
                             {
@@ -514,7 +558,7 @@ const LineItem = ({
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "budgetCode"]}
+                          name={[name, index, "budgetCode"]}
                           label="Budget Code"
                           rules={[
                             {
@@ -566,86 +610,110 @@ const LineItem = ({
                           </Select>
                         </Form.Item>
                         {form.getFieldValue([
-  "lineItems",
-  index,
-  "modeOfProcurement",
-]) === "Proprietary/Single Tender" && (
-  <>
-    <Form.Item
-      {...restField}
-      name={[name, "vendorNames"]}
-      rules={[{
-        required: true,
-        message: "Vendor name is required",
-      }]}
-    >
-      <Select placeholder="Select vendor">
-        {vendorMasterMod?.map((vendor) => (
-          <Option key={vendor.value} value={vendor.value}>
-            {vendor.label}
-          </Option>
-        ))}
-      </Select>
-    </Form.Item>
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "Proprietary/Single Tender" && (
+                          <Form.Item
+                            name={[name, index, "vendorNames"]}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Vendor name is required",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Select vendor">
+                              {vendorMasterMod?.map((vendor) => (
+                                <Option key={vendor.value} value={vendor.value}>
+                                  {vendor.label}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        )}
 
-    <Form.Item
-      label="Reason for Proprietary/Single Tender"
-      name={[name, "reason"]}
-      rules={[{ required: true }]}
-    >
-      <Select placeholder="Select reason">
-        <Option value="It is in the knowledge...">Manufacturer knowledge</Option>
-        <Option value="In a case of emergency...">Emergency purchase</Option>
-        <Option value="For standardization...">Standardization</Option>
-      </Select>
-    </Form.Item>
+                        {
+                          showVendorDd[index] === "Proprietary/Single Tender" && (
+                            <Form.Item
+                            name={[name, index, "vendorNames"]}
+                            rules={[
+                              {
+                                required: true,
+                                message: "Vendor name is required",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Select vendor">
+                              {vendorMasterMod?.map((vendor) => (
+                                <Option key={vendor.value} value={vendor.value}>
+                                  {vendor.label}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                          )
+                        }
 
-    <Form.Item
-      label="Justification"
-      name={[name, "proprietaryJustification"]}
-      rules={[{ required: true }]}
-    >
-      <Input.TextArea rows={4} />
-    </Form.Item>
-  </>
-)}
+                        {form.getFieldValue([
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "BRAND PAC" && (
+                          <Form.Item
+                            {...restField}
+                            name={[name, index, "vendorNames"]}
+                            // rules={[
+                            //   {
+                            //     required: true,
+                            //     message: "Vendor name is required",
+                            //   },
+                            // ]}
+                          >
+                            <Input disabled placeholder="Enter vendor name" />
+                          </Form.Item>
+                        )}
 
-{form.getFieldValue([
-  "lineItems",
-  index,
-  "modeOfProcurement",
-]) === "Limited Pre Approved Vendor Tender" && (
-  <Form.Item
-    {...restField}
-    name={[name, "vendorNames"]}
-    rules={[{
-      required: true,
-      validator: (_, value) => {
-        if (!value || value.length < 4) {
-          return Promise.reject("Minimum 4 vendors required");
-        }
-        return Promise.resolve();
-      },
-    }]}
-  >
-    <Select
-      mode="multiple"
-      placeholder="Select at least 4 vendors"
-      maxTagCount={4}
-    >
-      {vendorMasterMod?.map((vendor) => (
-        <Option key={vendor.value} value={vendor.value}>
-          {vendor.label}
-        </Option>
-      ))}
-    </Select>
-  </Form.Item>
-)}
+                        {form.getFieldValue([
+                          "lineItems",
+                          index,
+                          "modeOfProcurement",
+                        ]) === "Limited Pre Approved Vendor Tender" && (
+                          <Form.Item
+                            {...restField}
+                            name={[name, index, "vendorNames"]}
+                            rules={[
+                              {
+                                required: true,
+                                validator: (_, value) => {
+                                  if (!value || value.length < 4) {
+                                    return Promise.reject(
+                                      "Please select at least 4 vendors"
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Select
+                              mode="multiple"
+                              placeholder="Select vendors"
+                              maxTagCount={4}
+                            >
+                              {vendorMasterMod?.map((vendor) => (
+                                <Option key={vendor.value} value={vendor.value}>
+                                  {vendor.label}
+                                </Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        )}
                       </Col>
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, "totalPrice"]}
+                          name={[name, index, "totalPrice"]}
                           label="Total Price"
                           shouldUpdate
                         >
