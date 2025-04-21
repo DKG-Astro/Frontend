@@ -1,3 +1,4 @@
+// This is a working code of indent made by Sunit
 import React, { useRef, useState, useEffect } from "react";
 import { Button, Card, Form, Input, Select, DatePicker, message } from "antd";
 import { useReactToPrint } from "react-to-print";
@@ -10,13 +11,19 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
 
+import dayjs from "dayjs";
+import { modeOfProcurementList } from "../../../utils/Constants";
+
 const { Option } = Select;
 
 const Indent = () => {
   const printRef = useRef();
+  const [form] = Form.useForm();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [materialDescriptionMap, setMaterialDescriptionMap] = useState({});
+  const [generatedIndentId, setGeneratedIndentId] = useState("");
+  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
 
   // Redux selectors for user and location details
   const { userName, email, mobileNumber, token } = useSelector(
@@ -28,10 +35,12 @@ const Indent = () => {
   // Data states for fetched data
   const [locations, setLocations] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
 
   // Main form data state
-  const [formData, setFormData] = useState({ materialDetails: [{}], consignesLocation: "Bangalore" });
+  const [formData, setFormData] = useState({ materialDetails: [{}] });
+  const [searchIndentId, setSearchIndentId] = useState("");
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescriptionOptions, setMaterialDescriptionOptions] = useState([]);
   const [materials, setMaterials] = useState([]);
@@ -80,6 +89,7 @@ const Indent = () => {
         value: material.description,
       }));
       
+
       const materialMap = {};
       materials.forEach((material) => {
         materialMap[material.materialCode] = {

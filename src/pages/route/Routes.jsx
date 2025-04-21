@@ -108,7 +108,8 @@ import AssetReport from "../reports/AssetReport";
 import StockReport from "../reports/StockReport";
 import Indent from "../dashboard/indentCreation/Indent";
 import Tender from "../dashboard/tenderRequest/Tender";
-import ContingencyPurchase from "../dashboard/contingencyPurchase/Contingency";
+import ContingencyPurchase from "../dashboard/contingencyPurchase/ContingencyPurchase";
+import PO from "../dashboard/purchaseOrder/PO";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -127,7 +128,7 @@ const RoutesComponent = () => {
             <Route path="/procurement">
                 <Route path="indent">
                     <Route path="creation" element={<Form1 />} />
-                    {/* <Route path="temp" element={<Indent />} /> */}
+                    <Route path="temp" element={<Indent />} />
                     <Route path="modification" element={<Form3 />} />
                 </Route>
                 <Route path="tender">
@@ -136,9 +137,10 @@ const RoutesComponent = () => {
                     <Route path="temp" element={<Tender />} />
                 </Route>
                 <Route path="purchaseOrder" element={<Form7 />} />
+                <Route path="tempPo" element={<PO/>} />
                 <Route path="serviceOrder" element={<Form7a />} />
                 <Route path="contingencyPurchase" element={<Form7b />} />
-                <Route path="temp" element={<ContingencyPurchase/>} />
+                <Route path="tempCp" element={<ContingencyPurchase/>} />
                 <Route path="jobCreation" element={<JobCreation />} />
                 <Route path="workCreation" element={<WorkCreation />} />
                 <Route path="deliveryTracking" element={<Form10 />} />
