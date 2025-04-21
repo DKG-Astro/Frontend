@@ -25,12 +25,22 @@ const Grn = () => {
   });
 
   const handleChange = (fieldName, value) => {
+    console.log("Fieldnm: ", fieldName[2])
     if(typeof fieldName === 'string')
       setFormData(prev => ({...prev, [fieldName]: value}))
     else{
       setFormData(prev => {
         const prevMaterialDtlList = [...prev.materialDtlList];
         prevMaterialDtlList[fieldName[1]][fieldName[2]] = value;
+        
+        // Calculate book value when depreciation rate changes
+        if(fieldName[2] === 'depriciationRate') {
+          const unitPrice = parseFloat(prevMaterialDtlList[fieldName[1]].unitPrice || 0);
+          const depreciationRate = parseFloat(value || 0);
+          const depreciation = (depreciationRate * unitPrice) / 100;
+          prevMaterialDtlList[fieldName[1]].bookValue = (unitPrice - depreciation).toFixed(2);
+        }
+
         return {...prev, materialDtlList: prevMaterialDtlList}  
       })
     }
@@ -40,9 +50,26 @@ const Grn = () => {
     try {
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=${formData.grnType}&processNo=${formData.giNo}`);
       if(formData.grnType === "GI") {
-        setFormData({...data?.responseData?.giDtls, giNo: data.responseData?.giDtls?.inspectionNo, grnType: "GI"});
+        // Map GPRN material details to get unit price
+        const materialWithPrice = data?.responseData?.giDtls?.materialDtlList.map(material => {
+          const gprnMaterial = data?.responseData?.gprnDtls?.materialDtlList.find(
+            m => m.materialCode === material.materialCode
+          );
+          return {
+            ...material,
+            unitPrice: gprnMaterial?.unitPrice || 0
+          };
+        });
+
+        setFormData({
+          ...data?.responseData?.giDtls, 
+          indentorName: data?.responseData?.gprnDtls?.indentorName,
+          giNo: data.responseData?.giDtls?.inspectionNo, 
+          grnType: "GI",
+          materialDtlList: materialWithPrice
+        });
       }
-      else{
+      else {
         setFormData(
           {...data?.responseData, giNo: data.responseData?.igpId, grnType: "IGP",
             materialDtlList: data?.responseData?.materialDtlList?.map((material, index) => ({
