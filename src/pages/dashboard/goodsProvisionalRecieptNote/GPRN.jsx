@@ -416,7 +416,7 @@ const GPRN = () => {
                   label: "Note",
                   type: "text",
                   span: 5,
-                  required: true,
+                  // required: true,
               },
               {
                   name: "imageBase64",
