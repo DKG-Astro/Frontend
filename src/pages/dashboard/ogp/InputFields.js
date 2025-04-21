@@ -81,6 +81,29 @@ export const ogpFields = [
                 required: true
             },
         ]
+    },
+    {
+        heading: "Receiver Details",
+        fieldList: [
+            {
+                name: "receiverName",
+                label: "Receiver Name",
+                type: "text",
+                required: true,
+            },
+            {
+                name: "receiverLocation",
+                label: "Receiver Location",
+                type: "text",
+                required: true,
+            },
+            {
+                name: "dateOfReturn",
+                label: "Return Date",
+                type: "date",
+                // required: true,
+            }
+        ]
     }
 ];
 
@@ -172,6 +195,29 @@ export const ogpFieldsPo = [
                 span: 1,
                 required: true
             },
+        ]
+    },
+    {
+        heading: "Receiver Details",
+        fieldList: [
+            {
+                name: "receiverName",
+                label: "Receiver Name",
+                type: "text",
+                required: true,
+            },
+            {
+                name: "receiverLocation",
+                label: "Receiver Location",
+                type: "text",
+                required: true,
+            },
+            {
+                name: "dateOfReturn",
+                label: "Return Date",
+                type: "date",
+                // required: true,
+            }
         ]
     }
 ];

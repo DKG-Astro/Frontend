@@ -50,8 +50,6 @@ const Ogp = () => {
   const handleSearch = async () => {
     if(formData.type === "PO"){
       const {data} = await axios.get(`api/purchase-orders/${formData.issueNoteId}`)
-          const {data: vendorData} = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
-          const {data: indentData}  = await axios.get(`/api/indents/${data?.responseData?.indentIds[0]}`)
           setFormData(prev => ({
             ...data?.responseData,
             type: "PO",
@@ -68,6 +66,8 @@ const Ogp = () => {
       setFormData(prev => ({
         ...data?.responseData,
         issueNoteId: data.responseData?.issueNoteNo,
+        type: "Goods Issue",
+        ogpType: prev.ogpType,
         ogpDate: prev.ogpDate,
         materialDtlList: data?.responseData?.materialDtlList?.map(item => ({...item, locatorDesc: locatorMasterObj[parseInt(item.locatorId)]}))
       }));

@@ -92,6 +92,14 @@ const GPRN = () => {
         setFormData(prev => {
           const prevMaterialDtlList = prev.materialDtlList
           prevMaterialDtlList[fieldName[1]][fieldName[2]] = value
+          
+          // Calculate total amount when receivedQuantity changes
+          if(fieldName[2] === 'receivedQuantity') {
+            const unitPrice = parseFloat(prevMaterialDtlList[fieldName[1]].unitPrice || 0);
+            const quantity = parseFloat(value || 0);
+            prevMaterialDtlList[fieldName[1]].totalAmount = (unitPrice * quantity).toFixed(2);
+          }
+          
           return {...prev, materialDtlList: prevMaterialDtlList}  
         })
       }
@@ -373,6 +381,13 @@ const GPRN = () => {
                   disabled: true
               },
               {
+                  name: "totalAmount",
+                  label: "Total Amount",
+                  type: "text",
+                  required: true,
+                  disabled: true,
+              },
+              {
                   name: "makeNo",
                   label: "Make No.",
                   type: "text",
@@ -405,11 +420,12 @@ const GPRN = () => {
               },
               {
                   name: "imageBase64",
-                  label: "Material Photograph",
-                  type: "image",
+                  label: "Material Photographs",
+                  type: "multiImage",  // changed from "image" to "multiImage"
                   span: 3,
                   required: true,
-                  accept: "image/*"
+                  accept: "image/*",
+                  multiple: true  // added multiple property
               }
               // {
               //     name: "photographPath",
@@ -477,8 +493,6 @@ const GPRN = () => {
           ]
       }
   ]
-  
-  
     
   return (
     <Card className='a4-container' ref={printRef}>
