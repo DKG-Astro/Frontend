@@ -110,6 +110,7 @@ import Indent from "../dashboard/indentCreation/Indent";
 import Tender from "../dashboard/tenderRequest/Tender";
 import ContingencyPurchase from "../dashboard/contingencyPurchase/ContingencyPurchase";
 import PO from "../dashboard/purchaseOrder/PO";
+import SO from "../dashboard/serviceOrder/SO";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -139,6 +140,7 @@ const RoutesComponent = () => {
                 <Route path="purchaseOrder" element={<Form7 />} />
                 <Route path="tempPo" element={<PO/>} />
                 <Route path="serviceOrder" element={<Form7a />} />
+                <Route path="tempSo" element={<SO/>} />
                 <Route path="contingencyPurchase" element={<Form7b />} />
                 <Route path="tempCp" element={<ContingencyPurchase/>} />
                 <Route path="jobCreation" element={<JobCreation />} />
