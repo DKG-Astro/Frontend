@@ -155,6 +155,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   //   useEffect(() => {
@@ -216,6 +218,127 @@ const QueueRequest = ({ workflowId, requestType }) => {
     } finally {
       setLoadingPreviousRoles(false);
     }
+  };
+/*
+  const handleApproveAll = async () => {
+    if (selectedRows.length === 0) {
+      message.warning("No records selected.");
+      return;
+    }
+  
+    const vendors = selectedRows.filter((r) => r.requestId.startsWith("V"));
+    const materials = selectedRows.filter((r) => r.requestId.startsWith("M"));
+    const others = selectedRows.filter((r) => !r.requestId.startsWith("V") && !r.requestId.startsWith("M"));
+  
+    try {
+      // 1. Approve Vendors individually
+      for (const record of vendors) {
+        await axios.post("/api/vendor-master-util/performAction", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Vendor approved",
+          requestId: record.requestId,
+        });
+      }
+  
+      // 2. Approve Materials individually
+      for (const record of materials) {
+        await axios.post("/api/material-master-util/performActionForMaterial", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Material approved",
+          requestId: record.requestId,
+        });
+      }
+  
+      // 3. Bulk Approve Others
+      const otherPayloads = others.map((record) => ({
+        action: "APPROVED",
+        actionBy: actionPerformer,
+        assignmentRole: null,
+        remarks: "Approved successfully",
+        requestId: record.requestId,
+        workflowTransitionId: record.workflowTransitionId,
+      }));
+  
+      if (otherPayloads.length > 0) {
+        await axios.post("http://localhost:8081/astro-service/performAllTransitionAction", otherPayloads);
+      }
+  
+      message.success("All selected records approved.");
+      setData((prev) => prev.filter((item) => !selectedRowKeys.includes(item.key)));
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
+    } catch (error) {
+      console.error("Bulk approval error:", error);
+      message.error("Failed to approve selected records.");
+    }
+  };
+  */
+  const handleApproveAll = async () => {
+    if (selectedRows.length === 0) {
+      message.warning("No records selected.");
+      return;
+    }
+  
+    const vendors = selectedRows.filter((r) => r.requestId.startsWith("V"));
+    const materials = selectedRows.filter((r) => r.requestId.startsWith("M"));
+    const others = selectedRows.filter((r) => !r.requestId.startsWith("V") && !r.requestId.startsWith("M"));
+  
+    try {
+      // 1. Bulk approve vendors
+      if (vendors.length > 0) {
+        const vendorPayload = vendors.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Vendor approved",
+          requestId: record.requestId,
+        }));
+        await axios.post("/api/vendor-master-util/performBulkAction", vendorPayload);
+      }
+  
+      // 2. Bulk approve materials
+      if (materials.length > 0) {
+        const materialPayload = materials.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Material approved",
+          requestId: record.requestId,
+        }));
+        await axios.post("http://localhost:8081/astro-service/api/material-master-util/performBulkActionForMaterial", materialPayload);
+      }
+  
+      // 3. Bulk approve others
+      if (others.length > 0) {
+        const otherPayload = others.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          assignmentRole: null,
+          remarks: "Approved successfully",
+          requestId: record.requestId,
+          workflowTransitionId: record.workflowTransitionId,
+        }));
+        await axios.post("http://localhost:8081/astro-service/performAllTransitionAction", otherPayload);
+      }
+  
+      message.success("All selected records approved.");
+      setData((prev) => prev.filter((item) => !selectedRowKeys.includes(item.key)));
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
+    } catch (error) {
+      console.error("Bulk approval error:", error);
+      message.error("Failed to approve selected records.");
+    }
+  };
+  
+
+  // Handle Row Selection
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys, newSelectedRows) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+      setSelectedRows(newSelectedRows);
+    },
   };
 
   const handleApprove = async (record) => {
@@ -1073,13 +1196,29 @@ const {userId} = useSelector(state => state.auth)
         searchTerm={searchTerm}
         onReset={handleReset}
       />
+       <Space style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          onClick={handleApproveAll}
+          disabled={selectedRows.length === 0}
+        >
+          Approve All
+        </Button>
+      </Space>
 
       {loading ? (
         <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
       ) : error ? (
         <Text type="danger">{error}</Text>
       ) : (
-        <Table columns={columns} dataSource={filteredData} rowKey="key" />
+      // <Table columns={columns} dataSource={filteredData} rowKey="key" />
+       <Table
+        rowSelection={rowSelection}
+        rowKey="key" 
+        columns={columns}
+        dataSource={filteredData}
+        />
+      
       )}
       <QueueModal
         modalVisible={modalVisible}
