@@ -305,7 +305,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
           remarks: "Material approved",
           requestId: record.requestId,
         }));
-        await axios.post("http://localhost:8081/astro-service/api/material-master-util/performBulkActionForMaterial", materialPayload);
+        await axios.post("/api/material-master-util/performBulkActionForMaterial", materialPayload);
       }
   
       // 3. Bulk approve others
@@ -318,7 +318,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
           requestId: record.requestId,
           workflowTransitionId: record.workflowTransitionId,
         }));
-        await axios.post("http://localhost:8081/astro-service/performAllTransitionAction", otherPayload);
+        await axios.post("/performAllTransitionAction", otherPayload);
       }
   
       message.success("All selected records approved.");
