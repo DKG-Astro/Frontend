@@ -25,7 +25,7 @@ const SO = () => {
   const [tenders, setTenders] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
-    materialDtlList: [{}],
+    materialDtlList: [],
     consignesAddress: "Bangalore",
     billingAddress: "Koramangala, Bangalore - 560034",
   });
@@ -33,13 +33,10 @@ const SO = () => {
   // Fetch initial data
   const populateDropdowns = async () => {
     try {
-      const [vendorResponse, approvedTendersResponse, allTendersResponse] =
-        await Promise.all([
-          axios.get("/api/vendor-master"),
-          axios.get("/getApprovedTenderIdForPOAndSO"),
-          axios.get("/api/tender-requests"),
-          //   axios.get("/api/material-master"),
-        ]);
+      const [vendorResponse, approvedTendersResponse] = await Promise.all([
+        axios.get("/api/vendor-master"),
+        axios.get("/getApprovedTenderIdForPOAndSO"),
+      ]);
 
       // Format options
       const formattedVendors = (vendorResponse.data?.responseData || []).map(
@@ -58,20 +55,12 @@ const SO = () => {
       // Get approved tender IDs
       const approvedTenderIds =
         approvedTendersResponse.data?.responseData || [];
-      const allTenders = allTendersResponse.data?.responseData || [];
 
-      // Format tenders with full details
-      const filteredTenders = allTenders
-        .filter((tender) => approvedTenderIds.includes(tender.tenderId))
-        .map((tender) => ({
-          label: tender.tenderId,
-          value: tender.tenderId,
-          indentIds: tender.indentIds || [],
-          incoTerms: tender.incoTerms,
-          paymentTerms: tender.paymentTerms,
-        }));
-
-      setTenders(filteredTenders);
+      const tendersForDropdown = approvedTenderIds.map((tenderId) => ({
+        label: tenderId,
+        value: tenderId,
+      }));
+      setTenders(tendersForDropdown);
     } catch (error) {
       message.error("Failed to load dropdown data");
     }
@@ -92,6 +81,7 @@ const SO = () => {
           (indent.materialDetails || []).map((material) => ({
             materialCode: material.materialCode,
             materialDescription: material.materialDescription,
+            budgetCode: material.budgetCode,
             quantity: material.quantity,
             rate: material.unitPrice,
             uom: material.uom,
@@ -132,11 +122,18 @@ const SO = () => {
               options: tenders,
               props: {
                 onChange: (value) => {
-                  console.log("onChange fired with value:", value);
                   handleTenderSelect(value);
                 },
                 showSearch: true,
               },
+            };
+          if (field.name === "vendorId")
+            return {
+              ...field,
+              options: vendors.map((v) => ({
+                label: v.id,
+                value: v.id,
+              })),
             };
           return field;
         }),
@@ -165,7 +162,7 @@ const SO = () => {
         vendorAddress: selectedVendor?.address || "",
         vendorsAccountNo: selectedVendor?.accountNumber || "",
         vendorsZRSCCode: selectedVendor?.ifscCode || "",
-        vendorAccountName: selectedVendor?.accountName || "",
+        vendorsAccountName: selectedVendor?.accountName || "",
       }));
       return;
     }
@@ -199,13 +196,14 @@ const SO = () => {
           currency: m.currency || "",
           duties: Number(m.duties) || 0,
           exchangeRate: Number(m.exchangeRate) || 0,
-          freightCharge: Number(m.freightCharge) || 0,
           gst: Number(m.gst) || 0,
           materialCode: m.materialCode || "",
           materialDescription: m.materialDescription || "",
+          budgetCode: m.budgetCode || "",
           quantity: Number(m.quantity) || 0,
           rate: Number(m.rate) || 0,
         })),
+        applicablePBGToBeSubmitted: formData.applicablePBGToBeSubmitted || "",
       };
 
       const { data } = await axios.post("/api/service-orders", payload);

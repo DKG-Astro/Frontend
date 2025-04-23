@@ -81,10 +81,17 @@ export const SoDetails = [
           required: true
         },
         {
+          name: "budgetCode",
+          label: "Budget Code",
+          type: "text",
+          span: 2,
+        //   disabled: true,
+          required: true
+        },
+        {
             name: "exchangeRate",
             label: "Exchange Rate",
             type: "text",
-            span: 2
         },
         {
             name: "gst",
@@ -98,12 +105,6 @@ export const SoDetails = [
             type: "text",
             required: true
         },
-        {
-            name: "freightCharge",
-            label: "Freight Charges",
-            type: "text", 
-            span: 2
-        }
       ]
     },
     {
@@ -126,17 +127,11 @@ export const SoDetails = [
           type: "text",
         },
         {
-          name: "applicablePbgToBeSubmitted",
+          name: "applicablePBGToBeSubmitted",
           label: "Applicable PBG to be Submitted",
           type: "text",
           span: 2
         },
-        {
-            name: "transporterAndFreightForWarderDetails",
-            label: "Transporter Details",
-            type: "text",
-            span: 2
-        }
       ]
     },
     {
@@ -150,6 +145,12 @@ export const SoDetails = [
           required: true,
           options: [],
         }, 
+        {
+          name: "vendorId",
+          label: "Vendor Code",
+          type: "select",
+          required: true,
+        },
         {
           name: "vendorAddress",
           label: "Vendor Address",
@@ -172,7 +173,7 @@ export const SoDetails = [
             disabled: true,
         },
         {
-            name: "vendorAccountName",
+            name: "vendorsAccountName",
             label: "Vendor A/C Name",
             type: "text",
             required: true,

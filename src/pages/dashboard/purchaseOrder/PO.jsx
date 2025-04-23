@@ -25,7 +25,7 @@ const PO = () => {
   const [tenders, setTenders] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [formData, setFormData] = useState({
-    materialDtlList: [{}],
+    materialDtlList: [],
     consignesAddress: "Bangalore",
     billingAddress: "Koramangala, Bangalore - 560034",
   });
@@ -33,13 +33,10 @@ const PO = () => {
   // Fetch initial data
   const populateDropdowns = async () => {
     try {
-      const [vendorResponse, approvedTendersResponse, allTendersResponse] =
-        await Promise.all([
-          axios.get("/api/vendor-master"),
-          axios.get("/getApprovedTenderIdForPOAndSO"),
-          axios.get("/api/tender-requests"),
-          //   axios.get("/api/material-master"),
-        ]);
+      const [vendorResponse, approvedTendersResponse] = await Promise.all([
+        axios.get("/api/vendor-master"),
+        axios.get("/getApprovedTenderIdForPOAndSO"),
+      ]);
 
       // Format options
       const formattedVendors = (vendorResponse.data?.responseData || []).map(
@@ -58,20 +55,13 @@ const PO = () => {
       // Get approved tender IDs
       const approvedTenderIds =
         approvedTendersResponse.data?.responseData || [];
-      const allTenders = allTendersResponse.data?.responseData || [];
 
-      // Format tenders with full details
-      const filteredTenders = allTenders
-        .filter((tender) => approvedTenderIds.includes(tender.tenderId))
-        .map((tender) => ({
-          label: tender.tenderId,
-          value: tender.tenderId,
-          indentIds: tender.indentIds || [],
-          incoTerms: tender.incoTerms,
-          paymentTerms: tender.paymentTerms,
-        }));
+      const tendersForDropdown = approvedTenderIds.map((tenderId) => ({
+        label: tenderId,
+        value: tenderId,
+      }));
+      setTenders(tendersForDropdown);
 
-      setTenders(filteredTenders);
     } catch (error) {
       message.error("Failed to load dropdown data");
     }
@@ -132,7 +122,6 @@ const PO = () => {
               options: tenders,
               props: {
                 onChange: (value) => {
-                  console.log("onChange fired with value:", value);
                   handleTenderSelect(value);
                 },
                 showSearch: true,

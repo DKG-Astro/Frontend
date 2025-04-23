@@ -1,16 +1,16 @@
 export const IndentDetails = [
-    {
-      heading: "Indent Search",
-      colCnt: 4,
-      fieldList: [
-        {
-          name: "indentId",
-          label: "Indent ID",
-          type: "search",
-          span: 1,
-        },  
-      ]
-    },
+  {
+    heading: "Indent Search",
+    colCnt: 4,
+    fieldList: [
+      {
+        name: "indentId",
+        label: "Indent ID",
+        type: "search",
+        span: 1,
+      },
+    ],
+  },
   {
     heading: "Indentor Details",
     colCnt: 4,
@@ -125,17 +125,10 @@ export const IndentDetails = [
         ],
       },
       {
-        name: "totalPrice",
-        label: "Total Price",
-        type: "text",
-        span: 2,
-        disabled: true,
-      },
-      {
         name: "materialCategory",
         label: "Material Category",
         type: "text",
-        span: 3,
+        span: 2,
         required: true,
       },
       {
@@ -205,6 +198,13 @@ export const IndentDetails = [
           ].includes(formData.materialDetails?.[0]?.modeOfProcurement),
         filterOption: (input, option) =>
           option.label.toLowerCase().includes(input.toLowerCase()),
+      },
+      {
+        name: "totalPrice",
+        label: "Total Price",
+        type: "text",
+        span: 2,
+        disabled: true,
       },
     ],
   },

@@ -211,7 +211,10 @@ const Indent = () => {
 
   // --- onFinish Function ---
   const onFinish = async () => {
-    const payload = { ...formData, createdBy: actionPerformer };
+    const selectedProject = projects.find(
+      (proj) => proj.value === formData.projectCode
+    );
+    const payload = { ...formData, createdBy: actionPerformer, projectCode: formData.projectCode , projectName: selectedProject? selectedProject.label : "" };
 
     try {
       setSubmitBtnLoading(true);
@@ -286,6 +289,8 @@ const Indent = () => {
             return { ...field, options: locations };
           if (field.name === "projectName")
             return { ...field, options: projects };
+          if (field.name === "preBidMeetingLocation")
+            return {...field, options: locations };
           return field;
         }),
       };
