@@ -143,6 +143,7 @@ const ContingencyPurchase = () => {
       vendorsInvoiceNo: formData.vendorInvoiceNo,
       remarksForPurchase: formData.remarks,
       projectName: formData.projectName,
+      projectDetail: formData.projectDetail,
       date: formData.date,
       createdBy: actionPerformer,
       amountToBePaid: formData.amountToBePaid,
@@ -156,7 +157,8 @@ const ContingencyPurchase = () => {
       // Additional fields from material details
       currency: material.currency,
       materialCategory: material.materialCategory,
-      materialSubCategory: material.materialSubCategory
+      materialSubCategory: material.materialSubCategory,
+      fileType: 'CP',
     };
   
     try {
@@ -259,7 +261,7 @@ const ContingencyPurchase = () => {
 
   return (
     <Card className="a4-container" ref={printRef}>
-      <Heading title="Contingency Purchase Form" />
+      <Heading title="Contingency Purchase" />
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(
           hydratedCpDetails,

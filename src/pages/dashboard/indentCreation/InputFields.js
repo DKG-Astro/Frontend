@@ -172,7 +172,7 @@ export const IndentDetails = [
         ],
       },
       {
-        name: "vendorName",
+        name: "vendorNames",
         label: "Vendor Name",
         type: "select",
         span: 3,
@@ -189,7 +189,7 @@ export const IndentDetails = [
           "Limited Pre Approved Vendor Tender"
             ? "select"
             : undefined,
-        options: (props) => props.vendors,
+        // options: (props) => props.vendors,
         dependencies: ["materialDetails[0].modeOfProcurement"],
         shouldShow: (formData) =>
           [
@@ -228,27 +228,29 @@ export const IndentDetails = [
     colCnt: 6,
     fieldList: [
       {
-        name: "preBidMeetingRequired",
+        name: "isPreBidMeetingRequired",
         label: "Pre-Bid Meeting Required?",
         type: "checkbox", //should be a checkbox field (true or false)
         span: 2,
       },
       {
-        name: "preBidMeetingDetails",
-        label: "Pre-Bid Meeting Date",
+        name: "preBidMeetingDate",
+        label: "Tentative Meeting Date",
         type: "date",
         span: 2,
-        dependencies: ["preBidMeetingRequired"],
-        shouldShow: (formData) => formData.preBidMeetingRequired === true,
+        dependencies: ["isPreBidMeetingRequired"],
+        shouldShow: (formData) => formData.isPreBidMeetingRequired === true,
+        required: (formData) => formData.isPreBidMeetingRequired === true,
       },
       {
-        name: "preBidMeetingLocation",
-        label: "Pre-Bid Meeting Location",
+        name: "preBidMeetingVenue",
+        label: "Tentative Meeting Location",
         type: "select",
         span: 2,
-        dependencies: ["preBidMeetingRequired"],
+        dependencies: ["isPreBidMeetingRequired"],
         options: [],
-        shouldShow: (formData) => formData.preBidMeetingRequired === true,
+        shouldShow: (formData) => formData.isPreBidMeetingRequired === true,
+        required: (formData) => formData.isPreBidMeetingRequired === true,
       },
     ],
   },
@@ -257,22 +259,22 @@ export const IndentDetails = [
     colCnt: 10,
     fieldList: [
       {
-        name: "rateContractIndent",
+        name: "isItARateContractIndent",
         label: "Is it a Rate Contract Indent?",
         type: "checkbox", //should be a checkbox field (true or false)
         span: 3,
       },
       {
-        name: "periodOfRateContract",
+        name: "periodOfContract",
         label: "Contract Period (Months)",
         type: "text",
-        // required: true,
         span: 3,
-        dependencies: ["rateContractIndent"],
-        shouldShow: (formData) => formData.rateContractIndent === true,
+        dependencies: ["isItARateContractIndent"],
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
       },
       {
-        name: "singleOrMultipleJob",
+        name: "singleAndMultipleJob",
         label: "Job Type",
         type: "select",
         // required: true,
@@ -281,15 +283,17 @@ export const IndentDetails = [
           { value: "Single", label: "Single" },
           { value: "Multiple", label: "Multiple" },
         ],
-        shouldShow: (formData) => formData.rateContractIndent === true,
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
       },
       {
         name: "estimatedRate",
         label: "Estimated Rate",
         type: "text",
         span: 2,
-        dependencies: ["rateContractIndent"],
-        shouldShow: (formData) => formData.rateContractIndent === true,
+        dependencies: ["isItARateContractIndent"],
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
       },
     ],
   },
@@ -377,20 +381,23 @@ export const IndentDetails = [
       {
         name: "uploadingPriorApprovalsFileName",
         label: "Prior Approvals",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
       {
         name: "technicalSpecificationsFileName",
-        label: "Technical Specs",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        label: "Upload Technical Specifications",
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
       {
         name: "draftEOIOrRFPFileName",
         label: "Draft EOI/RFP",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
     ],
   },
@@ -407,9 +414,11 @@ export const IndentDetails = [
       {
         name: "uploadBuyBackFileNames",
         label: "Buy Back File",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         dependencies: ["buyBack"],
         shouldShow: (formData) => formData.buyBack === true,
+        required: (formData) => formData.buyBack === true,
+        fileType: "Indent",
       },
     ],
   },
@@ -430,14 +439,17 @@ export const IndentDetails = [
         span: 2,
         dependencies: ["brandPac"],
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
       {
         name: "uploadPACOrBrandPACFileName",
         label: "Brand PAC",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 1,
         dependencies: ["brandPac"],
+        fileType: "Indent",
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
       {
         name: "justification",
@@ -447,6 +459,7 @@ export const IndentDetails = [
         span: 4,
         dependencies: ["brandPac"],
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
     ],
   },

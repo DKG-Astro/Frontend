@@ -7,6 +7,7 @@ import CustomInput from "../components/CustomInput";
 import CustomSearch from "../components/CustomSearch";
 import ImageUploadBase64 from "../components/ImageUploadBas64";
 import InputDatePicker from "../components/DatePicker";
+import UploadFile from "../components/UploadFile";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -250,21 +251,35 @@ export const apiCall = async (method, url, token, payload = null) => {
         );
 
         case "checkbox":
-    return (
-      <Form.Item
-        name={field?.name}
-        label={field?.label}
-        valuePropName="checked"
-        required={field?.required}
-      >
-        <Checkbox 
-          disabled={field?.disabled}
-          onChange={(e) => handleChange(field?.name, e.target.checked)}
-          checked={formData[field.name]}
-        />
-      </Form.Item>
-    );
-  
+        return (
+        <Form.Item
+            name={field?.name}
+            label={field?.label}
+            valuePropName="checked"
+            required={field?.required}
+        >
+            <Checkbox 
+            disabled={field?.disabled}
+            onChange={(e) => handleChange(field?.name, e.target.checked)}
+            checked={formData[field.name]}
+            />
+        </Form.Item>
+        );
+
+      case "uploadFiles":
+        return (
+            <Form.Item
+              name={field?.name}
+              label={field?.label}
+              required={field?.required}
+            >
+                <UploadFile
+                fileType={field?.fileType}
+                onUploadSuccess={(fileName) => handleChange(field?.name, fileName)}
+                />
+            </Form.Item>
+        );
+
       default:
         throw new Error("Provided field type doesn't exist.");
     }

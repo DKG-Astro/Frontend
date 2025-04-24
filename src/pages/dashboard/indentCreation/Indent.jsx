@@ -58,14 +58,14 @@ const Indent = () => {
 
       const formattedVendors = (vendorResponse.data?.responseData || []).map(vendor => ({
         label: vendor.vendorName,
-        value: vendor.vendorId,
+        value: vendor.vendorName,
       }));
       setVendors(formattedVendors);
 
       const formattedProjects = (projectResponse.data?.responseData || []).map(
         (project) => ({
           label: project.projectNameDescription,
-          value: project.projectCode,
+          value: project.projectNameDescription,
         })
       );
 
@@ -187,6 +187,14 @@ const Indent = () => {
           };
         }
 
+        // If field is vendorNames, always store as array
+        else if (field === "vendorNames") {
+            updatedMaterials[index] = {
+              ...updatedMaterials[index],
+              [field]: Array.isArray(value) ? value : [value],
+            };
+          }
+
         // All other fields
         else {
           updatedMaterials[index] = {
@@ -211,10 +219,7 @@ const Indent = () => {
 
   // --- onFinish Function ---
   const onFinish = async () => {
-    const selectedProject = projects.find(
-      (proj) => proj.value === formData.projectCode
-    );
-    const payload = { ...formData, createdBy: actionPerformer, projectCode: formData.projectCode , projectName: selectedProject? selectedProject.label : "" };
+    const payload = { ...formData, createdBy: actionPerformer , projectName: formData.projectName, fileType: "Indent" };
 
     try {
       setSubmitBtnLoading(true);
@@ -289,7 +294,7 @@ const Indent = () => {
             return { ...field, options: locations };
           if (field.name === "projectName")
             return { ...field, options: projects };
-          if (field.name === "preBidMeetingLocation")
+          if (field.name === "preBidMeetingVenue")
             return {...field, options: locations };
           return field;
         }),
@@ -299,7 +304,7 @@ const Indent = () => {
       return {
         ...section,
         children: section.children.map((child) => {
-            if (child.name === "vendorName") {
+            if (child.name === "vendorNames") {
                 return {
                   ...child,
                   options: vendors,  // Remove this line
