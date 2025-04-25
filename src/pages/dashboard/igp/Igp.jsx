@@ -9,12 +9,17 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { igpFields, igpPoFields } from "./InputFields";
+import { useLocation } from "react-router-dom";
 
 const Igp = () => {
   const printRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
+
+  const location = useLocation();
+  const state = location.state;
+  console.log("State: ", state);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
@@ -45,6 +50,7 @@ const Igp = () => {
   }, {});
 
   const handleSearch = async () => {
+    console.log("FORMDA: ", formData)
     try {
       const endpoint = formData.igpType === "PO" 
         ? `/api/process-controller/getPoOgp?processNo=${formData.ogpId}`
@@ -66,7 +72,6 @@ const Igp = () => {
     }
   }
 
-  console.log("Fprmdata: ", formData)
 
   const {userId, locationId} = useSelector(state => state.auth);
 
@@ -98,6 +103,24 @@ const Igp = () => {
       message.success("Form loaded from draft.");
     }
   }, []);
+
+  // First useEffect to set initial data from state
+  useEffect(() => {
+    if(state?.processNo && state?.type) {
+      setFormData(prev => ({
+        ...prev,
+        igpType: state.type,
+        ogpId: state.processNo
+      }));
+    }
+  }, [state]);
+
+  // Second useEffect to handle search when formData changes
+  useEffect(() => {
+    if (formData.igpType && formData.ogpId) {
+      handleSearch();
+    }
+  }, [formData.igpType, formData.ogpId]);
 
   return (
     <Card className="a4-container" ref={printRef}>
