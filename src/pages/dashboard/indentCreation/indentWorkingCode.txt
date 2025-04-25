@@ -1,6 +1,6 @@
 // This is a working code of indent made by Sunit
 import React, { useRef, useState, useEffect } from "react";
-import { Button, Card, Form, Input, Select, DatePicker, message } from "antd";
+import { Card, message } from "antd";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -11,19 +11,11 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
 
-import dayjs from "dayjs";
-import { modeOfProcurementList } from "../../../utils/Constants";
-
-const { Option } = Select;
-
 const Indent = () => {
   const printRef = useRef();
-  const [form] = Form.useForm();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [materialDescriptionMap, setMaterialDescriptionMap] = useState({});
-  const [generatedIndentId, setGeneratedIndentId] = useState("");
-  const [isPrintEnabled, setIsPrintEnabled] = useState(false);
 
   // Redux selectors for user and location details
   const { userName, email, mobileNumber, token } = useSelector(
@@ -35,12 +27,10 @@ const Indent = () => {
   // Data states for fetched data
   const [locations, setLocations] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [materialList, setMaterialList] = useState([]);
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
 
   // Main form data state
-  const [formData, setFormData] = useState({ materialDetails: [{}] });
-  const [searchIndentId, setSearchIndentId] = useState("");
+  const [formData, setFormData] = useState({ materialDetails: [{}], consignesLocation: "Bangalore" });
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescriptionOptions, setMaterialDescriptionOptions] = useState([]);
   const [materials, setMaterials] = useState([]);
@@ -67,14 +57,14 @@ const Indent = () => {
 
       const formattedVendors = (vendorResponse.data?.responseData || []).map(vendor => ({
         label: vendor.vendorName,
-        value: vendor.vendorId,
+        value: vendor.vendorName,
       }));
       setVendors(formattedVendors);
 
       const formattedProjects = (projectResponse.data?.responseData || []).map(
         (project) => ({
           label: project.projectNameDescription,
-          value: project.projectCode,
+          value: project.projectNameDescription,
         })
       );
 
@@ -89,7 +79,6 @@ const Indent = () => {
         value: material.description,
       }));
       
-
       const materialMap = {};
       materials.forEach((material) => {
         materialMap[material.materialCode] = {
@@ -197,6 +186,14 @@ const Indent = () => {
           };
         }
 
+        // If field is vendorNames, always store as array
+        else if (field === "vendorNames") {
+            updatedMaterials[index] = {
+              ...updatedMaterials[index],
+              [field]: Array.isArray(value) ? value : [value],
+            };
+          }
+
         // All other fields
         else {
           updatedMaterials[index] = {
@@ -221,7 +218,7 @@ const Indent = () => {
 
   // --- onFinish Function ---
   const onFinish = async () => {
-    const payload = { ...formData, createdBy: actionPerformer };
+    const payload = { ...formData, createdBy: actionPerformer , projectName: formData.projectName, fileType: "Indent" };
 
     try {
       setSubmitBtnLoading(true);
@@ -296,6 +293,8 @@ const Indent = () => {
             return { ...field, options: locations };
           if (field.name === "projectName")
             return { ...field, options: projects };
+          if (field.name === "preBidMeetingVenue")
+            return {...field, options: locations };
           return field;
         }),
       };
@@ -304,7 +303,7 @@ const Indent = () => {
       return {
         ...section,
         children: section.children.map((child) => {
-            if (child.name === "vendorName") {
+            if (child.name === "vendorNames") {
                 return {
                   ...child,
                   options: vendors,  // Remove this line
