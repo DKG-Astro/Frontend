@@ -190,14 +190,20 @@ export const apiCall = async (method, url, token, payload = null) => {
   
       case "date":
         return (
-          <InputDatePicker
-          required={field?.required}
-            label={field?.label}
-            name={field?.name}
-            disabled={field?.disabled}
-            onChange={handleChange}
-            defaultValue={formData[field.name]}
-          />
+            <Form.Item
+              name={field?.name}
+              label={field?.label}
+              rules={field?.required? [{ required: true, message: `${field?.label} is required` }] : []}
+              >
+                <InputDatePicker
+                    // required={field?.required}
+                    // label={field?.label}
+                    // name={field?.name}
+                    disabled={field?.disabled}
+                    onChange={handleChange}
+                    defaultValue={formData[field.name]}
+                />
+              </Form.Item>
         );
 
       case "multiImage":
@@ -244,7 +250,7 @@ export const apiCall = async (method, url, token, payload = null) => {
             <Form.Item 
               name={field?.name}
               label={field?.label}
-              required={field?.required}
+              rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
             >
               <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} {...field.props} />
             </Form.Item>
@@ -271,7 +277,7 @@ export const apiCall = async (method, url, token, payload = null) => {
             <Form.Item
               name={field?.name}
               label={field?.label}
-              required={field?.required}
+              rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
             >
                 <UploadFile
                 fileType={field?.fileType}

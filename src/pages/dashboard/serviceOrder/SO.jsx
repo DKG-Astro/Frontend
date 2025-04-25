@@ -166,6 +166,19 @@ const SO = () => {
       }));
       return;
     }
+    if (name === "vendorId") {
+        const selectedVendor = vendors.find((v) => v.id === value);
+        setFormData((prev) => ({
+          ...prev,
+          vendorId: value,
+          vendorName: selectedVendor?.value || "",
+          vendorAddress: selectedVendor?.address || "",
+          vendorsAccountNo: selectedVendor?.accountNumber || "",
+          vendorsZRSCCode: selectedVendor?.ifscCode || "",
+          vendorsAccountName: selectedVendor?.accountName || "",
+        }));
+        return;
+      }
     if (Array.isArray(name)) {
       const [section, index, field] = name;
       if (section === "materialDtlList") {

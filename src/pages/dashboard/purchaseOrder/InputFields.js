@@ -158,8 +158,7 @@ export const PoDetails = [
         {
           name: "vendorId",
           label: "Vendor ID",
-          type: "text",
-          disabled: true,
+          type: "select",
           required: true 
         },
         {

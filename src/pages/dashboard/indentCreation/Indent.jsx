@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Button, Card, Form, Input, Select, DatePicker, message } from "antd";
+import { Card, message } from "antd";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -9,8 +9,6 @@ import { renderFormFields } from "../../../utils/CommonFunctions";
 import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
-
-const { Option } = Select;
 
 const Indent = () => {
   const printRef = useRef();
