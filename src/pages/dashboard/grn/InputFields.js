@@ -82,14 +82,28 @@ export const grvFields = [
                 label: "Asset ID",
                 type: "text",
                 span: 2,
-                required: true
+                // required: true
             },
             {
                 name: "assetDesc",
                 label: "Asset Description",
                 type: "text",
                 span: 3,
-                required: true
+                // required: true
+            },
+            {
+                name: "materialCode",
+                label: "Material Code",
+                type: "text",
+                span: 2,
+                // required: true
+            },
+            {
+                name: "materialDesc",
+                label: "Material Description",
+                type: "text",
+                span: 3,
+                // required: true
             },
             {
                 name: "uomId",
@@ -217,14 +231,28 @@ export const igpGrnFields = [
                 label: "Asset ID",
                 type: "text",
                 span: 2,
-                required: true
+                // required: true
             },
             {
                 name: "assetDesc",
                 label: "Asset Description",
                 type: "text",
                 span: 3,
-                required: true
+                // required: true
+            },
+            {
+                name: "materialCode",
+                label: "Material Code",
+                type: "text",
+                span: 2,
+                // required: true
+            },
+            {
+                name: "materialDesc",
+                label: "Material Description",
+                type: "text",
+                span: 3,
+                // required: true
             },
             {
                 name: "uomId",
