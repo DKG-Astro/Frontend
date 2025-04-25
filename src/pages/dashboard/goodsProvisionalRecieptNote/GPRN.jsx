@@ -410,6 +410,13 @@ const GPRN = () => {
                   span: 2,
                   required: true,
                   // disabled: true
+                },
+                {
+                name: "category",
+                label: "Category",
+                type: "text",
+                required: true,
+
               },
               {
                   name: "note",
