@@ -109,6 +109,89 @@ const MaterialDetailModal = ({ visible, setVisible, materialData }) => {
   );
 };
 
+const VendorDetailModal = ({ visible, setVisible, vendorData }) => {
+  if (!vendorData) return null;
+  
+  return (
+    <Modal
+      title="Vendor Details"
+      open={visible}
+      onCancel={() => setVisible(false)}
+      footer={[
+        <Button key="close" onClick={() => setVisible(false)}>
+          Close
+        </Button>
+      ]}
+      width={700}
+    >
+      <Descriptions bordered column={2}>
+        <Descriptions.Item label="Vendor Code" span={2}>
+          {vendorData.vendorId}
+        </Descriptions.Item>
+        <Descriptions.Item label="Vendor Name" span={2}>
+          {vendorData.vendorName}
+        </Descriptions.Item>
+        <Descriptions.Item label="Vendor Type">
+          {vendorData.vendorType}
+        </Descriptions.Item>
+        <Descriptions.Item label="Contact Number">
+          {vendorData.contactNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="Email Address">
+          {vendorData.emailAddress}
+        </Descriptions.Item>
+        <Descriptions.Item label="PFMS Vendor Code">
+          {vendorData.pfmsVendorCode} 
+        </Descriptions.Item>
+        <Descriptions.Item label="Primary Business">
+          {vendorData.primaryBusiness}
+        </Descriptions.Item>
+        <Descriptions.Item label="Address">
+          {vendorData.address}
+        </Descriptions.Item>
+        <Descriptions.Item label="Landline Number">
+          {vendorData.landlineNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="Fax Number">
+          {vendorData.faxNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="Pan Number">
+          {vendorData.panNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="GST Number">
+          {vendorData.gstNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="Bank Name">
+          {vendorData.bankName}
+        </Descriptions.Item>
+        <Descriptions.Item label="Account Number">
+          {vendorData.accountNumber}
+        </Descriptions.Item>
+        <Descriptions.Item label="IFSC Code">
+          {vendorData.ifscCode}
+        </Descriptions.Item>
+        <Descriptions.Item label="Registered Platform">
+          {vendorData.registeredPlatform? "True" : "false"}
+        </Descriptions.Item>
+        <Descriptions.Item label="Created By">
+          {vendorData.createdBy}
+        </Descriptions.Item>
+        <Descriptions.Item label="Created Date">
+          {new Date(vendorData.createdDate).toLocaleString()}
+        </Descriptions.Item>
+        <Descriptions.Item label="Status" span={2}>
+          <Badge 
+            status={vendorData.approvalStatus === "APPROVED" ? "success" : 
+                   vendorData.approvalStatus === "REJECTED" ? "error" : "warning"} 
+            text={vendorData.approvalStatus.replace("_", " ")} 
+          />
+        </Descriptions.Item>
+          
+      </Descriptions>
+    </Modal>
+  );
+};
+
 const FilterComponent = (
   { onSearch, searchTerm, onReset } // Changed prop name
 ) => (
@@ -155,6 +238,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [historyVisible, setHistoryVisible] = useState(false);
   const [queueData, setQueueData] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   //   useEffect(() => {
@@ -216,6 +301,127 @@ const QueueRequest = ({ workflowId, requestType }) => {
     } finally {
       setLoadingPreviousRoles(false);
     }
+  };
+/*
+  const handleApproveAll = async () => {
+    if (selectedRows.length === 0) {
+      message.warning("No records selected.");
+      return;
+    }
+  
+    const vendors = selectedRows.filter((r) => r.requestId.startsWith("V"));
+    const materials = selectedRows.filter((r) => r.requestId.startsWith("M"));
+    const others = selectedRows.filter((r) => !r.requestId.startsWith("V") && !r.requestId.startsWith("M"));
+  
+    try {
+      // 1. Approve Vendors individually
+      for (const record of vendors) {
+        await axios.post("/api/vendor-master-util/performAction", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Vendor approved",
+          requestId: record.requestId,
+        });
+      }
+  
+      // 2. Approve Materials individually
+      for (const record of materials) {
+        await axios.post("/api/material-master-util/performActionForMaterial", {
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Material approved",
+          requestId: record.requestId,
+        });
+      }
+  
+      // 3. Bulk Approve Others
+      const otherPayloads = others.map((record) => ({
+        action: "APPROVED",
+        actionBy: actionPerformer,
+        assignmentRole: null,
+        remarks: "Approved successfully",
+        requestId: record.requestId,
+        workflowTransitionId: record.workflowTransitionId,
+      }));
+  
+      if (otherPayloads.length > 0) {
+        await axios.post("http://localhost:8081/astro-service/performAllTransitionAction", otherPayloads);
+      }
+  
+      message.success("All selected records approved.");
+      setData((prev) => prev.filter((item) => !selectedRowKeys.includes(item.key)));
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
+    } catch (error) {
+      console.error("Bulk approval error:", error);
+      message.error("Failed to approve selected records.");
+    }
+  };
+  */
+  const handleApproveAll = async () => {
+    if (selectedRows.length === 0) {
+      message.warning("No records selected.");
+      return;
+    }
+  
+    const vendors = selectedRows.filter((r) => r.requestId.startsWith("V"));
+    const materials = selectedRows.filter((r) => r.requestId.startsWith("M"));
+    const others = selectedRows.filter((r) => !r.requestId.startsWith("V") && !r.requestId.startsWith("M"));
+  
+    try {
+      // 1. Bulk approve vendors
+      if (vendors.length > 0) {
+        const vendorPayload = vendors.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Vendor approved",
+          requestId: record.requestId,
+        }));
+        await axios.post("/api/vendor-master-util/performBulkAction", vendorPayload);
+      }
+  
+      // 2. Bulk approve materials
+      if (materials.length > 0) {
+        const materialPayload = materials.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          remarks: "Material approved",
+          requestId: record.requestId,
+        }));
+        await axios.post("/api/material-master-util/performBulkActionForMaterial", materialPayload);
+      }
+  
+      // 3. Bulk approve others
+      if (others.length > 0) {
+        const otherPayload = others.map((record) => ({
+          action: "APPROVED",
+          actionBy: actionPerformer,
+          assignmentRole: null,
+          remarks: "Approved successfully",
+          requestId: record.requestId,
+          workflowTransitionId: record.workflowTransitionId,
+        }));
+        await axios.post("/performAllTransitionAction", otherPayload);
+      }
+  
+      message.success("All selected records approved.");
+      setData((prev) => prev.filter((item) => !selectedRowKeys.includes(item.key)));
+      setSelectedRowKeys([]);
+      setSelectedRows([]);
+    } catch (error) {
+      console.error("Bulk approval error:", error);
+      message.error("Failed to approve selected records.");
+    }
+  };
+  
+
+  // Handle Row Selection
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys, newSelectedRows) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+      setSelectedRows(newSelectedRows);
+    },
   };
 
   const handleApprove = async (record) => {
@@ -427,6 +633,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
 
   const [materialModalOpen, setMaterialModalOpen] = useState(false);
   const [materialDtl, setMaterialDtl] = useState(null);
+  const [vendorModalOpen, setVendorModalOpen] = useState(false);
+  const [vendorDtl, setVendorDtl] = useState(null);
 
   // --- Fetch details based on workflowId ---
   const fetchWorkflowDetails = async (record) => {
@@ -441,6 +649,14 @@ const QueueRequest = ({ workflowId, requestType }) => {
       )
       setMaterialDtl(data.responseData)
       setMaterialModalOpen(true)
+      return
+    }
+    if(record.requestId.startsWith("V")) {
+      const {data} = await axios.get(
+        `/api/vendor-master-util/${record.requestId}`
+      )
+      setVendorDtl(data.responseData)
+      setVendorModalOpen(true)
       return
     }
     // Save the selected record so we can use its details in the Modal
@@ -1073,13 +1289,29 @@ const {userId} = useSelector(state => state.auth)
         searchTerm={searchTerm}
         onReset={handleReset}
       />
+       <Space style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          onClick={handleApproveAll}
+          disabled={selectedRows.length === 0}
+        >
+          Approve All
+        </Button>
+      </Space>
 
       {loading ? (
         <Spin size="large" tip="Loading..." style={{ marginTop: 24 }} />
       ) : error ? (
         <Text type="danger">{error}</Text>
       ) : (
-        <Table columns={columns} dataSource={filteredData} rowKey="key" />
+      // <Table columns={columns} dataSource={filteredData} rowKey="key" />
+       <Table
+        rowSelection={rowSelection}
+        rowKey="key" 
+        columns={columns}
+        dataSource={filteredData}
+        />
+      
       )}
       <QueueModal
         modalVisible={modalVisible}
@@ -1093,6 +1325,11 @@ const {userId} = useSelector(state => state.auth)
         visible={materialModalOpen}
         setVisible={setMaterialModalOpen}
         materialData={materialDtl}
+      />
+      <VendorDetailModal 
+        visible={vendorModalOpen}
+        setVisible={setVendorModalOpen}
+        vendorData={vendorDtl}
       />
     </div>
   );

@@ -1,4 +1,16 @@
 export const CpDetails = [
+    {
+        heading: "Contingency Search",
+        colCnt: 4,
+        fieldList: [
+          {
+            name: "cpId",
+            label: "Contingency ID",
+            type: "search",
+            span: 1,
+          },  
+        ]
+      },
   {
     colCnt: 4,
     fieldList: [
@@ -87,13 +99,6 @@ export const CpDetails = [
         ],
       },
       {
-        name: "totalPrice",
-        label: "Total Price",
-        type: "text",
-        span: 2,
-        disabled: true,
-      },
-      {
         name: "materialCategory",
         label: "Material Category",
         type: "text",
@@ -132,6 +137,14 @@ export const CpDetails = [
             label: "Global Tender",
           },
         ],
+      },
+      
+      {
+        name: "totalPrice",
+        label: "Total Price",
+        type: "text",
+        span: 2,
+        disabled: true,
       },
     ],
   },
@@ -176,7 +189,9 @@ export const CpDetails = [
       {
         name: "uploadCopyOfInvoice",
         label: "Upload Copy of Invoice",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        fileType: "CP",
+        required: true,
       },
     ],
   },
@@ -189,6 +204,11 @@ export const CpDetails = [
         label: "Project Name",
         type: "select",
       },
+      {
+        name: "projectDetail",
+        label: "Project Detail",
+        type: "text",
+      }
     ],
   },
 ];

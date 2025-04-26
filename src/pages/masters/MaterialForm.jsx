@@ -53,14 +53,29 @@ const MaterialForm = ({materialCode}) => {
             `http://103.181.158.220:8081/astro-service/api/material-master-util/${materialCode}`
           );
           const data = await response.json();
+          
 
           if (data.responseStatus?.statusCode === 0) {
             const materialData = data.responseData;
             setExistingData(materialData);
+            const originValue = materialData.indigenousOrImported ? 'indigenous' : 'imported';
             form.setFieldsValue({
               ...materialData,
               materialCode: materialData.materialCode, // Show existing code
+              indigenousOrImported: originValue,//seting the origin if true then inigenous,flase Imported
             });
+            // Parse comma-separated file names and set fileList
+          if (materialData.uploadImageFileName) {
+            const fileArray = materialData.uploadImageFileName
+              .split(",")
+              .map((fileName, index) => ({
+                uid: `${index}`,
+                name: fileName.trim(),
+                status: "done",
+                url: `http://103.181.158.220:8081/astro-service/file/view/Material/${fileName.trim()}`, // Update if different
+              }));
+            setFileList(fileArray);
+          }
             setIsEditMode(true);
           }
         } catch (error) {
@@ -182,6 +197,9 @@ const MaterialForm = ({materialCode}) => {
         uploadedFileName = uploadResult.fileName;
       }
         */
+      const existingFiles = fileList
+      .filter(file => !file.originFileObj)
+      .map(file => file.name); // these are already uploaded filenames
       let uploadedFileNames = [];
 
       if (fileList.length > 0) {
@@ -210,10 +228,11 @@ const MaterialForm = ({materialCode}) => {
         }
       }
       
-            
+      const finalFileNames = [...existingFiles, ...uploadedFileNames];
             // Convert array to comma-separated string
-     const uploadedFileNameString = uploadedFileNames.join(",");
+     //const uploadedFileNameString = uploadedFileNames.join(",");
 
+     const uploadedFileNameString = finalFileNames.join(",");
       const payload = {
         category: values.category,
         createdBy: isEditMode ? existingData.createdBy : actionPerformer,
@@ -317,11 +336,13 @@ const MaterialForm = ({materialCode}) => {
             ]}
           >
             <Select placeholder="Select Material Category">
-              {materialCategories.map((category) => (
+              {/*materialCategories.map((category) => (
                 <Option key={category} value={category}>
                   {category}
                 </Option>
-              ))}
+              ))*/}
+              <Option value="Capital">Capital</Option>
+              <Option value="Consumable">Consumable</Option>
             </Select>
           </Form.Item>
 
@@ -336,11 +357,22 @@ const MaterialForm = ({materialCode}) => {
             ]}
           >
             <Select placeholder="Select Material Subcategory">
-              {materialSubcategories.map((subCat) => (
+              {/*materialSubcategories.map((subCat) => (
                 <Option key={subCat} value={subCat}>
                   {subCat}
                 </Option>
-              ))}
+              ))*/}
+              <Option value="Chemicals">Chemicals</Option>
+              <Option value="Computer & Peripherals">Computer & Peripherals</Option>
+              <Option value="Electrical">Electrical</Option>
+              <Option value="Electronic Items">Electronic Items</Option>
+              <Option value="Equipment">Equipment</Option>
+              <Option value="Furniture">Furniture</Option>
+              <Option value="HARDWARE">HARDWARE</Option>
+              <Option value="Miscellaneous">Miscellaneous</Option>
+              <Option value="Software">Software</Option>
+              <Option value="Stationary">Stationary</Option>
+              <Option value="Vehicles">Vehicles</Option>
             </Select>
           </Form.Item>
         </div>
@@ -466,6 +498,7 @@ const MaterialForm = ({materialCode}) => {
               multiple={true}
               //   accept="image/*"
               fileList={fileList}
+              onPreview={(file) => window.open(file.url, "_blank")}
               onChange={({ fileList }) => setFileList(fileList)}
             >
               <Button icon={<UploadOutlined />}>Select File</Button>

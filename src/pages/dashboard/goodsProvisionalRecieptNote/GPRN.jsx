@@ -410,13 +410,20 @@ const GPRN = () => {
                   span: 2,
                   required: true,
                   // disabled: true
+                },
+                {
+                name: "category",
+                label: "Category",
+                type: "text",
+                required: true,
+
               },
               {
                   name: "note",
                   label: "Note",
                   type: "text",
                   span: 5,
-                  required: true,
+                  // required: true,
               },
               {
                   name: "imageBase64",

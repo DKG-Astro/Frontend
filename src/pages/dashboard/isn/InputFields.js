@@ -80,6 +80,13 @@ export const isnFields = [
                 required: true
             },
             {
+                name: "poId",
+                label: "PO ID",
+                type: "text",
+                span: 2,
+                required: true
+            },
+            {
                 name: "locatorDesc",
                 label: "Locator",
                 type: "text",

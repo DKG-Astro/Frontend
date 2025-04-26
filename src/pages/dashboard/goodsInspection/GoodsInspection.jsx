@@ -471,7 +471,8 @@ const GoodsInspection = () => {
   }, [processNo, handleSearch])
 
 
-
+console.log("Foprmdata: ", formData)
+  
 
 
   return (

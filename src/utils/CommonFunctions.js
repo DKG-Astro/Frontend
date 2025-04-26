@@ -7,6 +7,7 @@ import CustomInput from "../components/CustomInput";
 import CustomSearch from "../components/CustomSearch";
 import ImageUploadBase64 from "../components/ImageUploadBas64";
 import InputDatePicker from "../components/DatePicker";
+import UploadFile from "../components/UploadFile";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -187,17 +188,18 @@ export const apiCall = async (method, url, token, payload = null) => {
           />
         );
   
-      case "date":
-        return (
-          <InputDatePicker
-          required={field?.required}
-            label={field?.label}
-            name={field?.name}
-            disabled={field?.disabled}
-            onChange={handleChange}
-            defaultValue={formData[field.name]}
-          />
-        );
+        case "date":
+            return (
+              <InputDatePicker
+              required={field?.required}
+                label={field?.label}
+                name={field?.name}
+                disabled={field?.disabled}
+                onChange={handleChange}
+                defaultValue={formData[field.name]}
+                rules={field?.required? [{ required: true, message: `${field?.label} is required` }] : []}
+              />
+            );
 
       case "multiImage":
         return (
@@ -243,28 +245,42 @@ export const apiCall = async (method, url, token, payload = null) => {
             <Form.Item 
               name={field?.name}
               label={field?.label}
-              required={field?.required}
+              rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
             >
-              <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} />
+              <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} {...field.props} />
             </Form.Item>
         );
 
         case "checkbox":
-    return (
-      <Form.Item
-        name={field?.name}
-        label={field?.label}
-        valuePropName="checked"
-        required={field?.required}
-      >
-        <Checkbox 
-          disabled={field?.disabled}
-          onChange={(e) => handleChange(field?.name, e.target.checked)}
-          checked={formData[field.name]}
-        />
-      </Form.Item>
-    );
-  
+        return (
+        <Form.Item
+            name={field?.name}
+            label={field?.label}
+            valuePropName="checked"
+            required={field?.required}
+        >
+            <Checkbox 
+            disabled={field?.disabled}
+            onChange={(e) => handleChange(field?.name, e.target.checked)}
+            checked={formData[field.name]}
+            />
+        </Form.Item>
+        );
+
+      case "uploadFiles":
+        return (
+            <Form.Item
+              name={field?.name}
+              label={field?.label}
+              rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+            >
+                <UploadFile
+                fileType={field?.fileType}
+                onUploadSuccess={(fileName) => handleChange(field?.name, fileName)}
+                />
+            </Form.Item>
+        );
+
       default:
         throw new Error("Provided field type doesn't exist.");
     }

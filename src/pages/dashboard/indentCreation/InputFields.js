@@ -1,5 +1,17 @@
 export const IndentDetails = [
   {
+    heading: "Indent Search",
+    colCnt: 4,
+    fieldList: [
+      {
+        name: "indentId",
+        label: "Indent ID",
+        type: "search",
+        span: 1,
+      },
+    ],
+  },
+  {
     heading: "Indentor Details",
     colCnt: 4,
     fieldList: [
@@ -34,7 +46,7 @@ export const IndentDetails = [
   {
     heading: "Material Details",
     name: "materialDetails",
-    colCnt: 8,
+    colCnt: 9,
     children: [
       // Update materialCode field options to be populated dynamically
       {
@@ -52,7 +64,7 @@ export const IndentDetails = [
       // Update description field to show API data
       {
         name: "materialDescription",
-        label: "Description",
+        label: "Material Description",
         type: "select",
         span: 3,
         options: [], // Will be populated from API data
@@ -74,11 +86,14 @@ export const IndentDetails = [
         name: "quantity",
         label: "Quantity",
         type: "text",
+        required: true,
       },
       {
         name: "unitPrice",
         label: "Unit Price",
         type: "text",
+        required: true,
+        span: 2,
       },
       {
         name: "currency",
@@ -110,13 +125,6 @@ export const IndentDetails = [
         ],
       },
       {
-        name: "totalPrice",
-        label: "Total Price",
-        type: "text",
-        span: 2,
-        disabled: true,
-      },
-      {
         name: "materialCategory",
         label: "Material Category",
         type: "text",
@@ -127,7 +135,8 @@ export const IndentDetails = [
         name: "materialSubCategory",
         label: "Material Sub Category",
         type: "text",
-        span: 2,
+        span: 3,
+        required: true,
       },
       {
         name: "modeOfProcurement",
@@ -149,6 +158,10 @@ export const IndentDetails = [
             label: "Proprietary/Single Tender",
           },
           {
+            value: "Limited Pre Approved Vendor Tender",
+            label: "Limited Pre Approved Vendor Tender",
+          },
+          {
             value: "Open Tender",
             label: "Open Tender",
           },
@@ -159,11 +172,39 @@ export const IndentDetails = [
         ],
       },
       {
-        name: "vendorName",
+        name: "vendorNames",
         label: "Vendor Name",
+        type: "select",
+        span: 3,
+        // disabled: (formData) => {
+        //   const mode = formData.materialDetails?.[0]?.modeOfProcurement;
+        //   return ![
+        //     "Proprietary/Single Tender",
+        //     "Limited Pre Approved Vendor Tender",
+        //   ].includes(mode);
+        // },
+        showSearch: true,
+        mode: (formData) =>
+          formData.materialDetails?.[0]?.modeOfProcurement ===
+          "Limited Pre Approved Vendor Tender"
+            ? "select"
+            : undefined,
+        // options: (props) => props.vendors,
+        dependencies: ["materialDetails[0].modeOfProcurement"],
+        shouldShow: (formData) =>
+          [
+            "Proprietary/Single Tender",
+            "Limited Pre Approved Vendor Tender",
+          ].includes(formData.materialDetails?.[0]?.modeOfProcurement),
+        filterOption: (input, option) =>
+          option.label.toLowerCase().includes(input.toLowerCase()),
+      },
+      {
+        name: "totalPrice",
+        label: "Total Price",
         type: "text",
         span: 2,
-        // required: true,
+        disabled: true,
       },
     ],
   },
@@ -184,63 +225,75 @@ export const IndentDetails = [
   },
   {
     heading: "Pre-Bid Meeting Details",
-    colCnt: 4,
+    colCnt: 6,
     fieldList: [
       {
-        name: "preBidMeetingRequired",
+        name: "isPreBidMeetingRequired",
         label: "Pre-Bid Meeting Required?",
         type: "checkbox", //should be a checkbox field (true or false)
-        span: 1,
+        span: 2,
       },
       {
-        name: "preBidMeetingDetails",
-        label: "Pre-Bid Meeting Date",
+        name: "preBidMeetingDate",
+        label: "Tentative Meeting Date",
         type: "date",
-        span: 1,
-        dependencies: ["preBidMeetingRequired"],
-        shouldShow: (formData) => formData.preBidMeetingRequired === true,
+        span: 2,
+        dependencies: ["isPreBidMeetingRequired"],
+        shouldShow: (formData) => formData.isPreBidMeetingRequired === true,
+        required: (formData) => formData.isPreBidMeetingRequired === true,
       },
       {
-        name: "preBidMeetingLocation",
-        label: "Pre-Bid Meeting Location",
+        name: "preBidMeetingVenue",
+        label: "Tentative Meeting Location",
         type: "select",
         span: 2,
-        dependencies: ["preBidMeetingRequired"],
+        dependencies: ["isPreBidMeetingRequired"],
         options: [],
-        shouldShow: (formData) => formData.preBidMeetingRequired === true,
+        shouldShow: (formData) => formData.isPreBidMeetingRequired === true,
+        required: (formData) => formData.isPreBidMeetingRequired === true,
       },
     ],
   },
   {
     heading: "Rate Contract Indent Details",
-    colCnt: 9,
+    colCnt: 10,
     fieldList: [
       {
-        name: "rateContractIndent",
+        name: "isItARateContractIndent",
         label: "Is it a Rate Contract Indent?",
         type: "checkbox", //should be a checkbox field (true or false)
         span: 3,
       },
       {
-        name: "periodOfRateContract",
+        name: "periodOfContract",
         label: "Contract Period (Months)",
         type: "text",
-        // required: true,
         span: 3,
-        dependencies: ["rateContractIndent"],
-        shouldShow: (formData) => formData.rateContractIndent === true,
+        dependencies: ["isItARateContractIndent"],
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
       },
       {
-        name: "singleOrMultipleJob",
+        name: "singleAndMultipleJob",
         label: "Job Type",
         type: "select",
         // required: true,
-        span: 3,
+        span: 2,
         options: [
           { value: "Single", label: "Single" },
           { value: "Multiple", label: "Multiple" },
         ],
-        shouldShow: (formData) => formData.rateContractIndent === true,
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
+      },
+      {
+        name: "estimatedRate",
+        label: "Estimated Rate",
+        type: "text",
+        span: 2,
+        dependencies: ["isItARateContractIndent"],
+        shouldShow: (formData) => formData.isItARateContractIndent === true,
+        required: (formData) => formData.isItARateContractIndent === true,
       },
     ],
   },
@@ -269,44 +322,56 @@ export const IndentDetails = [
     ],
   },
   {
-    heading: "Proprietary Details",
+    heading:
+      "Proprietary Details (if mode of procurement is Proprietary/Single Tender)",
     colCnt: 4,
     fieldList: [
-      {
-        name: "proprietary",
-        label: "Is Proprietary?",
-        type: "checkbox", //should be a checkbox field (true or false)
-        span: 1,
-      },
+      //   {
+      //     name: "proprietary",
+      //     label: "Is Proprietary?",
+      //     type: "checkbox", //should be a checkbox field (true or false)
+      //     span: 1,
+      //   },
       {
         name: "reason",
         label: "Reason for Proprietary",
         type: "select",
-        span: 4,
+        span: 5,
         options: [
           {
-            value:"It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods",
-            label:"It is in the knowledge of the user department that only aparticular firm is the manufacturer of the required goods",
+            value:
+              "It is in the knowledge of the user department that only a particular firm is the manufacturer of the required goods",
+            label:
+              "It is in the knowledge of the user department that only aparticular firm is the manufacturer of the required goods",
           },
           {
-            value:"In a case of emergency, the required goods are necessarily to be purchased from a particular source",
-            label:"In a case of emergency, the required goods are necessarily to be purchased from a particular source",
+            value:
+              "In a case of emergency, the required goods are necessarily to be purchased from a particular source",
+            label:
+              "In a case of emergency, the required goods are necessarily to be purchased from a particular source",
           },
-          { value: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm", 
-            label: "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm" 
+          {
+            value:
+              "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm",
+            label:
+              "For standardization of machinery or spare parts to be compatible to the existing sets of equipment, the required item is to be purchased only from a selected firm",
           },
         ],
-        dependencies: ["proprietary"],
-        shouldShow: (formData) => formData.proprietary === true,
+        dependencies: ["materialDetails[0].modeOfProcurement"],
+        shouldShow: (formData) =>
+          formData.materialDetails?.[0]?.modeOfProcurement ===
+          "Proprietary/Single Tender",
       },
       {
         name: "proprietaryJustification",
         label: "Justification",
         type: "text",
         span: 4,
-        dependencies: ["proprietary"],
-        shouldShow: (formData) => formData.proprietary === true,
-      }
+        dependencies: ["materialDetails[0].modeOfProcurement"],
+        shouldShow: (formData) =>
+          formData.materialDetails?.[0]?.modeOfProcurement ===
+          "Proprietary/Single Tender",
+      },
     ],
   },
   {
@@ -316,20 +381,23 @@ export const IndentDetails = [
       {
         name: "uploadingPriorApprovalsFileName",
         label: "Prior Approvals",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
       {
         name: "technicalSpecificationsFileName",
-        label: "Technical Specs",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        label: "Upload Technical Specifications",
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
       {
         name: "draftEOIOrRFPFileName",
         label: "Draft EOI/RFP",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
+        fileType: "Indent",
       },
     ],
   },
@@ -346,9 +414,11 @@ export const IndentDetails = [
       {
         name: "uploadBuyBackFileNames",
         label: "Buy Back File",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         dependencies: ["buyBack"],
         shouldShow: (formData) => formData.buyBack === true,
+        required: (formData) => formData.buyBack === true,
+        fileType: "Indent",
       },
     ],
   },
@@ -369,14 +439,17 @@ export const IndentDetails = [
         span: 2,
         dependencies: ["brandPac"],
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
       {
         name: "uploadPACOrBrandPACFileName",
         label: "Brand PAC",
-        type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 1,
         dependencies: ["brandPac"],
+        fileType: "Indent",
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
       {
         name: "justification",
@@ -386,6 +459,7 @@ export const IndentDetails = [
         span: 4,
         dependencies: ["brandPac"],
         shouldShow: (formData) => formData.brandPac === true,
+        required: (formData) => formData.brandPac === true,
       },
     ],
   },

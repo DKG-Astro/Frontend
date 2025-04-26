@@ -44,6 +44,7 @@ const ItemSearch = ({itemArray, setFormData}) => {
               itemDesc: record.itemMasterDesc,
               uomId: record.uomId,
               quantity: 1,
+              poId: record.poId,
               // noOfDays: 1,
               // conditionOfGoods: "",
               // budgetHeadProcurement: "",
@@ -134,6 +135,7 @@ const ItemSearch = ({itemArray, setFormData}) => {
         },
     
         { title: "UNIT PRICE", dataIndex: "unitPrice", key: "price", render: (value) => convertToCurrency(value) || "---" },
+        { title: "PO ID", dataIndex: "poId", key: "poId" },
 
         {
           title: "LOCATOR QUANTITY DETAILS",
