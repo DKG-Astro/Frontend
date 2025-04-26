@@ -188,23 +188,18 @@ export const apiCall = async (method, url, token, payload = null) => {
           />
         );
   
-      case "date":
-        return (
-            <Form.Item
-              name={field?.name}
-              label={field?.label}
-              rules={field?.required? [{ required: true, message: `${field?.label} is required` }] : []}
-              >
-                <InputDatePicker
-                    // required={field?.required}
-                    // label={field?.label}
-                    // name={field?.name}
-                    disabled={field?.disabled}
-                    onChange={handleChange}
-                    defaultValue={formData[field.name]}
-                />
-              </Form.Item>
-        );
+        case "date":
+            return (
+              <InputDatePicker
+              required={field?.required}
+                label={field?.label}
+                name={field?.name}
+                disabled={field?.disabled}
+                onChange={handleChange}
+                defaultValue={formData[field.name]}
+                rules={field?.required? [{ required: true, message: `${field?.label} is required` }] : []}
+              />
+            );
 
       case "multiImage":
         return (
