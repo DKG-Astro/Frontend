@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { message, Table, Button, Space, Popover, Input } from 'antd';
+import { message, Table, Button, Space } from 'antd';
 import axios from 'axios';
 import TableComponent from '../../../components/DKG_Table';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const GatePass = () => {
-  const [rejectComment, setRejectComment] = useState('');
   const {role} = useSelector(state => state?.auth);
 
   const handleApprove = async (record) => {
@@ -30,13 +29,11 @@ const GatePass = () => {
 
   const handleReject = async (record) => {
     try {
-      await axios.post(`/api/process-controller/rejectOgp?processNo=${"INV/" + record.ogpSubProcessId}`, {
-        processNo: record.ogpSubProcessId,
+      await axios.post(`/api/process-controller/rejectOgp`, {
+        processNo: "INV/"+record.ogpSubProcessId,
         type: record?.issueNoteId ? "ISN" : "PO",
-        comments: rejectComment
       });
       message.success('Gate Pass rejected successfully');
-      setRejectComment('');
       fetchGatePassData();
     } catch (error) {
       message.error(error?.response?.data?.responseStatus?.message || 'Failed to reject Gate Pass');
@@ -111,7 +108,10 @@ const GatePass = () => {
               <Button type="primary" onClick={() => handleApprove(record)}>
                 Approve
               </Button>
-              <Popover
+              <Button danger onClick={() => handleReject(record)}>
+                Reject
+              </Button>
+              {/* <Popover
                 content={
                   <div style={{ padding: 12 }}>
                     <Input.TextArea
@@ -135,7 +135,7 @@ const GatePass = () => {
                 <Button danger>
                   Reject
                 </Button>
-              </Popover>
+              </Popover> */}
             </Space>
           );
         }
