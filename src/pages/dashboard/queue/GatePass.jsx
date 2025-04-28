@@ -100,7 +100,7 @@ const GatePass = () => {
         />
       )
     },
-    ...(role === "Store Purchase Office" ? [{
+    ...(role === "Store Purchase Officer" ? [{
       title: 'Actions',
       key: 'actions',
       fixed: 'right',

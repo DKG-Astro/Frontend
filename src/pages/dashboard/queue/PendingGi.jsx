@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import CustomReport from '../../../components/DKG_Report';
-import { Button, message, Table } from 'antd';
+import { Button, message, Table, Space, Popover, Input } from 'antd';
 import axios from 'axios';
 import TableComponent from '../../../components/DKG_Table';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,31 @@ import Btn from '../../../components/DKG_Btn';
 
 const PendingGi = () => {
     const navigate = useNavigate();
-  const columns = [
+
+    const handleApprove = async (record) => {
+      try {
+        await axios.post(`/api/process-controller/approveGprn`, {processNo: "INV" + record.processId + "/" + record.subProcessId,});
+        message.success('GPRN approved successfully');
+        populateData();
+      } catch (error) {
+        message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve GPRN');
+      }
+    };
+
+    const handleReject = async (record) => {
+      try {
+        await axios.post(`/api/process-controller/rejectGprn`, {
+          processNo: "INV" + record.processId + "/" + record.subProcessId,
+        });
+        message.success('GPRN rejected successfully');
+        // setRejectComment('');
+        populateData();
+      } catch (error) {
+        message.error(error?.response?.data?.responseStatus?.message || 'Failed to reject GPRN');
+      }
+    };
+
+    const columns = [
     { title: 'Process ID', dataIndex: 'processId', key: 'processId', searchable: true, render: (_, record) => "INV" + record.processId + "/" + record.subProcessId, fixed: 'left'   },
     // { title: 'Sub Process ID', dataIndex: 'subProcessId', key: 'subProcessId', searchable: true },
     { title: 'PO ID', dataIndex: 'poId', key: 'poId', searchable: true, fixed: 'left'  },
@@ -49,12 +73,44 @@ const PendingGi = () => {
         />
       )
     },
-    {title: "Actions", dataIndex: "actions",
-        render: (_, record) => {
-            return (
-                <Button className='hover:!border-darkBlueHover !border-darkBlue !text-darkBlue hover:!text-darkBlueHover' onClick={() => navigate("/inventory/goodsInspection", {state: {processNo: "INV" + record.processId + "/" + record.subProcessId}})}>Create GI</Button>
-            )
+    { 
+      title: 'Status', 
+      dataIndex: 'status', 
+      key: 'status',
+      filterable: true 
+    },
+    {
+      title: "Actions", 
+      dataIndex: "actions",
+      render: (_, record) => {
+        if (record.status === 'APPROVED') {
+          return (
+            <Button 
+              className='hover:!border-darkBlueHover !border-darkBlue !text-darkBlue hover:!text-darkBlueHover' 
+              onClick={() => navigate("/inventory/goodsInspection", {
+                state: {processNo: "INV" + record.processId + "/" + record.subProcessId}
+              })}
+            >
+              Create GI
+            </Button>
+          );
         }
+        
+        if (record.status === 'AWAITING APPROVAL') {
+          return (
+            <Space>
+              <Button type="primary" onClick={() => handleApprove(record)}>
+                Approve
+              </Button>
+              <Button
+                danger
+                onClick={() => handleReject(record)}> Reject </Button>
+            </Space>
+          )
+        }
+        
+        return null; // For REJECTED status
+      }
     }
   ];
 
