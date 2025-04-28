@@ -11,7 +11,7 @@ const GatePass = () => {
   const handleApprove = async (record) => {
     try {
       await axios.post(`/api/process-controller/approveOgp?processNo=${"INV/" + record.ogpSubProcessId}`, {
-        processNo: record.ogpSubProcessId,
+        processNo: "INV/" + record.ogpSubProcessId,
         type: record?.issueNoteId? "ISN" : "PO"
       });
       message.success('Gate Pass approved successfully');
