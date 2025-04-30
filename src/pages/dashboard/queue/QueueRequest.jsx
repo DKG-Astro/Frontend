@@ -240,6 +240,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
   const [queueData, setQueueData] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [workflowCounts, setWorkflowCounts] = useState({});
+
 
   // --- 2. Fetch the current user details from the UserMaster API ---
   //   useEffect(() => {
@@ -406,6 +408,17 @@ const QueueRequest = ({ workflowId, requestType }) => {
   
       message.success("All selected records approved.");
       setData((prev) => prev.filter((item) => !selectedRowKeys.includes(item.key)));
+      setTimeout(() => {
+        const updatedData = data.filter((item) => !selectedRowKeys.includes(item.key));
+      
+        const updatedCounts = {};
+        updatedData.forEach((item) => {
+          const id = item.workflowId;
+          updatedCounts[id] = (updatedCounts[id] || 0) + 1;
+        });
+      
+        setWorkflowCounts(updatedCounts);
+      }, 0);
       setSelectedRowKeys([]);
       setSelectedRows([]);
     } catch (error) {
@@ -468,6 +481,20 @@ const QueueRequest = ({ workflowId, requestType }) => {
       }
       message.success(`Request ${record.requestId} processed`);
       setData((prev) => prev.filter((item) => item.key !== record.key));
+     
+      const updatedData = data.filter((item) => item.key !== record.key);
+      setData(updatedData);
+
+     // Now updateing count og pending ids
+      const updatedCounts = {};
+      updatedData.forEach((item) => {
+      const id = item.workflowId;
+      updatedCounts[id] = (updatedCounts[id] || 0) + 1;
+      });
+      setWorkflowCounts(updatedCounts);
+
+
+
     } catch (error) {
       message.error("Failed to approve");
       console.error("Approval error:", error);
@@ -556,6 +583,18 @@ const QueueRequest = ({ workflowId, requestType }) => {
       message.success(`Request ${record.requestId} rejected and out of queue`);
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
       setRejectComment("");
+
+      const updatedData = data.filter((item) => item.key !== record.key);
+      setData(updatedData);
+
+      // Now update workflowCounts using updatedData
+      const updatedCounts = {};
+      updatedData.forEach((item) => {
+      const id = item.workflowId;
+      updatedCounts[id] = (updatedCounts[id] || 0) + 1;
+      });
+      setWorkflowCounts(updatedCounts);
+
     } catch (error) {
       message.error("Failed to reject");
       console.error("Rejection error:", error);
@@ -622,6 +661,16 @@ const QueueRequest = ({ workflowId, requestType }) => {
 
       message.success("Request change submitted successfully.");
       setData((prevData) => prevData.filter((item) => item.key !== record.key));
+      const updatedData = data.filter((item) => item.key !== record.key);
+      setData(updatedData);
+
+     // Now updateing count og pending ids
+      const updatedCounts = {};
+      updatedData.forEach((item) => {
+      const id = item.workflowId;
+      updatedCounts[id] = (updatedCounts[id] || 0) + 1;
+      });
+      setWorkflowCounts(updatedCounts);
       setRequestChangeComment("");
       setSelectedRole(null);
       setPreviousRoles([]);
@@ -696,7 +745,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
       setDetailsData(response.data.responseData);
       setQueueData(response.data.responseData);
       setModalVisible(true);
-      setData((prev) =>
+     /* setData((prev) =>
         prev.map((item) =>
           item.requestId === record.requestId
             ? {
@@ -705,7 +754,9 @@ const QueueRequest = ({ workflowId, requestType }) => {
               }
             : item
         )
-      );
+      );*/
+      
+
     } catch (err) {
       message.error("Failed to fetch details.");
       console.error("Fetch details error:", err);
@@ -818,6 +869,18 @@ const QueueRequest = ({ workflowId, requestType }) => {
      }
 
      setData(filteredData);
+    const workflowCounts = {};
+    filteredData.forEach(item => {
+    const id = item.workflowId;
+    workflowCounts[id] = (workflowCounts[id] || 0) + 1;
+  
+    });
+setWorkflowCounts(workflowCounts);
+
+
+
+
+
      // setData(formattedData);
     } catch (err) {
       setError(err.message);
@@ -937,7 +1000,7 @@ const {userId} = useSelector(state => state.auth)
         const amount = getCommonField(record.workflowId, record, "amount");
         return amount ? `₹${amount}` : "-";
       },
-      sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
+     // sorter: (a, b) => a.totalPriceOfAllMaterials - b.totalPriceOfAllMaterials,
     },
     {
       title: "Project",
@@ -1297,6 +1360,12 @@ const {userId} = useSelector(state => state.auth)
         >
           Approve All
         </Button>
+        {Object.entries(workflowCounts).map(([id, count]) => (
+        <Tag key={id} color="blue">
+         Pending RequestIds Count: {count}
+        </Tag>
+        ))}
+
       </Space>
 
       {loading ? (

@@ -149,7 +149,8 @@ const TableComponent = ({
 
   // Update the columnOptions menu
   const columnOptions = (
-    <Menu>
+   // <Menu>
+   <Menu style={{ maxHeight: '300px', overflowY: 'auto' }}>
         <div className="flex items-center gap-2 !bg-white">
       <Menu.Item key="selectAll">
 

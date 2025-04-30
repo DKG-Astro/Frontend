@@ -1,3 +1,5 @@
+import { PiPlaceholder } from "react-icons/pi";
+
 export const IndentDetails = [
   {
     heading: "Indent Search",
@@ -80,27 +82,29 @@ export const IndentDetails = [
         label: "UOM",
         type: "text",
         required: true,
+        span:2,
         disabled: true,
       },
       {
         name: "quantity",
         label: "Quantity",
         type: "text",
+        span:2,
         required: true,
       },
       {
         name: "unitPrice",
-        label: "Unit Price",
+        label: "Unit Price inclusive of all taxes, duties and free door delivery",
         type: "text",
         required: true,
-        span: 2,
+        span: 3,
       },
       {
         name: "currency",
         label: "Currency",
         type: "text",
         required: true,
-        span: 1,
+        span: 2,
         disabled: true,
       },
       {
@@ -380,14 +384,14 @@ export const IndentDetails = [
     fieldList: [
       {
         name: "uploadingPriorApprovalsFileName",
-        label: "Prior Approvals",
+        label: "Upload Prior Approvals if any",
         type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
         fileType: "Indent",
       },
       {
         name: "technicalSpecificationsFileName",
-        label: "Upload Technical Specifications",
+        label: "Upload Technical Specifications/ Budgetary Quote",
         type: "uploadFiles", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
         span: 2,
         fileType: "Indent",
@@ -411,6 +415,33 @@ export const IndentDetails = [
         type: "checkbox", //should be a checkbox field (true or false)
         span: 1,
       },
+      /*{
+        name: "modelNumber",
+        label: "Model Number",
+        type: "text",
+        span: 1,
+        dependencies: ["buyBack"],
+        shouldShow: (formData) => formData.buyBack === true,
+        required: (formData) => formData.buyBack === true,
+      },
+      {
+        name: "serialNumber",
+        label: "Serial Number",
+        type: "text",
+        span: 1,
+        dependencies: ["buyBack"],
+        shouldShow: (formData) => formData.buyBack === true,
+        required: (formData) => formData.buyBack === true,
+      },
+      {
+        name: "dateOfPurchase",
+        label: "Date Of Purchase",
+        type: "date",
+        span: 1,
+        dependencies: ["buyBack"],
+        shouldShow: (formData) => formData.buyBack === true,
+        required: (formData) => formData.buyBack === true,
+      },*/
       {
         name: "uploadBuyBackFileNames",
         label: "Buy Back File",
@@ -458,6 +489,7 @@ export const IndentDetails = [
         type: "text",
         span: 4,
         dependencies: ["brandPac"],
+        placeholder: "Enter justification for choosing this brand",
         shouldShow: (formData) => formData.brandPac === true,
         required: (formData) => formData.brandPac === true,
       },
