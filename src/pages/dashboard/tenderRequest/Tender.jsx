@@ -226,7 +226,7 @@ const Tender = () => {
         },
         {
           name: "openingDate",
-          label: "Opening Date",
+          label: "Start Date",
           type: "date",
           required: true,
           span: 1
@@ -387,24 +387,24 @@ const Tender = () => {
           required: true,
           span: 1,
           options: [
-            { value: "Single", label: "Single" },
-            { value: "Double", label: "Double" }
+            { value: "Single", label: "Single Bid" },
+            { value: "Double", label: "Two Bid" }
           ] 
         },
-        {
+       /* {
           name: "lastDate",
           label: "Last Date of Submission",
           type: "date",
           required: true,
           span: 1
-        },
-        {
+        },*/
+      /*  {
           name: "applicableTaxes",
           label: "Applicable Taxes",
           type: "text",
-          required: true,
+        //  required: true,
           span: 1
-        }
+        }*/
       ]
     },
     {

@@ -416,7 +416,7 @@ export const IndentDetails = [
         type: "checkbox", //should be a checkbox field (true or false)
         span: 1,
       },
-      /*{
+      {
         name: "modelNumber",
         label: "Model Number",
         type: "text",
@@ -442,7 +442,7 @@ export const IndentDetails = [
         dependencies: ["buyBack"],
         shouldShow: (formData) => formData.buyBack === true,
         required: (formData) => formData.buyBack === true,
-      },*/
+      },
       {
         name: "uploadBuyBackFileNames",
         label: "Buy Back File",
