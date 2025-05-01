@@ -49,6 +49,7 @@ export const IndentDetails = [
     heading: "Material Details",
     name: "materialDetails",
     colCnt: 9,
+    addButton: true,
     children: [
       // Update materialCode field options to be populated dynamically
       {

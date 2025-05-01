@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Card, message } from "antd";
+import { Card, Form, message } from "antd";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -10,7 +10,19 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { IndentDetails } from "./InputFields";
 
+const materialDtlObj = {
+  materialCode: "",
+        materialDescription: "",
+        materialCategory: "",
+        materialSubCategory: "",
+        uom: "",
+        unitPrice: "",
+        currency: "",
+        totalPrice: ""
+}
+
 const Indent = () => {
+  const [form] =Form.useForm();
   const printRef = useRef();
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
@@ -118,40 +130,47 @@ const Indent = () => {
     }
   };
 
+  console.log("MAterialcode options: ", materialOptions)
+
   // --- handleChange Function ---
   const handleChange = async (name, value) => {
     if (Array.isArray(name)) {
       const [section, index, field] = name;
 
       if (section === "materialDetails") {
-        const updatedMaterials = [...formData.materialDetails];
+        const updatedMaterials = [...formData.materialDetails]
 
-        // If field is materialCode, auto-fill other fields
-        if (field === "materialCode") {
-          const materialData = materialDetailsMap[value] || {};
-          const quantity = updatedMaterials[index].quantity || 0;
+        // Check for materialCategory and modeOfProcurement consistency
+        if (field === "materialCategory" || field === "modeOfProcurement") {
+          // Check if there are other materials with different values
+          const hasInconsistentValues = updatedMaterials.some((material, i) => {
+            return i !== index && material[field] && material[field] !== value;
+          });
 
-          updatedMaterials[index] = {
-            ...updatedMaterials[index],
-            materialCode: value,
-            materialDescription: materialData.materialDescription || "",
-            materialCategory: materialData.materialCategory || "",
-            materialSubCategory: materialData.materialSubCategory || "",
-            uom: materialData.uom || "",
-            unitPrice: materialData.unitPrice || 0,
-            currency: materialData.currency || "",
-            totalPrice: (materialData.unitPrice || 0) * quantity,
-          };
-        }
+          if (hasInconsistentValues) {
+            updatedMaterials[index] = materialDtlObj;
+            message.error(`All materials must have the same ${field === 'materialCategory' ? 'Material Category' : 'Mode of Procurement'}`);
+            setFormData((prev) => ({
+             ...prev,
+              materialDetails: updatedMaterials,
+            }));
+            return;
+          }
 
-        else if (field === "materialDescription") {
-            const materialData = materialDescriptionMap[value] || {};
+          // If passed validation, update all materials with the same value
+          updatedMaterials.forEach(material => {
+            material[field] = value;
+          });
+        } else {
+          // Handle other field changes as before
+          if (field === "materialCode") {
+            const materialData = materialDetailsMap[value] || {};
             const quantity = updatedMaterials[index].quantity || 0;
-          
+
             updatedMaterials[index] = {
               ...updatedMaterials[index],
-              materialDescription: value,
-              materialCode: materialData.materialCode || "",
+              materialCode: value,
+              materialDescription: materialData.materialDescription || "",
               materialCategory: materialData.materialCategory || "",
               materialSubCategory: materialData.materialSubCategory || "",
               uom: materialData.uom || "",
@@ -159,46 +178,33 @@ const Indent = () => {
               currency: materialData.currency || "",
               totalPrice: (materialData.unitPrice || 0) * quantity,
             };
-          }          
 
-        // If field is quantity, update total price
-        else if (field === "quantity") {
-          const quantity = parseFloat(value || 0);
-          const unitPrice = parseFloat(updatedMaterials[index].unitPrice || 0);
+            // Remove selected material from options
+            const updatedMaterialOptions = materialOptions.filter(option => 
+              !formData.materialDetails.some(material => 
+                material.materialCode === option.value && material.materialCode !== updatedMaterials[index].materialCode
+              )
+            );
+            setMaterialOptions(updatedMaterialOptions);
 
-          updatedMaterials[index] = {
-            ...updatedMaterials[index],
-            quantity,
-            totalPrice: unitPrice * quantity,
-          };
-        }
+            // Ensure materialCategory consistency after auto-fill
+            const newCategory = materialData.materialCategory;
+            if (newCategory) {
+              const hasInconsistentCategory = updatedMaterials.some((material, i) => {
+                return i !== index && material.materialCategory && material.materialCategory !== newCategory;
+              });
 
-        // If field is unitPrice (user edits manually), recalculate total
-        else if (field === "unitPrice") {
-          const unitPrice = parseFloat(value || 0);
-          const quantity = parseFloat(updatedMaterials[index].quantity || 0);
+              if (hasInconsistentCategory) {
+                message.error('All materials must have the same Material Category');
+                return;
+              }
 
-          updatedMaterials[index] = {
-            ...updatedMaterials[index],
-            unitPrice,
-            totalPrice: unitPrice * quantity,
-          };
-        }
-
-        // If field is vendorNames, always store as array
-        else if (field === "vendorNames") {
-            updatedMaterials[index] = {
-              ...updatedMaterials[index],
-              [field]: Array.isArray(value) ? value : [value],
-            };
+              // Update all materials with the same category
+              updatedMaterials.forEach(material => {
+                material.materialCategory = newCategory;
+              });
+            }
           }
-
-        // All other fields
-        else {
-          updatedMaterials[index] = {
-            ...updatedMaterials[index],
-            [field]: value,
-          };
         }
 
         setFormData((prev) => ({
@@ -217,6 +223,10 @@ const Indent = () => {
 
   // --- onFinish Function ---
   const onFinish = async () => {
+    if(formData.isPreBidMeetingRequired && !formData.tentativeMeetingDate){
+      message.error("Please enter the tentative meeting date");
+      return;
+    }
     const payload = { ...formData, createdBy: actionPerformer , projectName: formData.projectName, fileType: "Indent" };
 
     try {
@@ -319,6 +329,32 @@ const Indent = () => {
     }
     return section;
   });
+
+  const addMaterialRow = () => {
+
+    const materialDetails = formData.materialDetails;
+    const lastMaterial = materialDetails[materialDetails.length - 1];
+    if(!lastMaterial.materialCode && !lastMaterial.materialCategory && !lastMaterial.materialSubCategory && !lastMaterial.uom && !lastMaterial.unitPrice && !lastMaterial.currency && !lastMaterial.totalPrice){
+      message.error("Please fill all the fields of the last row before adding a new row");
+      return;
+    }
+    setFormData((prev) => ({
+     ...prev,
+      materialDetails: [...prev.materialDetails, {
+        materialCode: "",
+        materialDescription: "",
+        materialCategory: "",
+        materialSubCategory: "",
+        uom: "",
+        unitPrice: "",
+        currency: "",
+        totalPrice: ""
+      }],
+    }));
+  };
+
+  console.log("Formdata: ", formData);
+
   // --- Auto Populate Indentor Information Based on Login Info--
   useEffect(() => {
     setFormData({
@@ -329,10 +365,15 @@ const Indent = () => {
     });
   }, []);
 
+  useEffect(() => {
+    console.log("USEEFFECT INDENT")
+    form.setFieldsValue(formData);
+  }, [form, formData])
+
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Indent Form" />
-      <CustomForm formData={formData} onFinish={onFinish}>
+      <CustomForm formData={formData} onFinish={onFinish} customForm={form}>
         {renderFormFields(
           hydratedIndentDetails,
           handleChange,
@@ -340,7 +381,8 @@ const Indent = () => {
           "",
           null,
           setFormData,
-          handleSearch
+          handleSearch,
+          addMaterialRow
         )}
         <ButtonContainer
           onFinish={onFinish}

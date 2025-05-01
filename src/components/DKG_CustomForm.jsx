@@ -1,15 +1,21 @@
 import { Form } from "antd";
 import React, { useEffect } from "react";
 
-const DKG_CustomForm = ({ formData, onFinish, onFinishFailed, children }) => {
+const DKG_CustomForm = ({ formData, onFinish, onFinishFailed, children, customForm }) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue(formData);
-  }, [formData, form]);
+    if(customForm) {
+      console.log("USEEFFECT CUSTOM")
+      customForm.setFieldsValue(formData);
+    }
+    else{
+      form.setFieldsValue(formData);
+    }
+  }, [formData, form, customForm]);
   return (
     <Form
-      form={form}
+      form={customForm ? customForm : form}
       layout="vertical"
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}

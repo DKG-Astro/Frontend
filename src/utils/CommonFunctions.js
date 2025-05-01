@@ -8,6 +8,7 @@ import CustomSearch from "../components/CustomSearch";
 import ImageUploadBase64 from "../components/ImageUploadBas64";
 import InputDatePicker from "../components/DatePicker";
 import UploadFile from "../components/UploadFile";
+import Btn from "../components/DKG_Btn";
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -298,7 +299,7 @@ export const apiCall = async (method, url, token, payload = null) => {
     10: "md:grid-cols-10",
   };
  
-export const renderFormFields = (detail, handleChange, formData, parentName = "", index = null, setFormData, handleSearch = null) => {
+export const renderFormFields = (detail, handleChange, formData, parentName = "", index = null, setFormData, handleSearch = null, addButtonFunc = null) => {
   const handleDeleteChild = (sectionName, childIndex) => {
     if (!setFormData) {
       console.error('setFormData is required for deletion');
@@ -321,7 +322,11 @@ export const renderFormFields = (detail, handleChange, formData, parentName = ""
       {detail.map((section, sectionIndex) => (
         <div key={sectionIndex} className="mb-4">
           <h1 className="font-semibold">{section?.heading}</h1>
-          
+          {
+            section?.addButton && (
+              <Btn onClick={addButtonFunc} className="border-darkBlue hover:bg-darkBlueHover text-darkBlue hover:text-darkBlueHover">ADD MORE</Btn>
+            )
+          }
           {section?.fieldList ? (
             <div className={`grid md:gap-x-4 md:gap-y-2 ${colClasses[section.colCnt] || "md:grid-cols-3"}`}>
               {section.fieldList.map((field, fieldIndex) => {
