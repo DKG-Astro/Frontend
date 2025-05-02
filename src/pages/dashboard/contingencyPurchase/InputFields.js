@@ -110,7 +110,7 @@ export const CpDetails = [
         type: "text",
         span: 2,
       },
-      {
+     /* {
         name: "modeOfProcurement",
         label: "Mode of Procurement",
         type: "select",
@@ -137,7 +137,7 @@ export const CpDetails = [
             label: "Global Tender",
           },
         ],
-      },
+      },*/
       
       {
         name: "totalPrice",
@@ -175,12 +175,12 @@ export const CpDetails = [
         label: "Remarks For Purchase",
         type: "text",
       },
-      {
+   /*   {
         name: "amountToBePaid",
         label: "Amount to be Paid",
         type: "text",
         required: true,
-      },
+      },*/
       {
         name: "predefinedPurchaseStatement",
         label: "Purchase Statement",

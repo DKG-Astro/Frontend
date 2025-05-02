@@ -111,11 +111,16 @@ const ContingencyPurchase = () => {
           } else if (field === 'quantity' || field === 'unitPrice') {
             const quantity = field === 'quantity' ? value : updatedMaterials[index]?.quantity || 0;
             const unitPrice = field === 'unitPrice' ? value : updatedMaterials[index]?.unitPrice || 0;
-            
+            const calculateTotalPrice = quantity * unitPrice;
+            if (calculateTotalPrice > 50000) {
+              message.warning('Total price cannot exceed 50,000');
+              return prev; 
+            }
             updatedMaterials[index] = {
               ...updatedMaterials[index],
               [field]: value,
-              totalPrice: quantity * unitPrice
+             // totalPrice: quantity * unitPrice
+             totalPrice: calculateTotalPrice
             };
           } else {
             updatedMaterials[index] = {
@@ -123,7 +128,7 @@ const ContingencyPurchase = () => {
               [field]: value
             };
           }
-
+           
           return { ...prev, materialDetails: updatedMaterials };
         });
       }
