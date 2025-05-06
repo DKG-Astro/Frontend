@@ -251,6 +251,16 @@ export const apiCall = async (method, url, token, payload = null) => {
               <Select showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} {...field.props} />
             </Form.Item>
         );
+        case "multiselect":
+          return (
+            <Form.Item 
+              name={field?.name}
+              label={field?.label}
+              rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+            >
+              <Select mode="multiple" showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} {...field.props} />
+            </Form.Item>
+        );
 
         case "checkbox":
         return (

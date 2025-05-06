@@ -5,12 +5,13 @@ export const fetchMasters = createAsyncThunk(
   'masters/fetchMasters',
   async () => {
     try {
-      const [uomResponse, locationResponse, vendorResponse, materialResponse, locatorResponse] = await Promise.all([
+      const [uomResponse, locationResponse, vendorResponse, materialResponse, locatorResponse, projectResponse] = await Promise.all([
         axios.get('/api/uom-master'),
         axios.get('/api/location-master'),
         axios.get('/api/vendor-master'),
         axios.get('/api/material-master'),
-        axios.get('/api/locator-master')
+        axios.get('/api/locator-master'),
+        axios.get(`/api/project-master`)
       ]);
 
       // Extract unique categories and subcategories
@@ -24,7 +25,8 @@ export const fetchMasters = createAsyncThunk(
         vendorMaster: vendorResponse.data.responseData,
         materialMaster: materialResponse.data.responseData,
         categoryMaster: categories,
-        subCategoryMaster: subCategories
+        subCategoryMaster: subCategories,
+        projectMaster: projectResponse.data.responseData
       };
     } catch (error) {
       throw error;
@@ -42,6 +44,7 @@ const masterSlice = createSlice({
     categoryMaster: [],
     subCategoryMaster: [],
     locatorMaster: [],
+    projectMaster: [],
     loading: false,
     error: null
   },
@@ -60,6 +63,7 @@ const masterSlice = createSlice({
         state.categoryMaster = action.payload.categoryMaster;
         state.subCategoryMaster = action.payload.subCategoryMaster;
         state.locatorMaster = action.payload.locatorMaster;
+        state.projectMaster = action.payload.projectMaster
         state.error = null;
       })
       .addCase(fetchMasters.rejected, (state, action) => {

@@ -111,6 +111,7 @@ import Tender from "../dashboard/tenderRequest/Tender";
 import ContingencyPurchase from "../dashboard/contingencyPurchase/ContingencyPurchase";
 import PO from "../dashboard/purchaseOrder/PO";
 import SO from "../dashboard/serviceOrder/SO";
+import Indent1 from "../dashboard/indentCreation/Indent1";
 // import SmsRecord from "../dashboard/records/SmsRecord";
 
 const RoutesComponent = () => {
@@ -120,7 +121,6 @@ const RoutesComponent = () => {
         <Route element={<PrivateRoutes />}>
           <Route path="/" element={<LayoutWithDashboard />}>
             <Route index element={<Dashboard />} />
-            {/* <Route path="/record/sms" element={<SmsRecord />} /> */}
 
             <Route path="/dashboard" element={<MainDashboard/>} />
             <Route path="/queue" element={<QueueTable/>}/>
@@ -130,6 +130,7 @@ const RoutesComponent = () => {
                 <Route path="indent">
                     <Route path="creation" element={<Form1 />} />
                     <Route path="temp" element={<Indent />} />
+                    <Route path="temp1" element={<Indent1 />} />
                     <Route path="modification" element={<Form3 />} />
                 </Route>
                 <Route path="tender">
@@ -155,6 +156,7 @@ const RoutesComponent = () => {
                 <Route path="vendorContract" element={<VendorContract />} />
                 <Route path="procurementActivity" element={<ProcurementActivityReport />} />
             </Route>
+
             <Route path="/invReports" element={<InvReportsMain />}>
                 <Route path="goodsIssue" element={<GoodsIssueReport />} />
                 <Route path="igp" element={<IgpReport />} />
