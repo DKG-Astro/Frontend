@@ -202,14 +202,16 @@ const Indent1 = () => {
                 },
                 {
                     name: "unitPrice",
-                    label: "Unit Price",
+                    label: "Unit Price inclusive of all taxes, duties and free door delivery",
                     type: "text",
+                    required: true
                     // disabled: true
                 },
                 {
                     name: "currency",
                     label: "Currency",
                     type: "text",
+                    required: true,
                     disabled: true
                 },
                 {
@@ -244,21 +246,21 @@ const Indent1 = () => {
             fieldList: [
                 {
                     name: "uploadingPriorApprovalsFileName",
-                    label: "Uploading Prior Approvals",
+                    label: "Upload Prior Approvals if any",
                     type: "multiImage",
-                    required: true
+                    
                 },
                 {
                     name: "technicalSpecificationsFileName",
-                    label: "Uploading Technical Specifications",
+                    label: "Upload Technical Specifications/ Budgetary Quote",
                     type: "multiImage",
-                    required: true
+                    
                 },
                 {
                     name: "draftEOIOrRFPFileName",
-                    label: "Upload draft EOI or RFP",
+                    label: "Draft EOI/RFP",
                     type: "multiImage",
-                    required: true
+                    
                 },
                 {
                     name: "quarter",
@@ -311,10 +313,26 @@ const Indent1 = () => {
                 },
                 ...(formData.buyBack ? [{
                     name: "uploadBuyBackFileNames",
-                    label: "Upload Buy Back File Name",
+                    label: "Upload Buy Back File",
                     type: "multiImage",
                     required: true
-                }] : []),
+                },{
+                    name: "modelNumber",
+                    label: "Model Number",
+                    type: "text",
+                    required: true,
+                },{
+                    name: "serialNumber",
+                    label: "Serial Number",
+                    type: "text",
+                    required: true,
+                },{
+                    name: "dateOfPurchase",
+                    label: "Date Of Purchase",
+                    type: "date",
+                    required: true,
+                }
+            ] : []),
                 {
                     name: "brandPac",
                     type: "checkbox",
@@ -324,32 +342,37 @@ const Indent1 = () => {
                     name: "uploadPACOrBrandPACFileName",
                     label: "Upload PAC/Brand PAC File Name",
                     type: "multiImage",
+                    required: true,
                 }, {
                     name: "brandAndModel",
                     label: "Brand and Model",
                     type: "text",
+                    required: true,
                 },
                 {
                     name: "justification",
                     label: "It is known that as per the Rule 144 of GFR, where in the Fundamental principles of public buying states that the description of the subject matter of procurement to the extent practicable should not indicate a requirement for a particular trade mark, trade name or brand. However in the subject requirement, it is required to prefer the above mentioned brand for the following reasons:",
                     type: "text",
                     placeholder: "Declaration",
+                    required: true,
                     span: 2
                 }
                 ] : []),
                 {
                     name: "isPreBidMeetingRequired",
                     type: "checkbox",
-                    label: "Is Pre Bid Meeting Required",
+                    label: "Pre-Bid Meeting Required?",
                 },
                 ...(formData.isPreBidMeetingRequired ? [{
                     name: "preBidMeetingDate",
-                    label: "Pre Bid Meeting Date",
+                    label: "Tentative Meeting Date",
                     type: "date",
+                    required: true,
                 }, {
                     name: "preBidMeetingVenue",
-                    label: "Pre Bid Meeting Venue",
+                    label: "Tentative Meeting Location",
                     type: "select",
+                    required: true,
                     options: locationDropdown,
                 }
                 ] : []),
@@ -363,16 +386,19 @@ const Indent1 = () => {
                         name: "estimatedRate",
                         label: "Estimated Rate",
                         type: "text",
+                        required:true,
                     },
                     {
                         name: "periodOfContract",
-                        label: "Period of Contract",
+                        label: "Contract Period (Months)",
                         type: "text",
+                        required:true,
                     },
                     {
                         name: "singleAndMultipleJob",
-                        label: "Single or Multiple Job",
+                        label: "Job Type",
                         type: "select",
+                        required:true,
                         options: [
                             {
                                 label: "Single",
