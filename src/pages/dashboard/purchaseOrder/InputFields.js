@@ -32,11 +32,16 @@ export const PoDetails = [
           required: true,
           span: 2
         },
-        {
+      /*  {
             name: "deliveryPeriod",
             label: "Delivery Period",
             type: "text",
             required: true
+        }*/{
+          name:"deliveryDate",
+          label:"Delivery Date",
+          type:"date",
+          required:true
         }
       ]
     },

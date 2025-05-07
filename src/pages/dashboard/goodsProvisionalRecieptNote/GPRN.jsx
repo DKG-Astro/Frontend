@@ -98,7 +98,7 @@ const GPRN = () => {
         consigneeDetail: data?.responseData?.consignesAddress,
         materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
-        deliveryDate: dayjs().format('DD/MM/YYYY'),
+        deliveryDate: data?.responseData?.deliveryDate || "", 
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
       })
     }
