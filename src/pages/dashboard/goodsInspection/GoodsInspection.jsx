@@ -109,7 +109,14 @@ const GoodsInspection = () => {
                 disabled: true, //optional
                 required: true, // option
                 span: 2
-            },
+            },{
+              name: "poId",
+              label: "PO Id.",
+              type: "text",
+              disabled: true,
+              
+              // required: true
+          },
             {
                 name: "giNo",
                 label: "Gi No.",

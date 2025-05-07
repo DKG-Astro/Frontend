@@ -96,7 +96,7 @@ const GPRN = () => {
         project: data?.responseData?.projectName || "N/A",
         indentorName: indentData?.responseData?.indentorName,
         consigneeDetail: data?.responseData?.consignesAddress,
-        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity })),
+        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: dayjs().format('DD/MM/YYYY'),
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
@@ -310,9 +310,11 @@ const GPRN = () => {
         },
         {
           name: "quantityDelivered",
-          label: "Quantity Delivered",
+          label: "Quantity Already Delivered",
           type: "text",
-          required: true
+          span:2,
+          required: true,
+          disabled:true,
         },
         {
           name: "receivedQuantity",
