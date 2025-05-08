@@ -44,75 +44,54 @@ const Tender = () => {
 
   });
   
-  // ... existing code ...
-
+  
   useEffect(() => {
-    const fetchAllData = async () => {
-      setLoading(true);
-      try {
-        // 1. Fetch used indent IDs
-        const tenderResponse = await axios.get("/api/tender-requests");
-        const tenderData = tenderResponse.data;
-        const allUsedIndents = (tenderData.responseData || []).flatMap(
-          (tender) => tender.indentIds?.map(String) || []
-        );
-        setUsedIndentIds(new Set(allUsedIndents));
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      // Fetch approved indents first
+      const approvedResponse = await axios.get("/approved-indents");
+      console.log("Approved IDs response:", approvedResponse.data);
 
-        const [approvedResponse, indentsResponse] = await Promise.all([
-          axios.get("/approved-indents"),
-          axios.get("/api/indents"),
-        ]);
+      // Fetch locations
+      const locationsResponse = await axios.get("/api/location-master");
+      setConsigneeOptions(
+        (locationsResponse.data.responseData || []).map((location) => ({
+          value: location.locationCode,
+          label: location.locationName,
+        }))
+      );
 
-        console.log("Approved IDs response:", approvedResponse.data);
-        console.log("All indents response:", indentsResponse.data);
+      // Set approved indents as options for the dropdown
+      const approvedIds = approvedResponse.data?.responseData || [];
+      setApprovedIndents(
+        approvedIds.map((indent) => ({
+          label: `${indent.indentId} - ${indent.projectName}`,
+          value: indent.indentId,
+          projectName: indent.projectName,
+        }))
+      );
+    } catch (error) {
+      message.error("Failed to load dropdown data");
+      console.error("Dropdown fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const approvedIds = approvedResponse.data?.responseData || [];
-        const allIndents = indentsResponse.data?.responseData || [];
+  fetchAllData();
+}, []);
 
-        
-        const filteredIndents = allIndents.filter((indent) => {
-          const isApproved = approvedIds.some(
-            (approvedId) => String(approvedId) === String(indent.indentId)
-          );
-          console.log(
-            `Match check: ${approvedIds.join(",")} vs ${
-              indent.indentId
-            } -> ${isApproved}`
-          );
-          return isApproved;
-        });
-
-        console.log("Filtered approved indents:", filteredIndents);
-
-       // setApprovedIndents(filteredIndents.map((indent) => ({label: indent.indentId + ": " + indent.projectName, value: indent.indentId})));
-       setApprovedIndents(filteredIndents.map((indent) => ({
-        label: `${indent.indentId} - ${indent.projectName}`,
-        value: indent.indentId,
-        projectName: indent.projectName
-      })));
-      
-        const locationsResponse = await axios.get("/api/location-master");
-        setConsigneeOptions(
-          (locationsResponse.data.responseData || []).map((location) => ({
-            value: location.locationCode,
-            label: location.locationName,
-          }))
-        );
-      } catch (error) {
-        message.error("Failed to load dropdown data");
-        console.error("Dropdown fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAllData();
-  }, []);
-
+  
+  
+  // Now, your indentOptions will use the updated project names:
   const indentOptions = approvedIndents.map((indent) => ({
     value: indent.indentId,
     label: `Indent ${indent.indentId} (${indent.projectName})`,
   }));
+  
   console.log("Indent Dropdown Options:", indentOptions);
+  
   const formatMaterial = (material) => ({
     materialCode: material.materialCode,
     materialDescription: material.materialDescription,
@@ -122,45 +101,12 @@ const Tender = () => {
     budgetCode: material.budgetCode,
     totalPrice: material.totalPrice,
     materialCategory: material.materialCategory,
-    currency: material.currency,
+   // currency: material.currency,
     materialSubCategory: material.materialSubCategory,
     modeOfProcurement: material.modeOfProcurement,
     vendorNames: material.vendorNames,
   });
-  /*
-  useEffect(() => {
-    const fetchMaterialDetails = async () => {
-      const selectedIndentIds = formData.indentId;
-      if (!selectedIndentIds || selectedIndentIds.length === 0) return;
-  
-      try {
-        const allMaterials = [];
-  
-        for (const id of selectedIndentIds) {
-          const res = await axios.get(`/api/indents/${id}`);
-          const indentData = res.data?.responseData;
-  
-          if (indentData?.materialDetails) {
-            allMaterials.push(...indentData.materialDetails);
-          }
-        }
-  
-        const formattedMaterials = allMaterials.map(formatMaterial);
-  
-        setFormData((prev) => ({
-          ...prev,
-          materialDetails: formattedMaterials,
-        }));
-  
-        form.setFieldsValue({ materialDetails: formattedMaterials });
-  
-      } catch (err) {
-        console.error("Failed to fetch materials for indent", err);
-      }
-    };
-  
-    fetchMaterialDetails();
-  }, [formData.indentId]);*/
+ 
   
   const handleIndentSearch = async (indentIds) => {
     try {
@@ -182,12 +128,12 @@ const Tender = () => {
         uom: material.uom,
         quantity: material.quantity,
         unitPrice: material.unitPrice,
-        currency: material.currency,
+       // currency: material.currency,
         materialCategory: material.materialCategory,
         materialSubCategory: material.materialSubCategory,
         budgetCode: material.budgetCode,
         totalPrice: material.totalPrice,
-        modeOfProcurement:material.modeOfProcurement,
+        modeOfProcurement: material.modeOfProcurement,
         vendorNames: material.vendorNames,
       }));
   
@@ -266,20 +212,23 @@ const Tender = () => {
   });
 
   const onFinish = async () => {
+    const { materialDetails, indentMaterials, ...filteredData } = formData;
+  
     const payload = {
-      ...formData,
+      ...filteredData,
       createdBy: userId,
       lastUpdatedBy: userId,
+      fileType:"Tender",
     };
-
+  
     try {
       setSubmitBtnLoading(true);
-      const { data } = await axios.post("api/tenders", payload, {
+      const { data } = await axios.post("/api/tender-requests", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
       if (data?.responseData?.tenderId) {
         setGeneratedTenderId(data.responseData.tenderId);
         setIsPrintEnabled(true);
@@ -293,6 +242,7 @@ const Tender = () => {
       setSubmitBtnLoading(false);
     }
   };
+  
 
 
 
@@ -303,7 +253,7 @@ const Tender = () => {
       colCnt: 4,
       fieldList: [
         {
-          name: "title",
+          name: "titleOfTender",
           label: "Title of the Tender",
           type: "text",
           required: true,
@@ -390,8 +340,9 @@ const Tender = () => {
           label: "Unit Price",
           disabled: true,
           type: "text",
+          span:1
         },
-        {
+       /* {
           name: "currency",
           label: "Currency",
           disabled: true,
@@ -399,14 +350,14 @@ const Tender = () => {
           required: true,
           span: 1,
           disabled: true,
-        },
+        }*/,
         {
           name: "budgetCode",
           label: "Budget Code",
           type: "select",
           required: true,
           disabled: true,
-          span: 3,
+          span: 2,
           options: [],
         },
         {
@@ -440,8 +391,8 @@ const Tender = () => {
           options: [],
         },
         {
-          name: "vendorName",
-          label: "Vendor Name",
+          name: "vendorNames",
+          label: "Vendor Codes",
           disabled: true,
           type: "text",
           span: 2,
@@ -456,20 +407,23 @@ const Tender = () => {
         {
           name: "uploadTenderDocuments",
           label: "Tender Documents",
-          type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+         // type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+          type: "multiImage",
           span: 1
         },
         {
           name: "uploadGeneralTermsAndConditions",
           label: "General Terms & Conditions",
-          type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+        //  type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+          type: "multiImage",
           required: true,
           span: 1
         },
         {
           name: "uploadSpecificTermsAndConditions",
           label: "Specific Terms & Conditions",
-          type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+          //type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
+          type: "multiImage",
           span: 1
         }
       ]
@@ -517,7 +471,7 @@ const Tender = () => {
           span: 1
         },
         {
-          name: "consigneeAddress",
+          name: "consignes",
           label: "Consignee Address",
           type: "select",
           required: true,
@@ -552,13 +506,13 @@ const Tender = () => {
           required: true,
           span: 1
         },
-        {
+       /* {
           name: "applicablePerformance",
           label: "Performance Security",
           type: "text",
           required: true,
           span: 1
-        }
+        }*/
       ]
     },
     {
@@ -566,7 +520,7 @@ const Tender = () => {
       colCnt: 2,
       fieldList: [
         {
-          name: "bidSecurity",
+          name: "bidSecurityDeclaration",
           label: "Bid Security Declaration",
           type: "checkbox", //should be a checkbox field (true or false)
           span: 1
