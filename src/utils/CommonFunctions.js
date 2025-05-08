@@ -291,7 +291,24 @@ export const apiCall = async (method, url, token, payload = null) => {
                 />
             </Form.Item>
         );
-
+        case "multiselect":
+        return (
+              <Form.Item
+                name={field?.name}
+                label={field?.label}
+                rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+              >
+              <Select
+              mode="multiple"
+              showSearch
+              options={field?.options}
+              disabled={field?.disabled}
+              onChange={(val) => handleChange(field?.name, val)}  // Ensure 'val' is an array
+              value={formData[field?.name] || []} // Ensure default value is an empty array
+              {...field.props}
+              />
+            </Form.Item>
+             );
       default:
         throw new Error("Provided field type doesn't exist.");
     }

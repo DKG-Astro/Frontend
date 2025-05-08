@@ -187,7 +187,8 @@ const ContingencyPurchase = () => {
     budgetCode: material.budgetCode,
     materialCategory: material.materialCategory,
     materialSubCategory: material.materialSubCategory,
-    currency: material.currency
+    currency: material.currency,
+    gst: material.gst,
   }));
 
   const payload = {
@@ -253,7 +254,7 @@ const handleSearch = async (value) => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
-  const addMaterialRow = () => {
+ /* const addMaterialRow = () => {
     const materialDetails = formData.materialDetails;
     const lastMaterial = materialDetails[materialDetails.length - 1];
   
@@ -283,7 +284,53 @@ const handleSearch = async (value) => {
           unitPrice: "",
           quantity: "",
           currency: "",
-          totalPrice: ""
+          totalPrice: "",
+        }
+      ]
+    }));
+  };
+  */
+  const addMaterialRow = () => {
+    const materialDetails = formData.materialDetails;
+  
+    // Allow adding the first row if materialDetails is empty
+    if (!Array.isArray(materialDetails)) {
+      message.error("Material details are not initialized properly.");
+      return;
+    }
+  
+    if (materialDetails.length > 0) {
+      const lastMaterial = materialDetails[materialDetails.length - 1];
+  
+      if (
+        !lastMaterial.materialCode &&
+        !lastMaterial.materialCategory &&
+        !lastMaterial.materialSubCategory &&
+        !lastMaterial.uom &&
+        !lastMaterial.unitPrice &&
+        !lastMaterial.currency &&
+        !lastMaterial.totalPrice
+      ) {
+        message.error("Please fill all the fields of the last row before adding a new row");
+        return;
+      }
+    }
+  
+    setFormData(prev => ({
+      ...prev,
+      materialDetails: [
+        ...(prev.materialDetails || []),
+        {
+          materialCode: "",
+          materialDescription: "",
+          materialCategory: "",
+          materialSubCategory: "",
+          uom: "",
+          unitPrice: "",
+          quantity: "",
+          currency: "",
+          totalPrice: "",
+          gst: "", 
         }
       ]
     }));

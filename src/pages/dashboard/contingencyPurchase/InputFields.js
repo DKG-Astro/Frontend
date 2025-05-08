@@ -80,6 +80,13 @@ export const CpDetails = [
       disabled: true,
     },
     {
+      name: "gst",
+      label: "Gst",
+      type: "text",
+      required: true,
+      span: 1,
+    },
+    {
       name: "budgetCode",
       label: "Budget Code",
       type: "select",

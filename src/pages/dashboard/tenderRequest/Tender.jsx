@@ -10,6 +10,7 @@ import { renderFormFields } from "../../../utils/CommonFunctions";
 import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { TenderDetails } from "./InputFields";
+import { multiply } from "lodash";
 
 const { Option } = Select;
 
@@ -28,13 +29,21 @@ const Tender = () => {
   const [approvedIndents, setApprovedIndents] = useState([]);
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescOptions, setMaterialDescOptions] = useState([]);
+  const [selectedProjectName, setSelectedProjectName] = useState(null);
+
 
   const { userName, email, mobileNumber, token, userId } = useSelector(
     (state) => state.auth
   );
 
-  const [formData, setFormData] = useState({});
+  //const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    indentId: [],  
+    materialDetails: [],
+    billingAddress: "Koramangala, 2nd Block, Bangalore -560034",
 
+  });
+  
   // ... existing code ...
 
   useEffect(() => {
@@ -49,21 +58,18 @@ const Tender = () => {
         );
         setUsedIndentIds(new Set(allUsedIndents));
 
-        // 2. Fetch approved indent IDs and full indent data
-        // In the fetchAllData effect
         const [approvedResponse, indentsResponse] = await Promise.all([
           axios.get("/approved-indents"),
           axios.get("/api/indents"),
         ]);
 
-        // Add debug logging for API responses
         console.log("Approved IDs response:", approvedResponse.data);
         console.log("All indents response:", indentsResponse.data);
 
         const approvedIds = approvedResponse.data?.responseData || [];
         const allIndents = indentsResponse.data?.responseData || [];
 
-        // Add type coercion for comparison
+        
         const filteredIndents = allIndents.filter((indent) => {
           const isApproved = approvedIds.some(
             (approvedId) => String(approvedId) === String(indent.indentId)
@@ -78,9 +84,13 @@ const Tender = () => {
 
         console.log("Filtered approved indents:", filteredIndents);
 
-        setApprovedIndents(filteredIndents.map((indent) => ({label: indent.indentId + ": " + indent.indentorName, value: indent.indentId})));
-
-        // 3. Fetch consignee addresses
+       // setApprovedIndents(filteredIndents.map((indent) => ({label: indent.indentId + ": " + indent.projectName, value: indent.indentId})));
+       setApprovedIndents(filteredIndents.map((indent) => ({
+        label: `${indent.indentId} - ${indent.projectName}`,
+        value: indent.indentId,
+        projectName: indent.projectName
+      })));
+      
         const locationsResponse = await axios.get("/api/location-master");
         setConsigneeOptions(
           (locationsResponse.data.responseData || []).map((location) => ({
@@ -98,67 +108,142 @@ const Tender = () => {
     fetchAllData();
   }, []);
 
-  // Format options correctly
   const indentOptions = approvedIndents.map((indent) => ({
     value: indent.indentId,
     label: `Indent ${indent.indentId} (${indent.projectName})`,
   }));
   console.log("Indent Dropdown Options:", indentOptions);
-
+  const formatMaterial = (material) => ({
+    materialCode: material.materialCode,
+    materialDescription: material.materialDescription,
+    quantity: material.quantity,
+    unitPrice: material.unitPrice,
+    uom: material.uom,
+    budgetCode: material.budgetCode,
+    totalPrice: material.totalPrice,
+    materialCategory: material.materialCategory,
+    currency: material.currency,
+    materialSubCategory: material.materialSubCategory,
+    modeOfProcurement: material.modeOfProcurement,
+    vendorNames: material.vendorNames,
+  });
+  /*
   useEffect(() => {
     const fetchMaterialDetails = async () => {
-      const selectedIndents = formData.indentId;
-      if (!selectedIndents || selectedIndents.length === 0) return;
-
+      const selectedIndentIds = formData.indentId;
+      if (!selectedIndentIds || selectedIndentIds.length === 0) return;
+  
       try {
-        const res = await axios.get(`/api/indents/${selectedIndents[0]}`);
-        const materials = res.data.responseData.materialDetails;
-
-        // You can store them in state or inject into formData if needed
-        console.log("Fetched materials:", materials);
+        const allMaterials = [];
+  
+        for (const id of selectedIndentIds) {
+          const res = await axios.get(`/api/indents/${id}`);
+          const indentData = res.data?.responseData;
+  
+          if (indentData?.materialDetails) {
+            allMaterials.push(...indentData.materialDetails);
+          }
+        }
+  
+        const formattedMaterials = allMaterials.map(formatMaterial);
+  
+        setFormData((prev) => ({
+          ...prev,
+          materialDetails: formattedMaterials,
+        }));
+  
+        form.setFieldsValue({ materialDetails: formattedMaterials });
+  
       } catch (err) {
         console.error("Failed to fetch materials for indent", err);
       }
     };
-
+  
     fetchMaterialDetails();
-  }, [formData.indentId]);
-
-  const handleIndentSearch = async (indentId) => {
+  }, [formData.indentId]);*/
+  
+  const handleIndentSearch = async (indentIds) => {
     try {
-      const res = await axios.get(`/api/indents/${indentId}`);
-      const indentData = res.data?.responseData;
-
-      if (indentData?.materialDetails) {
-        setFormData((prev) => ({
-          ...prev,
-          materialDetails: indentData.materialDetails.map((material) => ({
-            materialCode: material.materialCode,
-            materialDescription: material.materialDescription,
-            uom: material.uom,
-            quantity: material.quantity,
-            unitPrice: material.unitPrice,
-            currency: material.currency,
-            materialCategory: material.materialCategory,
-            materialSubCategory: material.materialSubCategory,
-          })),
-        }));
+      const allMaterials = [];
+  
+      // Loop through all selected indent IDs
+      for (const id of indentIds) {
+        const res = await axios.get(`/api/indents/${id}`);
+        const indentData = res.data?.responseData;
+  
+        if (indentData?.materialDetails) {
+          allMaterials.push(...indentData.materialDetails);
+        }
       }
+  
+      const formattedMaterials = allMaterials.map((material) => ({
+        materialCode: material.materialCode,
+        materialDescription: material.materialDescription,
+        uom: material.uom,
+        quantity: material.quantity,
+        unitPrice: material.unitPrice,
+        currency: material.currency,
+        materialCategory: material.materialCategory,
+        materialSubCategory: material.materialSubCategory,
+        budgetCode: material.budgetCode,
+        totalPrice: material.totalPrice,
+        modeOfProcurement:material.modeOfProcurement,
+        vendorNames: material.vendorNames,
+      }));
+  
+      // Update formData with the fetched material details
+      setFormData((prev) => ({
+        ...prev,
+        materialDetails: formattedMaterials,
+      }));
+  
+      form.setFieldsValue({ materialDetails: formattedMaterials });
+  
     } catch (err) {
       console.error("Failed to fetch materials for indent", err);
       message.error("Failed to load indent materials");
     }
   };
-
+  
+  
+  /*
   const handleChange = (fieldName, value) => {
     if (fieldName === "indentId") {
       setFormData((prev) => ({ ...prev, [fieldName]: value }));
-      handleIndentSearch(value[0]); // Assuming single select
+      handleIndentSearch(value); // value is now an array, it should be passed directly
       return;
     }
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
+  };*/
+  const handleChange = (fieldName, value) => {
+    if (fieldName === "indentId") {
+      const selectedIndents = approvedIndents.filter(indent =>
+        value.includes(indent.value)
+      );
+  
+      const projectNames = [...new Set(selectedIndents.map(i => i.projectName))];
+  
+      if (projectNames.length > 1) {
+        message.error("All selected indents must be under the same project");
+        return;
+      }
+  
+      if (!selectedProjectName || projectNames[0] === selectedProjectName) {
+        setSelectedProjectName(projectNames[0]);
+        setFormData(prev => ({ ...prev, [fieldName]: value }));
+        handleIndentSearch(value);
+      } else {
+        message.error(`Selected indent belongs to a different project: ${projectNames[0]}`);
+      }
+  
+      return;
+    }
+  
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
-
+  
+  
+  
   const handleSearch = async () => {
     if (!searchTenderId) {
       message.error("Please enter a Tender ID");
@@ -247,9 +332,11 @@ const Tender = () => {
           {
               name: "indentId",
               label: "Select Indent ID",
-              type: "select", // or "select" if single-select
+              type: "multiselect", // or "select" if single-select
+              mode: "multiple",
               required: true,
               options: approvedIndents, // This will be overridden dynamically
+              onChange: (val) => handleChange("indentId", val), 
             },          
       ]
     },
@@ -265,8 +352,9 @@ const Tender = () => {
           type: "select",
           span: 2,
           required: true,
-          options: [], // Will be populated from API data
+        //  options: [], // Will be populated from API data
           showSearch: true,
+          disabled: true,
           filterOption: (input, option) =>
             option.label.toLowerCase().includes(input.toLowerCase()),
         },
@@ -279,6 +367,7 @@ const Tender = () => {
           span: 3,
           options: [], // Will be populated from API data
           showSearch: true,
+          disabled: true,
           filterOption: (input, option) =>
             option.label.toLowerCase().includes(input.toLowerCase()),
           required: true,
@@ -287,6 +376,7 @@ const Tender = () => {
           name: "uom",
           label: "UOM",
           type: "text",
+          disabled: true,
           required: true,
           disabled: true,
         },
@@ -298,11 +388,13 @@ const Tender = () => {
         {
           name: "unitPrice",
           label: "Unit Price",
+          disabled: true,
           type: "text",
         },
         {
           name: "currency",
           label: "Currency",
+          disabled: true,
           type: "text",
           required: true,
           span: 1,
@@ -313,6 +405,7 @@ const Tender = () => {
           label: "Budget Code",
           type: "select",
           required: true,
+          disabled: true,
           span: 3,
           options: [],
         },
@@ -320,6 +413,7 @@ const Tender = () => {
           name: "totalPrice",
           label: "Total Price",
           type: "text",
+          disabled: true,
           span: 2,
           disabled: true,
         },
@@ -327,24 +421,28 @@ const Tender = () => {
           name: "materialCategory",
           label: "Material Category",
           type: "text",
+          disabled: true,
           span: 2,
         },
         {
           name: "materialSubCategory",
           label: "Material Sub Category",
           type: "text",
+          disabled: true,
           span: 2,
         },
         {
           name: "modeOfProcurement",
           label: "Mode of Procurement",
           type: "select",
+          disabled: true,
           span: 3,
           options: [],
         },
         {
           name: "vendorName",
           label: "Vendor Name",
+          disabled: true,
           type: "text",
           span: 2,
           // required: true,
@@ -431,7 +529,8 @@ const Tender = () => {
           type: "text",
           required: true,
           span: 1,
-          // defaultValue should be "Koramangala, 2nd Block, Bangalore -560034"
+          disabled:true,
+          //defaultValue:"Koramangala, 2nd Block, Bangalore -560034"
         }
       ]
     },
@@ -469,13 +568,13 @@ const Tender = () => {
         {
           name: "bidSecurity",
           label: "Bid Security Declaration",
-          type: "text", //should be a checkbox field (true or false)
+          type: "checkbox", //should be a checkbox field (true or false)
           span: 1
         },
         {
           name: "mllStatusDeclaration",
           label: "MLL Status Declaration",
-          type: "text", // should be a checkbox field (true or false)
+          type: "checkbox", // should be a checkbox field (true or false)
           span: 1
         }
       ]
