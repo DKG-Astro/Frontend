@@ -64,13 +64,17 @@ const Tender = () => {
 
       // Set approved indents as options for the dropdown
       const approvedIds = approvedResponse.data?.responseData || [];
-      setApprovedIndents(
-        approvedIds.map((indent) => ({
-          label: `${indent.indentId} - ${indent.projectName}`,
-          value: indent.indentId,
-          projectName: indent.projectName,
-        }))
+     setApprovedIndents(
+        (approvedIds || [])
+          .filter(indent => indent.indentId && indent.projectName)
+          .map(indent => ({
+            label: `${indent.indentId} - ${indent.projectName}`,
+            value: indent.indentId,
+            projectName: indent.projectName,
+          }))
       );
+       
+      
     } catch (error) {
       message.error("Failed to load dropdown data");
       console.error("Dropdown fetch error:", error);
@@ -83,12 +87,13 @@ const Tender = () => {
 }, []);
 
   
-  
+ 
   // Now, your indentOptions will use the updated project names:
   const indentOptions = approvedIndents.map((indent) => ({
     value: indent.indentId,
     label: `Indent ${indent.indentId} (${indent.projectName})`,
   }));
+
   
   console.log("Indent Dropdown Options:", indentOptions);
   
@@ -416,7 +421,7 @@ const Tender = () => {
           label: "General Terms & Conditions",
         //  type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
           type: "multiImage",
-          required: true,
+        //  required: true,
           span: 1
         },
         {
@@ -561,7 +566,8 @@ const Tender = () => {
           draftDataName="tenderDraft"
           submitBtnLoading={submitBtnLoading}
           submitBtnEnabled
-          printBtnEnabled={isPrintEnabled}
+         // printBtnEnabled={isPrintEnabled}
+          printBtnEnabled
           draftBtnEnabled
           handlePrint={handlePrint}
         />
