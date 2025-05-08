@@ -64,15 +64,22 @@ const Tender = () => {
 
       // Set approved indents as options for the dropdown
       const approvedIds = approvedResponse.data?.responseData || [];
-     setApprovedIndents(
+     /*setApprovedIndents(
         (approvedIds || [])
           .filter(indent => indent.indentId && indent.projectName)
           .map(indent => ({
             label: `${indent.indentId} - ${indent.projectName}`,
             value: indent.indentId,
             projectName: indent.projectName,
-          }))
+          }))*/
+            setApprovedIndents(
+              approvedIds.map((indent) => ({
+                label: `${indent.indentId} - ${indent.projectName || ""}`,
+                value: indent.indentId,
+                projectName: indent.projectName,
+              }))
       );
+     
        
       
     } catch (error) {
@@ -421,7 +428,7 @@ const Tender = () => {
           label: "General Terms & Conditions",
         //  type: "image", //should be a multiple file upload field (.png, .jpeg, .pdf, .doc, etc. )
           type: "multiImage",
-        //  required: true,
+          required: true,
           span: 1
         },
         {
