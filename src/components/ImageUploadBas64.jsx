@@ -48,7 +48,8 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     <Form.Item
       label={label}
       name={name}
-      required={required}
+      // required={required}
+      rules={[{ required: required, message: `${label} is required` }]}
       className="mb-0"
     >
       <div className="flex flex-col gap-2">

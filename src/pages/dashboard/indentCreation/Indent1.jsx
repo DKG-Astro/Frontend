@@ -7,6 +7,9 @@ import CustomForm from '../../../components/DKG_CustomForm'
 import ButtonContainer from '../../../components/ButtonContainer'
 import { useReactToPrint } from 'react-to-print'
 import axios from 'axios'
+import CustomModal from '../../../components/CustomModal'
+
+const proprietaryLimitedDeclarationLabel = "The budgetary quote was obtained informing the vendor about:  (i) IIA's Payment Terms - 100% payment within 30 days from acceptance (ii). Applicability of providing performance & warranty security. (iii) Applicability of LD Clause."
 
 const modeOfProcurementOptions = [
     {
@@ -15,7 +18,7 @@ const modeOfProcurementOptions = [
     },
     {
         label: "Brand PAC",
-        value: "BRAND PAC"
+        value: "Brand PAC"
     },
     {
         label: "Proprietary/Single Tender",
@@ -58,18 +61,20 @@ const reasonDropdown = [
 
 const Indent1 = () => {
 
+    const { userName, mobileNumber, email, userId } = useSelector(state => state.auth)
+
     const printRef = useRef();
 
     const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
 
     const handlePrint = useReactToPrint({
         content: () => printRef.current,
-      });
+    });
 
     const [formData, setFormData] = useState({
-        indentorName: "",
-        indentorMobileNo: "",
-        indentorEmailAddress: "",
+        indentorName: userName,
+        indentorMobileNo: mobileNumber,
+        indentorEmailAddress: email,
         projectName: "",
         consignesLocation: "",
         materialDetails: [{}]
@@ -104,11 +109,19 @@ const Indent1 = () => {
 
     const budgetCodeDropdown = [...new Set(projectMaster.map(p => p.budgetType))].map(bt => ({ label: bt, value: bt }))
 
+    const [modalOpen, setModalOpen] = useState(false);
+
     const inputFields = [
         {
             heading: "Indentor Details",
             colCnt: 4,
             fieldList: [
+                {
+                    name: "indentId",
+                    label: "Indent ID",
+                    type: "text",
+                    disabled: true,
+                },
                 {
                     name: "indentorName",
                     label: "Indentor Name",
@@ -160,7 +173,7 @@ const Indent1 = () => {
                     required: true,
                     options: materialMasterState.map((item) => {
                         return {
-                            label: item.materialCode,
+                            label: item.materialCode + " - " + item.description,
                             value: item.materialCode
                         }
                     })
@@ -226,7 +239,6 @@ const Indent1 = () => {
                     name: "budgetCode",
                     label: "Budget Code",
                     type: "select",
-                    // span: 2,
                     options: budgetCodeDropdown,
                     required: true
                 },
@@ -297,19 +309,39 @@ const Indent1 = () => {
                         label: "Reason",
                         type: "select",
                         span: 2,
-                        options: reasonDropdown
+                        options: reasonDropdown,
+                        required: true
                     },
                     {
                         name: "proprietaryJustification",
                         label: "Proprietary Justification",
                         type: "text",
                         span: 2,
+                        required: true
+                    }
+                ] : []),
+                ...((selectedModeOfProcurement === "Proprietary/Single Tender" || selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") ? [
+                    {
+                        name: "proprietaryAndLimitedDeclaration",
+                        label: proprietaryLimitedDeclarationLabel,
+                        type: "text",
+                        span: 2,
+                        required: true
+
+                    },
+                    {
+                        name: "proprietaryJustification",
+                        label: "Proprietary Justification",
+                        type: "text",
+                        span: 2,
+                        required: true
                     }
                 ] : []),
                 {
                     name: "buyBack",
                     type: "checkbox",
                     label: "Buy Back",
+                    required: selectedModeOfProcurement === "Brand PAC"
                 },
                 ...(formData.buyBack ? [{
                     name: "uploadBuyBackFileNames",
@@ -336,7 +368,7 @@ const Indent1 = () => {
                 {
                     name: "brandPac",
                     type: "checkbox",
-                    label: "Is is a Brand PAC?",
+                    label: "Is a Brand PAC?",
                 },
                 ...(formData.brandPac ? [{
                     name: "uploadPACOrBrandPACFileName",
@@ -374,6 +406,7 @@ const Indent1 = () => {
                     type: "select",
                     required: true,
                     options: locationDropdown,
+                    // required: true
                 }
                 ] : []),
                 {
@@ -415,6 +448,25 @@ const Indent1 = () => {
         },
     ]
 
+    useEffect(() => {
+        if(selectedModeOfProcurement === "Brand PAC"){
+            setFormData({
+                ...formData,
+                buyBack: true
+            })
+        }
+    }, [selectedModeOfProcurement, formData])
+
+    const replaceMaterial = (prevMaterial, newMaterial) => {
+        const prevMtlrDtl = materialMaster.find((item) => item.materialCode === prevMaterial.materialCode)
+       setMaterialMasterState(prev => {
+           let newMaterialMaster = [...prev]
+           newMaterialMaster = newMaterialMaster.filter((item) => item.materialCode !== newMaterial.materialCode)
+           newMaterialMaster.push(prevMtlrDtl)
+           return newMaterialMaster
+       })
+    }
+
     const handleChange = (fieldName, value) => {
         if (typeof fieldName === "string") {
             setFormData({
@@ -429,15 +481,21 @@ const Indent1 = () => {
         const index = fieldName[1]
 
         if (name === "materialCode") {
+            const prevMaterialCode = formData.materialDetails[index]?.materialCode || null;
             const material = materialMasterState.find((item) => item.materialCode === value)
-            handleMaterialSelect(material)
+            if(prevMaterialCode){
+                replaceMaterial(formData.materialDetails[index], material)
+            }
+            else{
+                handleMaterialSelect(material)
+            }
             const { materialDetails } = formData;
             materialDetails[index].materialCode = value
             materialDetails[index].materialDescription = material.description
             materialDetails[index].materialCategory = material.category
             materialDetails[index].materialSubCategory = material.subCategory
             materialDetails[index].uom = material.uom
-            materialDetails[index].quantity = 1
+            materialDetails[index].quantity = ""
             materialDetails[index].unitPrice = material.unitPrice
             materialDetails[index].currency = material.currency
 
@@ -457,90 +515,122 @@ const Indent1 = () => {
                 materialDetails: updatedMaterialDetails
             })
         }
+        else {
+            const { materialDetails } = formData;
+            materialDetails[index][name] = value
+            setFormData({
+                ...formData,
+                materialDetails: materialDetails
+            })
+        }
     }
 
     const handleMaterialSelect = (material) => {
+        console.log("MATERIAL SELECT :", materialMasterState)
         const { materialCode, category } = material
-        console.log("CIDHDL ", materialCode, category)
         const newMaterialMasterState = materialMasterState.filter((item) => {
-            // Keep only materials that:
-            // 1. Have the same category as selected material AND
-            // 2. Are not the selected material itself
             return item.category === category && item.materialCode !== materialCode
         })
         setMaterialMasterState(newMaterialMasterState)
     }
 
-    const handleMaterialDeselect = (material) => {
-        setMaterialMasterState([...materialMasterState, material])
+    const handleMaterialDeselect = (index) => {
+        const { materialDetails } = formData;
+        const material = materialDetails[index]
+
+        if (material.materialCode) {
+            if(formData.materialDetails.length === 1){
+                setMaterialMasterState(materialMaster)
+            }
+            else{
+                const newMaterialDtl = materialMaster.find((item) => item.materialCode === material.materialCode)
+                const newMaterialMasterState = [...materialMasterState, newMaterialDtl]
+                setMaterialMasterState(newMaterialMasterState)
+            }
+        }
     }
-
-
-    console.log("material master stare: ", materialMasterState)
+    console.log("Material state", materialMasterState)
 
     const onFinish = async () => {
-        console.log("CALLED")
+        if (selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") {
+            let minFourVendorSelected = true;
+
+            formData.materialDetails.forEach((item, index) => {
+                if (item.vendorNames.length < 4) {
+                    message.error("Atleast 4 vendors should be selected for Limited Pre Approved Vendor Tender.")
+                    minFourVendorSelected = false;
+                    return;
+                }
+            })
+
+            if (!minFourVendorSelected) {
+                return;
+            }
+
+        }
         const payload = {
             ...formData,
-            uploadBuyBackFileNames: formData.buyBack? formData.uploadBuyBackFileNames : null,
-            uploadPACOrBrandPACFileName: formData.brandPac? formData.uploadPACOrBrandPACFileName : null,
-            brandAndModel: formData.brandPac? formData.brandAndModel : null,
-            preBidMeetingDate: formData.isPreBidMeetingRequired? formData.preBidMeetingDate : null,
-            preBidMeetingVenue: formData.isPreBidMeetingRequired? formData.preBidMeetingVenue : null,
-            estimatedRate: formData.isItARateContractIndent? formData.estimatedRate : null,
-            periodOfContract: formData.isItARateContractIndent? formData.periodOfContract : null,
-            singleAndMultipleJob: formData.isItARateContractIndent? formData.singleAndMultipleJob : null,
-            justification: formData.brandPac? formData.justification : null,
-            reason: selectedModeOfProcurement === "Proprietarty/Single Tender" ? formData.reason : null,
-            proprietaryJustification: selectedModeOfProcurement === "Proprietarty/Single Tender"? formData.proprietaryJustification : null,
+            fileType: "Indent",
+            uploadBuyBackFileNames: formData.buyBack ? formData.uploadBuyBackFileNames : null,
+            uploadPACOrBrandPACFileName: formData.brandPac ? formData.uploadPACOrBrandPACFileName : null,
+            brandAndModel: formData.brandPac ? formData.brandAndModel : null,
+            preBidMeetingDate: formData.isPreBidMeetingRequired ? formData.preBidMeetingDate : null,
+            preBidMeetingVenue: formData.isPreBidMeetingRequired ? formData.preBidMeetingVenue : null,
+            estimatedRate: formData.isItARateContractIndent ? formData.estimatedRate : null,
+            periodOfContract: formData.isItARateContractIndent ? formData.periodOfContract : null,
+            singleAndMultipleJob: formData.isItARateContractIndent ? formData.singleAndMultipleJob : null,
+            justification: formData.brandPac ? formData.justification : null,
+            reason: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.reason : null,
+            proprietaryJustification: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.proprietaryJustification : null,
+            createdBy: userId,
         }
 
-        try{
+        try {
             setSubmitBtnLoading(true)
-            const {data} = await axios.post("/api/indents", payload)
-            message.success("Indent created successfully.")
+            const { data } = await axios.post("/api/indents", payload)
+            setFormData({
+                ...formData,
+                indentId: data?.responseData?.indentId
+            })
+            setModalOpen(true)
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             message.error(error.message || "Error submitting indent.")
         }
-        finally{
+        finally {
             setSubmitBtnLoading(false)
         }
     }
 
-    useEffect(() => {
-        if (selectedModeOfProcurement === "Proprietary/Single Tender") {
-            setFormData({
-                ...formData,
-
-            })
-        }
-    }, [])
-
-    const addMaterialFunc = ()  => {
+    const addMaterialFunc = () => {
         setFormData({
-           ...formData,
+            ...formData,
             materialDetails: [...formData.materialDetails, {}]
         })
+    }
+    const additionalFunc = {
+        "addMaterialSection": addMaterialFunc,
+        "materialDeselect": (index) => handleMaterialDeselect(index)
     }
 
     return (
         <Card className='a4-container' ref={printRef}>
             <Heading title="Indent Creation" />
             <CustomForm formData={formData} onFinish={onFinish}>
-                {renderFormFields(inputFields, handleChange, formData, "", null, setFormData, null, addMaterialFunc)}
-            <ButtonContainer
-                onFinish={onFinish}
-                formData={formData}
-                draftDataName="indentDraft"
-                submitBtnLoading={submitBtnLoading}
-                submitBtnEnabled
-                printBtnEnabled
-                draftBtnEnabled
-                handlePrint={handlePrint}
-            />
+                {renderFormFields(inputFields, handleChange, formData, "", null, setFormData, null, additionalFunc)}
+                <ButtonContainer
+                    onFinish={onFinish}
+                    formData={formData}
+                    draftDataName="indentDraft"
+                    submitBtnLoading={submitBtnLoading}
+                    submitBtnEnabled
+                    printBtnEnabled
+                    draftBtnEnabled
+                    handlePrint={handlePrint}
+                />
             </CustomForm>
+            <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Indent" processNo={formData?.indentId} />
         </Card>
     )
 }
