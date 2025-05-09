@@ -150,7 +150,7 @@ const Indent1 = () => {
                     label: "Project Name",
                     type: "select",
                     options: projectDropdown,
-                    required: true
+                  //  required: true
                 },
                 {
                     name: "consignesLocation",
@@ -372,7 +372,7 @@ const Indent1 = () => {
                 },
                 ...(formData.brandPac ? [{
                     name: "uploadPACOrBrandPACFileName",
-                    label: "Upload PAC/Brand PAC File Name",
+                    label: "Upload PAC",
                     type: "multiImage",
                     required: true,
                 }, {

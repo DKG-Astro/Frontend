@@ -18,7 +18,7 @@ export const CpDetails = [
       name: "date",
       label: "Date",
       type: "date",
-      // required: true,
+      required: true,
     },
   ],
 },

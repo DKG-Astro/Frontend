@@ -9,6 +9,8 @@ import { renderFormFields } from '../../../utils/CommonFunctions';
 import ButtonContainer from '../../../components/ButtonContainer';
 import CustomModal from '../../../components/CustomModal';
 import { CpDetails } from './InputFields';
+import { useMemo } from 'react';
+
 
 const { Option } = Select;
 
@@ -101,35 +103,42 @@ const ContingencyPurchase = () => {
           const updatedMaterials = [...prev.materialDetails];
           const materialData = materialDetailsMap[value] || {};
           const currentMaterial = updatedMaterials[index] || {};
-  
-          // Check for duplicate materialCode
-          if (field === 'materialCode') {
-            const isDuplicate = updatedMaterials.some((mat, idx) => mat.materialCode === value && idx !== index);
-            if (isDuplicate) {
-              message.warning('Material Code must be unique');
-              return prev;
-            }
-  
-            // Check for consistent materialCategory
-            const selectedCategory = materialData.materialCategory;
-            const existingCategories = updatedMaterials
-              .filter((_, idx) => idx !== index && _.materialCategory) // Exclude current index
-              .map(mat => mat.materialCategory);
+            if (field === 'materialCode' || field === 'materialDescription') {
+              const isByCode = field === 'materialCode';
+              const selectedValue = value;
             
-            const isCategoryMismatch = existingCategories.some(cat => cat !== selectedCategory);
-  
-            if (existingCategories.length && isCategoryMismatch) {
-              message.warning('All materials must belong to the same category');
-              return prev;
+              const materialData = materialDetailsMap[selectedValue] || {};
+              const newMaterialCode = isByCode ? selectedValue : materialData.materialCode;
+              const newDescription = isByCode ? materialData.materialDescription : selectedValue;
+            
+              // Check for duplicate materialCode
+              const isDuplicate = updatedMaterials.some((mat, idx) => mat.materialCode === newMaterialCode && idx !== index);
+              if (isDuplicate) {
+                message.warning('Material Code must be unique');
+                return prev;
+              }
+            
+              // Check for consistent materialCategory
+              const selectedCategory = materialData.materialCategory;
+              const existingCategories = updatedMaterials
+                .filter((_, idx) => idx !== index && _.materialCategory)
+                .map(mat => mat.materialCategory);
+            
+              const isCategoryMismatch = existingCategories.some(cat => cat !== selectedCategory);
+              if (existingCategories.length && isCategoryMismatch) {
+                message.warning('All materials must belong to the same category');
+                return prev;
+              }
+            
+              updatedMaterials[index] = {
+                ...currentMaterial,
+                materialCode: newMaterialCode,
+                materialDescription: newDescription,
+                ...materialData,
+                totalPrice: calculateTotalPrice(currentMaterial.quantity, materialData.unitPrice),
+              };
             }
-  
-            updatedMaterials[index] = {
-              ...currentMaterial,
-              [field]: value,
-              ...materialData,
-              totalPrice: calculateTotalPrice(currentMaterial.quantity, materialData.unitPrice),
-            };
-          }
+            
   
           // Quantity / Unit Price change
           else if (field === 'quantity' || field === 'unitPrice') {
@@ -254,118 +263,106 @@ const handleSearch = async (value) => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
- /* const addMaterialRow = () => {
-    const materialDetails = formData.materialDetails;
-    const lastMaterial = materialDetails[materialDetails.length - 1];
+
+  const addMaterialRow = () => {
+    console.log('Add More button clicked');
   
+    const currentMaterialDetails = formData.materialDetails || [];
+  
+    // If materialDetails is empty, allow adding the first row
+    if (currentMaterialDetails.length === 0) {
+      setFormData({
+        ...formData,
+        materialDetails: [
+          {
+            materialCode: '',
+            materialDescription: '',
+            materialCategory: '',
+            materialSubCategory: '',
+            uom: '',
+            unitPrice: '',
+            quantity: '',
+            currency: '',
+            totalPrice: '',
+            gst: '',
+          },
+        ],
+      });
+      return;
+    }
+  
+    const lastMaterial = currentMaterialDetails[currentMaterialDetails.length - 1];
+  
+    // Validate the last row is fully filled
     if (
-      !lastMaterial.materialCode &&
-      !lastMaterial.materialCategory &&
-      !lastMaterial.materialSubCategory &&
-      !lastMaterial.uom &&
-      !lastMaterial.unitPrice &&
-      !lastMaterial.currency &&
+      !lastMaterial.materialCode ||
+      !lastMaterial.materialCategory ||
+      !lastMaterial.materialSubCategory ||
+      !lastMaterial.uom ||
+      !lastMaterial.unitPrice ||
+      !lastMaterial.currency ||
       !lastMaterial.totalPrice
     ) {
       message.error("Please fill all the fields of the last row before adding a new row");
       return;
     }
   
+    // Append a new empty row
     setFormData(prev => ({
       ...prev,
       materialDetails: [
         ...prev.materialDetails,
         {
-          materialCode: "",
-          materialDescription: "",
-          materialCategory: "",
-          materialSubCategory: "",
-          uom: "",
-          unitPrice: "",
-          quantity: "",
-          currency: "",
-          totalPrice: "",
-        }
-      ]
+          materialCode: '',
+          materialDescription: '',
+          materialCategory: '',
+          materialSubCategory: '',
+          uom: '',
+          unitPrice: '',
+          quantity: '',
+          currency: '',
+          totalPrice: '',
+          gst: '',
+        },
+      ],
     }));
   };
-  */
-  const addMaterialRow = () => {
-    const materialDetails = formData.materialDetails;
   
-    // Allow adding the first row if materialDetails is empty
-    if (!Array.isArray(materialDetails)) {
-      message.error("Material details are not initialized properly.");
-      return;
-    }
-  
-    if (materialDetails.length > 0) {
-      const lastMaterial = materialDetails[materialDetails.length - 1];
-  
-      if (
-        !lastMaterial.materialCode &&
-        !lastMaterial.materialCategory &&
-        !lastMaterial.materialSubCategory &&
-        !lastMaterial.uom &&
-        !lastMaterial.unitPrice &&
-        !lastMaterial.currency &&
-        !lastMaterial.totalPrice
-      ) {
-        message.error("Please fill all the fields of the last row before adding a new row");
-        return;
-      }
-    }
-  
-    setFormData(prev => ({
-      ...prev,
-      materialDetails: [
-        ...(prev.materialDetails || []),
-        {
-          materialCode: "",
-          materialDescription: "",
-          materialCategory: "",
-          materialSubCategory: "",
-          uom: "",
-          unitPrice: "",
-          quantity: "",
-          currency: "",
-          totalPrice: "",
-          gst: "", 
-        }
-      ]
-    }));
-  };
   
 
   useEffect(()=>{
     populateDropdowns();
   },[]);
 
-const hydratedCpDetails = CpDetails.map(section => {
-  if (section.fieldList) {
-    return {
-      ...section,
-      fieldList: section.fieldList.map(field => {
-        if (field.name === 'projectName') return { ...field, options: projects };
-        if (field.name === 'vendorName') return { ...field, options: vendors };
-        return field;
-      })
-    };
-  }
+const hydratedCpDetails = useMemo(() => {
+  return CpDetails.map(section => {
+    if (section.fieldList) {
+      return {
+        ...section,
+        fieldList: section.fieldList.map(field => {
+          if (field.name === 'projectName') return { ...field, options: projects };
+          if (field.name === 'vendorName') return { ...field, options: vendors };
+          return field;
+        })
+      };
+    }
 
-  if (section.children) {
-    return {
-      ...section, //  This preserves addButton and other properties
-      children: section.children.map(child => {
-        if (child.name === 'materialCode') return { ...child, options: materialOptions };
-        if (child.name === 'materialDescription') return { ...child, options: materialDescOptions };
-        return child;
-      })
-    };
-  }
+    if (section.children) {
+      return {
+        ...section,
+        children: section.children.map(child => {
+          if (child.name === 'materialCode') return { ...child, options: materialOptions };
+          if (child.name === 'materialDescription') return { ...child, options: materialDescOptions };
+          return child;
+        })
+      };
+    }
 
-  return section;
-});
+    return section;
+  });
+}, [CpDetails, projects, vendors, materialOptions, materialDescOptions]); // <- Dependencies
+
+
 
 
   return (
@@ -380,7 +377,10 @@ const hydratedCpDetails = CpDetails.map(section => {
           null,
           setFormData,
           handleSearch,
-          addMaterialRow
+          {
+            addMaterialSection: addMaterialRow,
+          //  materialDeselect: materialDeselectRow 
+          }
         )}
         <ButtonContainer
           onFinish={onFinish}
