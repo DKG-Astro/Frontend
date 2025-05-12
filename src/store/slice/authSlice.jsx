@@ -19,29 +19,27 @@ const initialState = {
 export const login = createAsyncThunk(
   'auth/login',
   async (formData, thunkAPI) => {
-    // try {
-    //   const response = await axios.post(
-    //     '/login',
-    //     formData
-    //   );
-    //   const data = response.data;
+    try {
+      const response = await axios.post(
+        '/login',
+        formData
+      );
+      const data = response.data;
       
-    //   // Check for successful status (assuming statusCode === 0 means success)
-    //   if (data.responseStatus?.statusCode !== 0) {
-    //     return thunkAPI.rejectWithValue(
-    //       data.responseStatus?.message || 'Login failed'
-    //     );
-    //   }
+      // Check for successful status (assuming statusCode === 0 means success)
+      if (data.responseStatus?.statusCode !== 0) {
+        return thunkAPI.rejectWithValue(
+          data.responseStatus?.message || 'Login failed'
+        );
+      }
       
-    //   // Return the responseData that contains userRoleId, roleId, role, userId, etc.
-    //   return data.responseData;
-    // } catch (error) {
-    //   return thunkAPI.rejectWithValue(
-    //     error.response?.data || error.message
-    //   );
-    // }
-
-    return "abcd"
+      // Return the responseData that contains userRoleId, roleId, role, userId, etc.
+      return data.responseData;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || error.message
+      );
+    }
   }
 );
 
@@ -73,34 +71,24 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        // const {
-        //   userRoleId,
-        //   roleId,
-        //   role,
-        //   userId,
-        //   readPermission,
-        //   writePermission
-        // } = action.payload;
-        // state.userRoleId = userRoleId;
-        // state.roleId = roleId;
-        // state.role = role;
-        // state.userId = userId;
-        // state.readPermission = readPermission;
-        // state.writePermission = writePermission;
-        // state.locationId = "BNG"
-        // state.userName = action?.payload?.userName;
-        // state.email = action?.payload?.email;
-        // state.mobileNumber = action?.payload?.mobileNumber;
-        state.userRoleId = "abcd"
-        state.roleId = "abcd"
-        state.role = "abcd"
-        state.userId = "abcd"
-        state.readPermission = "abcd"
-        state.writePermission = "abcd"
-        state.locationId = "abcd"
-        state.userName = "abcd"
-        state.email = "abcd"
-        state.mobileNumber = "abcd"
+        const {
+          userRoleId,
+          roleId,
+          role,
+          userId,
+          readPermission,
+          writePermission
+        } = action.payload;
+        state.userRoleId = userRoleId;
+        state.roleId = roleId;
+        state.role = role;
+        state.userId = userId;
+        state.readPermission = readPermission;
+        state.writePermission = writePermission;
+        state.locationId = "BNG"
+        state.userName = action?.payload?.userName;
+        state.email = action?.payload?.email;
+        state.mobileNumber = action?.payload?.mobileNumber;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
