@@ -1,4 +1,4 @@
-export const CpDetails = [
+export const CpDetails =(formData = {}) => [
   {
       heading: "Contingency Search",
       colCnt: 4,
@@ -174,6 +174,36 @@ export const CpDetails = [
       type: "text",
     },
   ],
+},{
+  heading: "Payment Details",
+  fieldList: [
+    {
+      name: "paymentTo",
+      label: "Payment To",
+      type: "select",
+      required: true,
+      options: [
+        { label: "Vendor", value: "vendor" },
+        { label: "Employee", value: "employee" }
+      ]
+    },
+    ...(formData.paymentTo === "vendor" ? [
+      {
+        name: "paymentToVendor",
+        label: "Vendor Name",
+        type: "select",
+        required: true,
+      }
+    ] : []),
+    ...(formData.paymentTo === "employee" ? [
+      {
+        name: "paymentToEmployee",
+        label: "Employee Name",
+        type: "select",
+        required: true,
+      }
+    ] : [])
+  ]
 },
 {
   heading: "Purchase Details",

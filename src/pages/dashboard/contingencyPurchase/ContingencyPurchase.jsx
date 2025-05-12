@@ -23,6 +23,8 @@ const ContingencyPurchase = () => {
   const [generatedCpId, setGeneratedCpId] = useState('');
   const [isPrintEnabled, setIsPrintEnabled] = useState(false);
 
+  const [employees, setEmployees] = useState([]);
+
   // Redux selectors
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
@@ -60,6 +62,17 @@ const ContingencyPurchase = () => {
       }));
       setVendors(formattedVendors);
 
+      const employeeResponse = await axios.get('/api/employee-department-master');
+      const formattedEmployees = (employeeResponse.data?.responseData || []).map(employee => ({
+      label: employee.employeeName,
+      value: employee.employeeId,
+      }));
+      setEmployees(formattedEmployees);
+      console.log("Formatted Employees", formattedEmployees);
+
+
+     
+
       // Format materials
       const materials = materialResponse.data?.responseData || [];
       const materialMap = {};
@@ -93,6 +106,9 @@ const ContingencyPurchase = () => {
       message.error('Failed to load dropdown data');
     }
   };
+
+ 
+  
 
   const handleChange = (name, value) => {
     if (Array.isArray(name)) {
@@ -332,8 +348,8 @@ const handleSearch = async (value) => {
 
   useEffect(()=>{
     populateDropdowns();
-  },[]);
-
+  },[formData.paymentTo]);
+/*
 const hydratedCpDetails = useMemo(() => {
   return CpDetails.map(section => {
     if (section.fieldList) {
@@ -360,7 +376,37 @@ const hydratedCpDetails = useMemo(() => {
 
     return section;
   });
-}, [CpDetails, projects, vendors, materialOptions, materialDescOptions]); // <- Dependencies
+}, [formData,CpDetails, projects, vendors, materialOptions, materialDescOptions]); // <- Dependencies
+*/
+const hydratedCpDetails = useMemo(() => {
+  return CpDetails(formData).map(section => {  // Call the function here
+    if (section.fieldList) {
+      return {
+        ...section,
+        fieldList: section.fieldList.map(field => {
+          if (field.name === 'projectName') return { ...field, options: projects };
+          if (field.name === 'vendorName') return { ...field, options: vendors };
+          if (field.name === 'paymentToVendor') return { ...field, options: vendors };
+          if (field.name === 'paymentToEmployee') return { ...field, options: employees }; 
+          return field;
+        })
+      };
+    }
+
+    if (section.children) {
+      return {
+        ...section,
+        children: section.children.map(child => {
+          if (child.name === 'materialCode') return { ...child, options: materialOptions };
+          if (child.name === 'materialDescription') return { ...child, options: materialDescOptions };
+          return child;
+        })
+      };
+    }
+
+    return section;
+  });
+}, [formData, projects, vendors, materialOptions, materialDescOptions, employees]);
 
 
 
