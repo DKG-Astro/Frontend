@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Upload, Button, Form } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 
@@ -30,6 +30,35 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     }
   };
 
+  // useEffect(() => {
+  //   if (multiple) {
+  //     setPreviewData(value || []);
+  //     setFileNames((value || []).map((_, i) => `File ${i + 1}`));
+  //   } else {
+  //     setPreviewData(value || '');
+  //     setFileNames(value ? 'Uploaded File' : '');
+  //   }
+  // }, [value]);
+
+  function isPdfBase64(base64) {
+    if (!base64) return false;
+  
+    try {
+      console.log("BASE 64: ", base64)
+      const base64Data = base64.split(',')[1];
+      const decoded = atob(base64Data.slice(0, 20)); // decode first ~20 chars
+
+
+
+      console.log("UITS PDG", decoded.startsWith('%PDF'))
+      return decoded.startsWith('%PDF');
+    } catch (err) {
+      console.log("NOT UITS PDG, ", err)
+      return false;
+    }
+  }
+  
+
   const handleDelete = (index) => {
     if (multiple) {
       const newPreviewData = previewData.filter((_, i) => i !== index);
@@ -43,6 +72,20 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
       onChange(name, '');
     }
   };
+
+  useEffect(() => {
+    if(value) {
+      if (multiple) {
+        setPreviewData(value || []);
+        setFileNames((value || []).map((_, i) => `File ${i + 1}`));
+      } else {
+        setPreviewData(value || '');
+        setFileNames(value? 'Uploaded File' : '');
+      }
+    }
+  }, [value, multiple]);
+
+  console.log("PREVIEW DATA: ", previewData[0]?.split(";")[1])
 
   return (
     <Form.Item
@@ -71,9 +114,10 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           {multiple ? (
             previewData.map((preview, index) => (
               <div key={index} className="relative mt-2">
-                {fileNames[index]?.toLowerCase().endsWith('.pdf') ? (
+                {(fileNames[index]?.toLowerCase().endsWith('.pdf') || isPdfBase64(preview) )? (
                   <iframe
-                    src={preview}
+                    // src={preview}
+                    src={`data:application/pdf;${preview.split(";")[1]}`}
                     title={`PDF Preview ${index + 1}`}
                     className="w-[200px] h-[200px] border rounded"
                   />
@@ -100,9 +144,9 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           ) : (
             previewData && (
               <div className="relative mt-2">
-                {fileNames?.toLowerCase().endsWith('.pdf') ? (
+                {(fileNames?.toLowerCase().endsWith('.pdf') || isPdfBase64(previewData)) ? (
                   <iframe
-                    src={previewData}
+                  src={`data:application/pdf;${previewData.split(";")[1]}`}
                     title="PDF Preview"
                     className="w-[200px] h-[200px] border rounded"
                   />
