@@ -119,8 +119,9 @@ const Indent1 = () => {
                 {
                     name: "indentId",
                     label: "Indent ID",
-                    type: "text",
-                    disabled: true,
+                    type: "search",
+                    // disabled: true,
+
                 },
                 {
                     name: "indentorName",
@@ -218,7 +219,18 @@ const Indent1 = () => {
                     label: "Unit Price inclusive of all taxes, duties and free door delivery",
                     type: "text",
                     required: true
-                    // disabled: true
+                },
+                {
+                    name: "totalPrice",
+                    label: "Total Price",
+                    type: "text",
+                    disabled: true,
+                    dependencies: ["quantity", "unitPrice"],
+                    value: (formData, index) => {
+                        const quantity = Number(formData.materialDetails[index]?.quantity) || 0;
+                        const unitPrice = Number(formData.materialDetails[index]?.unitPrice) || 0;
+                        return (quantity * unitPrice).toFixed(2);
+                    }
                 },
                 {
                     name: "currency",
@@ -328,20 +340,21 @@ const Indent1 = () => {
                         span: 2,
                         required: true
 
-                    },
-                    {
-                        name: "proprietaryJustification",
-                        label: "Proprietary Justification",
-                        type: "text",
-                        span: 2,
-                        required: true
                     }
                 ] : []),
+                // ...((selectedModeOfProcurement === "Proprietary/Single Tender") ? [
+                //     {
+                //         name: "proprietaryJustification",
+                //         label: "Proprietary Justification",
+                //         type: "text",
+                //         span: 2,
+                //         required: true
+                //     }
+                // ] : []),
                 {
                     name: "buyBack",
                     type: "checkbox",
                     label: "Buy Back",
-                    required: selectedModeOfProcurement === "Brand PAC"
                 },
                 ...(formData.buyBack ? [{
                     name: "uploadBuyBackFileNames",
@@ -369,6 +382,7 @@ const Indent1 = () => {
                     name: "brandPac",
                     type: "checkbox",
                     label: "Is a Brand PAC?",
+                    required: selectedModeOfProcurement === "Brand PAC"
                 },
                 ...(formData.brandPac ? [{
                     name: "uploadPACOrBrandPACFileName",
@@ -452,10 +466,16 @@ const Indent1 = () => {
         if(selectedModeOfProcurement === "Brand PAC"){
             setFormData({
                 ...formData,
-                buyBack: true
+                brandPac: true
             })
         }
-    }, [selectedModeOfProcurement, formData])
+        else{
+            setFormData({
+               ...formData,
+               brandPac: false
+            })
+        }
+    }, [selectedModeOfProcurement])
 
     const replaceMaterial = (prevMaterial, newMaterial) => {
         const prevMtlrDtl = materialMaster.find((item) => item.materialCode === prevMaterial.materialCode)
@@ -506,13 +526,22 @@ const Indent1 = () => {
         }
         else if (name === "modeOfProcurement") {
             const { materialDetails } = formData;
-            const updatedMaterialDetails = materialDetails.map(item => ({ ...item, modeOfProcurement: value }))
+            const updatedMaterialDetails = materialDetails.map(item => ({ ...item, modeOfProcurement: value, vendorNames: [] }))
 
             setSelectedModeOfProcurement(value)
 
             setFormData({
                 ...formData,
                 materialDetails: updatedMaterialDetails
+            })
+        }
+        else if(name === "quantity" || name === "unitPrice"){
+            const { materialDetails } = formData;
+            materialDetails[index][name] = value
+            materialDetails[index].totalPrice = (Number(materialDetails[index].quantity || 0) * Number(materialDetails[index].unitPrice || 0)).toFixed(2)
+            setFormData({
+               ...formData,
+                materialDetails: materialDetails
             })
         }
         else {
@@ -526,7 +555,6 @@ const Indent1 = () => {
     }
 
     const handleMaterialSelect = (material) => {
-        console.log("MATERIAL SELECT :", materialMasterState)
         const { materialCode, category } = material
         const newMaterialMasterState = materialMasterState.filter((item) => {
             return item.category === category && item.materialCode !== materialCode
@@ -549,7 +577,16 @@ const Indent1 = () => {
             }
         }
     }
-    console.log("Material state", materialMasterState)
+
+    const handleSearch = async (value) => {
+        try {
+            const {data} = await axios.get(`/api/indents/indentData/${value}`)
+            setFormData(data.responseData || {})
+        }
+        catch(error){
+            message.error("Error while fetching indent data.")
+        }
+    }
 
     const onFinish = async () => {
         if (selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") {
@@ -603,6 +640,8 @@ const Indent1 = () => {
         }
     }
 
+    console.log("Fprmdata: ", formData)
+
     const addMaterialFunc = () => {
         setFormData({
             ...formData,
@@ -618,7 +657,7 @@ const Indent1 = () => {
         <Card className='a4-container' ref={printRef}>
             <Heading title="Indent Creation" />
             <CustomForm formData={formData} onFinish={onFinish}>
-                {renderFormFields(inputFields, handleChange, formData, "", null, setFormData, null, additionalFunc)}
+                {renderFormFields(inputFields, handleChange, formData, "", null, setFormData, handleSearch, additionalFunc)}
                 <ButtonContainer
                     onFinish={onFinish}
                     formData={formData}
