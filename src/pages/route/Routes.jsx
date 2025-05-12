@@ -128,21 +128,26 @@ const RoutesComponent = () => {
 
             <Route path="/procurement">
                 <Route path="indent">
-                    <Route path="creation" element={<Form1 />} />
+                    {/*  <Route path="creation" element={<Form1 />} />*/}
+                    <Route path="creation" element={<Indent1/>} />
                     <Route path="temp" element={<Indent />} />
                     <Route path="temp1" element={<Indent1 />} />
                     <Route path="modification" element={<Form3 />} />
                 </Route>
                 <Route path="tender">
-                    <Route path="request" element={<Form4 />} />
+                   {/**  <Route path="request" element={<Form4 />} />*/}
+                    <Route path="request" element={<Tender />} />
                     <Route path="evaluation" element={<Form4a />} />
                     <Route path="temp" element={<Tender />} />
                 </Route>
-                <Route path="purchaseOrder" element={<Form7 />} />
+               {/** <Route path="purchaseOrder" element={<Form7 />} />*/} 
+                <Route path="purchaseOrder" element={<PO/>} />
                 <Route path="tempPo" element={<PO/>} />
-                <Route path="serviceOrder" element={<Form7a />} />
+                {/*<Route path="serviceOrder" element={<Form7a />} />*/}
+                <Route path="serviceOrder" element={<SO/>} />
                 <Route path="tempSo" element={<SO/>} />
-                <Route path="contingencyPurchase" element={<Form7b />} />
+              {/*  <Route path="contingencyPurchase" element={<Form7b />} />*/}
+              <Route path="contingencyPurchase" element={<ContingencyPurchase/>} />
                 <Route path="tempCp" element={<ContingencyPurchase/>} />
                 <Route path="jobCreation" element={<JobCreation />} />
                 <Route path="workCreation" element={<WorkCreation />} />
