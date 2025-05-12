@@ -620,6 +620,12 @@ const Indent1 = () => {
             reason: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.reason : null,
             proprietaryJustification: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.proprietaryJustification : null,
             createdBy: userId,
+            materialDetails: formData.materialDetails.map((item) => {
+                return {
+                    ...item,
+                    vendorNames: selectedModeOfProcurement === "Proprietary/Single Tender" ? [item.vendorNames] : item.vendorNames,
+                }
+            })
         }
 
         try {
