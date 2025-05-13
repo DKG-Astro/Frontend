@@ -103,7 +103,7 @@ const QueueModal = ({
                       <strong>Technical Specs:</strong>
                       {detailsData.technicalSpecificationsFileName
                         ? detailsData.technicalSpecificationsFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -126,7 +126,7 @@ const QueueModal = ({
                       <strong>Prior Approvals:</strong>
                       {detailsData.uploadingPriorApprovalsFileName
                         ? detailsData.uploadingPriorApprovalsFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -149,7 +149,7 @@ const QueueModal = ({
                       <strong>Draft EOI/RFP:</strong>
                       {detailsData.draftEOIOrRFPFileName
                         ? detailsData.draftEOIOrRFPFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -290,7 +290,7 @@ const QueueModal = ({
                         <strong>PAC/Brand PAC:</strong>
                         {detailsData.uploadPACOrBrandPACFileName
                           ? detailsData.uploadPACOrBrandPACFileName
-                              .split(", ")
+                              .split(",")
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
@@ -603,7 +603,7 @@ const QueueModal = ({
                       <strong>Tender Documents:</strong>
                       {detailsData.uploadTenderDocuments
                         ? detailsData.uploadTenderDocuments
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -627,7 +627,7 @@ const QueueModal = ({
                       <strong>Specific Terms:</strong>
                       {detailsData.uploadSpecificTermsAndConditions
                         ? detailsData.uploadSpecificTermsAndConditions
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -652,7 +652,7 @@ const QueueModal = ({
                       <strong>General Terms:</strong>
                       {detailsData.uploadGeneralTermsAndConditions
                         ? detailsData.uploadGeneralTermsAndConditions
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
