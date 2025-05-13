@@ -39,12 +39,25 @@ const Asset = () => {
     shelfLife: "",
     locatorId: null
   });
+  const handleSearch = async (value) => {
+   console.log("handleSearch received value:", value);
+   try {
+    const { data } = await axios.get(`http://localhost:8081/astro-service/api/asset/getAssetDtl`, {
+      params: { assetId: value }
+    });
+    setFormData(data.responseData || {});
+    } catch (error) {
+    message.error("Error while fetching Asset data.");
+    }
+  };
 
   const handleChange = (fieldName, value) => {
     setFormData(prev => ({...prev, [fieldName]: value}));
   }
 
   const {userId, locationId} = useSelector(state => state.auth);
+ 
+
 
   const onFinish = async () => {
     const payload = {
@@ -85,7 +98,8 @@ const Asset = () => {
       <Heading title="Asset Master" />
       
       <CustomForm formData={formData} onFinish={onFinish}>
-        {renderFormFields(assetFields, handleChange, formData)}
+        {/*renderFormFields(assetFields, handleChange, handleSearch, formData)*/}
+        {renderFormFields(assetFields, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer
           onFinish={onFinish}
           formData={formData}

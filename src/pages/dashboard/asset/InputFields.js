@@ -8,9 +8,9 @@ export const assetFields = [
             {
                 name: "assetId",
                 label: "Asset ID",
-                type: "text",
+                type: "search",
                 span: 2,
-                disabled: true,
+               // disabled: true,
                 // required: true
             },
             {
