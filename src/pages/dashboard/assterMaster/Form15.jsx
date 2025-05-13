@@ -6,7 +6,7 @@ const { Option } = Select;
 
 const Form15 = () => {
   const onFinish = (values) => {
-    console.log("Form Values:", values);
+    ;
   };
 
   return (

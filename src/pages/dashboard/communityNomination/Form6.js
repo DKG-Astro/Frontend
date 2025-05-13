@@ -5,7 +5,7 @@ import { Form, Input, Select, Button } from 'antd';
 
 const Form6 = () => {
   const onFinish = (values) => {
-    console.log('Committee Data:', values);
+    ;
   };
 
   return (

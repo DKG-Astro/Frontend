@@ -51,7 +51,7 @@ const JobCreation = () => {
     setLoading(true);
     try {
       // Add your submit logic here
-      console.log("Form values:", values);
+      ;
       message.success("Job created successfully!");
       form.resetFields();
     } catch (error) {

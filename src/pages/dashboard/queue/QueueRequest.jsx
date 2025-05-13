@@ -438,7 +438,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
   };
 
   const handleApprove = async (record) => {
-    console.log("Handleapprove clicked: ", record);
+    ;
     // if (!currentUserId) {
     //   message.error("User details not loaded yet.");
     //   return;

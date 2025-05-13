@@ -127,7 +127,7 @@ const PendingGi = () => {
     }
     catch(e){
         message.error("Erorr fetching details.");
-        console.log(e);
+        ;
     }
   }
   useEffect(() => {

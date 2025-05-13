@@ -160,14 +160,14 @@ const LineItem = ({
   const handleModeOfProcurementChange = (value, index) => {
     if (value === "Proprietary/Single Tender") {
       // setHasProprietaryItem(true);
-      console.log("HERE");
+      ;
 
       setHasProprietaryItem(true);
     }
 
     const str = "Proprietary/Single Tender";
 
-    console.log("Called", value.length, str.length);
+    ;
     const lineItems = form.getFieldValue("lineItems");
     const currentItem = lineItems[index];
 
@@ -178,7 +178,7 @@ const LineItem = ({
     }
   };
 
-  console.log("PROP: ");
+  ;
 
   const fetchInitialData = async () => {
     try {

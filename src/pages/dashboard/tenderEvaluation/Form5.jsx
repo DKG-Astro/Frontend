@@ -5,7 +5,7 @@ import { Option } from "antd/es/mentions";
 import { useLocation } from "react-router-dom";
 const Form5 = () => {
   const onFinish = (values) => {
-    console.log("Evaluation Data:", values);
+    ;
   };
   return (
     <div className="form-container">

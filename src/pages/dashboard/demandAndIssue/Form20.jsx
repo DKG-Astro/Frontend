@@ -7,7 +7,7 @@ const Form20 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Demand Form Values:", values);
+    ;
   };
   return (
     <div className="form-container">

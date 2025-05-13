@@ -73,7 +73,7 @@ const GPRN = () => {
     }
     catch (error) {
       message.error(error?.response?.data?.responseStatus?.message || "Failed to save GPRN.");
-      console.log("Error: ", error?.response?.data?.responseStatus?.message);
+      ;
     }
     finally {
       setSubmitBtnLoading(false)
@@ -103,7 +103,7 @@ const GPRN = () => {
       })
     }
     catch (error) {
-      console.log("ERROR: ", error)
+      
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
   }
@@ -148,7 +148,7 @@ const GPRN = () => {
       setUserDd(formattedUsers);
     }
     catch (error) {
-      console.log("ERROR: ", error)
+      
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
   }

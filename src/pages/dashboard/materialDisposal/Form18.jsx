@@ -15,7 +15,7 @@ const Form18 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Material Disposal Form values:", values);
+    ;
   };
 
   return (

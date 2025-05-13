@@ -51,7 +51,7 @@ const Tender = () => {
     try {
       // Fetch approved indents first
       const approvedResponse = await axios.get("/approved-indents");
-      console.log("Approved IDs response:", approvedResponse.data);
+      ;
 
       // Fetch locations
       const locationsResponse = await axios.get("/api/location-master");
@@ -102,7 +102,7 @@ const Tender = () => {
   }));
 
   
-  console.log("Indent Dropdown Options:", indentOptions);
+  ;
   
   const formatMaterial = (material) => ({
     materialCode: material.materialCode,

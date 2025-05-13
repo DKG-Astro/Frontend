@@ -704,7 +704,7 @@ const Form1 = () => {
     // setHasProprietaryItem(propPresent);
   };
 
-  // console.log("PROP PRESETN: ", hasProprietaryItem)
+  // 
 
   // Add this handler in Form1
   const handleMaterialDescriptionSelect = (index, materialCode) => {

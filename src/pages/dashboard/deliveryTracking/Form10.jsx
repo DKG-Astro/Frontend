@@ -4,7 +4,7 @@ import React from "react";
 
 const Form10 = () => {
   const handleSubmit = (values) => {
-    console.log("Delivery Tracking Form Values:", values);
+    ;
   };
   return (
     <div className="form-container">

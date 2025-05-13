@@ -37,7 +37,7 @@ const Form11 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Form Values:", values);
+    ;
   };
 //   const handlePrint = () => {
 //     const printContent = document.getElementById("printable-form").innerHTML;

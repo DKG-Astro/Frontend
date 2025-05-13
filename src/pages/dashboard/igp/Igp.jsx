@@ -19,7 +19,7 @@ const Igp = () => {
 
   const location = useLocation();
   const state = location.state;
-  console.log("State: ", state);
+  ;
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
@@ -50,7 +50,7 @@ const Igp = () => {
   }, {});
 
   const handleSearch = async () => {
-    console.log("FORMDA: ", formData)
+    
     try {
       const endpoint = formData.igpType === "PO" 
         ? `/api/process-controller/getPoOgp?processNo=${formData.ogpId}`

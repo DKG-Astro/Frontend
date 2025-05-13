@@ -109,7 +109,7 @@ const Ogp = () => {
     }
   }, []);
 
-  console.log("FOrmdata: ", formData)
+  
 
   return (
     <Card className="a4-container" ref={printRef}>

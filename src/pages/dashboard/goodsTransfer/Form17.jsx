@@ -6,7 +6,7 @@ const Form17 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Goods Transfer Form values:", values);
+    ;
   };
 
   return (

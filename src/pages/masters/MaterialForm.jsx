@@ -223,7 +223,7 @@ const MaterialForm = ({materialCode}) => {
              // uploadedFileNames.push(uploadResult.fileName);
             //}
       
-            console.log("Uploaded:", uploadResult.fileName);
+            ;
           }
         }
       }

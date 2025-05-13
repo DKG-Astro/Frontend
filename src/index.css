@@ -43,7 +43,7 @@ label{
 }
 
 .ant-menu-item-selected{
-  @apply !bg-[#327979] !text-white
+  @apply !bg-darkBlueHover !text-white
 }
 
 .dashboard-search .ant-input, .dashboard-search .ant-btn{

@@ -130,7 +130,7 @@ const Indent = () => {
     }
   };
 
-  console.log("MAterialcode options: ", materialOptions)
+  
 
   // --- handleChange Function ---
   const handleChange = async (name, value) => {
@@ -245,7 +245,7 @@ const Indent = () => {
         error?.response?.data?.responseStatus?.message ||
           "Failed to save Indent."
       );
-      console.log("Error: ", error?.response?.data?.responseStatus?.message);
+      ;
     } finally {
       setSubmitBtnLoading(false);
     }
@@ -262,7 +262,7 @@ const Indent = () => {
         ...data?.responseData,
       });
     } catch (error) {
-      console.log("ERROR: ", error);
+      ;
       message.error(
         error?.response?.data?.responseStatus?.message || "Error fetching data."
       );
@@ -353,7 +353,7 @@ const Indent = () => {
     }));
   };
 
-  console.log("Formdata: ", formData);
+  ;
 
   // --- Auto Populate Indentor Information Based on Login Info--
   useEffect(() => {
@@ -366,7 +366,7 @@ const Indent = () => {
   }, []);
 
   useEffect(() => {
-    console.log("USEEFFECT INDENT")
+    
     form.setFieldsValue(formData);
   }, [form, formData])
 

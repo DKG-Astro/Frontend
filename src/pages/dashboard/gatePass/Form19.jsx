@@ -5,7 +5,7 @@ const Form19 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Gate Pass Form Values:", values);
+    ;
   };
 
   return (

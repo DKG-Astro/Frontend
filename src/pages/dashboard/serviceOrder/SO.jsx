@@ -68,12 +68,12 @@ const SO = () => {
 
   const handleTenderSelect = async (tenderId) => {
     try {
-      console.log("Selected tenderId:", tenderId);
+      ;
 
       // 1. Fetch the full tender DTO by tenderId using axios and relative path
       const tenderRes = await axios.get(`/api/tender-requests/${tenderId}`);
       const tenderDto = tenderRes.data.responseData;
-      console.log("Fetched full tender DTO:", tenderDto);
+      ;
 
       // 2. Extract all material details from indentResponseDTO
       const allMaterials = (tenderDto.indentResponseDTO || []).flatMap(
@@ -241,7 +241,7 @@ const SO = () => {
         materialDtlList: responseData?.materials || [],
       });
     } catch (error) {
-      console.log("ERROR: ", error);
+      ;
       message.error(
         error?.response?.data?.responseStatus?.message || "Error fetching data."
       );

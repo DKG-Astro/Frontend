@@ -25,7 +25,7 @@ const Grn = () => {
   });
 
   const handleChange = (fieldName, value) => {
-    console.log("Fieldnm: ", fieldName[2])
+    
     if(typeof fieldName === 'string')
       setFormData(prev => ({...prev, [fieldName]: value}))
     else{

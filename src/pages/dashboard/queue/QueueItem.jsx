@@ -14,11 +14,11 @@ const QueueItem = ({ item }) => {
   const [comments, setComments] = useState("");
 
   const handleApprove = () => {
-    console.log("Approved:", item.requestId);
+    ;
   };
 
   const handleReject = () => {
-    console.log("Rejected:", item.requestId);
+    ;
     setRejectCommentsVisible(!rejectCommentsVisible);
   };
 

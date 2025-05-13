@@ -294,7 +294,7 @@ const Form4 = () => {
 
   //       const responseData = data.responseData;
 
-  //       console.log("RESPINSDDTAA: ", responseData);
+  //       ;
 
   //       // Updated mapping: keys here match the form field names
   //       const formData = {
@@ -393,7 +393,7 @@ const Form4 = () => {
       setLoading(true);
       const values = await form.validateFields();
 
-      console.log("Value", values);
+      ;
 
       // Validate project consistency
       if (values.indentId?.length > 0) {
@@ -483,7 +483,7 @@ const Form4 = () => {
       };
       delete payload.lineItems;
 
-      console.log("PAYLOAD", payload);
+      ;
 
       // Create FormData
       const response = await fetch(
@@ -509,7 +509,7 @@ const Form4 = () => {
         setShowTenderIdModal(true);
       }
       message.success("Tender submitted successfully");
-      console.log("API Response:", result);
+      ;
       form.resetFields();
       setSearchTenderId("");
     } catch (error) {
@@ -554,7 +554,7 @@ const Form4 = () => {
         }}
         onFinish={handleSubmit}
         onFinishFailed={(errorInfo) => {
-          console.log("Validation Failed:", errorInfo);
+          ;
           message.error("Please fix the validation errors before submitting.");
         }}
         layout="vertical"

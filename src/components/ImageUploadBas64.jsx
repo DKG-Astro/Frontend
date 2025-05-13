@@ -44,16 +44,10 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     if (!base64) return false;
   
     try {
-      console.log("BASE 64: ", base64)
       const base64Data = base64.split(',')[1];
       const decoded = atob(base64Data.slice(0, 20)); // decode first ~20 chars
-
-
-
-      console.log("UITS PDG", decoded.startsWith('%PDF'))
       return decoded.startsWith('%PDF');
     } catch (err) {
-      console.log("NOT UITS PDG, ", err)
       return false;
     }
   }
@@ -84,8 +78,6 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
       }
     }
   }, [value, multiple]);
-
-  console.log("PREVIEW DATA: ", previewData[0]?.split(";")[1])
 
   return (
     <Form.Item

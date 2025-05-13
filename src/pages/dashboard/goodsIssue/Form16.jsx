@@ -7,7 +7,7 @@ const Form16 = () => {
   const [form] = Form.useForm();
 
   const onFinish = (values) => {
-    console.log("Form values:", values);
+    ;
   };
 
   return (

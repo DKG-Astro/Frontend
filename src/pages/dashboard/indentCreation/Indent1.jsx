@@ -638,7 +638,7 @@ const Indent1 = () => {
             setModalOpen(true)
         }
         catch (error) {
-            console.log(error)
+            
             message.error(error.message || "Error submitting indent.")
         }
         finally {
@@ -646,7 +646,7 @@ const Indent1 = () => {
         }
     }
 
-    console.log("Fprmdata: ", formData)
+    
 
     const addMaterialFunc = () => {
         setFormData({

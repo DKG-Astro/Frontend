@@ -41,7 +41,7 @@ export const apiCall = async (method, url, token, payload = null) => {
     // Display error alert
     message.error(error?.response?.data?.responseStatus?.message || "Some error occurred.");
     // Rethrow the error for the calling function to handle
-    console.log("ERRORRR: ", error)
+    
     throw error;
   }
 };

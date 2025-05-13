@@ -61,11 +61,11 @@ const GoodsInspection = () => {
     }
   }
 
-  console.log("Form: ", formData)
+  
 
   const handleSearch = useCallback(async () => {
     try {
-      console.log("FROMDATA: ", formData)
+      
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${formData?.gprnNo}`);
       setFormData({...data?.responseData, gprnNo: data.responseData?.processId});
     } catch(error) {
@@ -478,7 +478,7 @@ const GoodsInspection = () => {
   }, [processNo, handleSearch])
 
 
-console.log("Foprmdata: ", formData)
+
   
 
 

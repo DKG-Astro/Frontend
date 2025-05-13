@@ -35,9 +35,8 @@ const CustomReport = ({api, columns, title, showFilter}) => {
             token,
             filter
           );
-          console.log("DATA: ", data)
           setDataSource(data?.responseData);
-        } catch (error) {console.log("Error: ", error)}
+        } catch (error) {}
       };
 
       const handleChange = (fieldName, value) => {

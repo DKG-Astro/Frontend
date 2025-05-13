@@ -15,7 +15,7 @@ import IndentorUpload from "./IndentorUpload";
 const Form4a = () => {
   const [form] = Form.useForm();
   const onFinish = (values) => {
-    console.log("Received values of form:", values);
+    ;
   };
 
   const {roleId} = useSelector(state => state.auth)

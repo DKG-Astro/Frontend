@@ -12,7 +12,6 @@ const FileUpload = ({ documentName, fileType, onChange, value, fileName }) => {
     return new Promise((resolve, reject) => {
       // Make sure file is a valid File or Blob object
       if (!file || !(file instanceof File || file instanceof Blob)) {
-        console.log("Invalid file object:", file);
         reject(new Error('Not a valid file'));
         return;
       }

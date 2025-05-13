@@ -6,7 +6,6 @@ const DKG_CustomForm = ({ formData, onFinish, onFinishFailed, children, customFo
 
   useEffect(() => {
     if(customForm) {
-      console.log("USEEFFECT CUSTOM")
       customForm.setFieldsValue(formData);
     }
     else{

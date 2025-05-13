@@ -23,7 +23,7 @@ const SubworkflowTransition = () => {
             message.success("Approval successful")
                 populateData()
         }catch(err){
-            console.log(err)
+            
         }
     }
 

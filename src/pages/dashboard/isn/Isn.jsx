@@ -29,7 +29,7 @@ const Isn = () => {
   });
 
   const handleChange = (fieldName, value) => {
-    console.log("Handlechangecalled", fieldName, value)
+    
 
     if(typeof fieldName === 'string')
       setFormData(prev => ({...prev, [fieldName]: value}))
@@ -99,7 +99,7 @@ const Isn = () => {
     }
   }, [])
 
-  console.log("ITemqtlylist: ", itemQtyList)
+  
 
   useEffect(() => {
     populateItemQtyDtls()

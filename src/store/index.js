@@ -2,8 +2,6 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import authSlice from './slice/authSlice';
-import smsDutySlice from './slice/smsDutySlice'; 
-import rollingDutySlice from './slice/rollingDutySlice'; 
 import masterSlice from './slice/masterSlice';
 const persistConfig = {
 	key: 'root',
@@ -14,8 +12,6 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authSlice,
-  smsDuty: smsDutySlice,
-  rollingDuty: rollingDutySlice,
   masters: masterSlice
 })
 

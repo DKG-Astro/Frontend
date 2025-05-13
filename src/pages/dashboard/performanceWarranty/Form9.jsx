@@ -6,7 +6,7 @@ const { Option } = Select;
 
 const Form9 = () => {
   const handleSubmit = (values) => {
-    console.log("Warranty Security Form Values:", values);
+    ;
   };
 
   return (

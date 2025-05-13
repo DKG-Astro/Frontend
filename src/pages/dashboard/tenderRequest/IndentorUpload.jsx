@@ -113,7 +113,7 @@ const IndentorUpload = ({ requestId }) => {
             try {
               // Use the correct file type from our local object
               const fileType = localDocFileType[key] || "Tender";
-              console.log("Using file type for download:", fileType, "for key:", key);
+              ;
               
               const fileResponse = await axios.get(
                 `/file/download/${fileType}/${responseData[key]}`,
@@ -194,7 +194,7 @@ const IndentorUpload = ({ requestId }) => {
           const fileType = docFileType[fileKey] || 'Indent';
           formData.append('fileType', fileType);
           
-          console.log(`Uploading ${fileKey} with fileType: ${fileType}`);
+          ;
 
           const uploadResponse = await axios.post('/file/upload', formData, {
             headers: {

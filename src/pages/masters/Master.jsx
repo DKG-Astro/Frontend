@@ -33,8 +33,8 @@ const Master = () => {
     const master = state?.master;
     const materialCode = state?.materialCode;
 
-    console.log("MATERIAL CODE: ", materialCode)
-    console.log("masters: ", master)
+    
+    
 
     const renderMasterForm = () => {
         switch (selectedMaster) {

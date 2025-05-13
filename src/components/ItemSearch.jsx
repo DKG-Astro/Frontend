@@ -21,8 +21,6 @@ const ItemSearch = ({itemArray, setFormData}) => {
       return acc;
     }, {});
 
-    console.log("Loca: ", locatorMasterObj)
-
 
     const handleSelectItem = (record, subRecord) => {
         setTableOpen(false);

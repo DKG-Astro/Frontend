@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import TableComponent from "../../../components/DKG_Table";
-import { PlayCircleOutlined, FileTextOutlined, FileDoneOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { FileTextOutlined, FileDoneOutlined, FileSearchOutlined } from '@ant-design/icons';
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);

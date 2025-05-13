@@ -68,7 +68,7 @@ const ContingencyPurchase = () => {
       value: employee.employeeId,
       }));
       setEmployees(formattedEmployees);
-      console.log("Formatted Employees", formattedEmployees);
+      ;
 
 
      
@@ -239,7 +239,7 @@ const ContingencyPurchase = () => {
       error?.response?.data?.responseStatus?.message ||
       "Failed to submit purchase."
     );
-    console.log("Error: ", error?.response?.data?.responseStatus?.message);
+    ;
   } finally {
     setSubmitBtnLoading(false);
   }
@@ -256,7 +256,7 @@ const handleSearch = async (value) => {
       materialDetails: data?.responseData?.cpMaterials || [],
     });
   } catch (error) {
-    console.log("ERROR: ", error);
+    ;
     message.error(
       error?.response?.data?.responseStatus?.message || "Error fetching CP details."
     );
@@ -281,7 +281,7 @@ const handleSearch = async (value) => {
   });
 
   const addMaterialRow = () => {
-    console.log('Add More button clicked');
+    ;
   
     const currentMaterialDetails = formData.materialDetails || [];
   
