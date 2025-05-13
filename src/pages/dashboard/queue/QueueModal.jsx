@@ -107,7 +107,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Indent/${fileName.trim()}`}
+                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
