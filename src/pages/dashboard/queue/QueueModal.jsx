@@ -103,11 +103,11 @@ const QueueModal = ({
                       <strong>Technical Specs:</strong>
                       {detailsData.technicalSpecificationsFileName
                         ? detailsData.technicalSpecificationsFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                  href={`/file/view/Indent/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -126,7 +126,7 @@ const QueueModal = ({
                       <strong>Prior Approvals:</strong>
                       {detailsData.uploadingPriorApprovalsFileName
                         ? detailsData.uploadingPriorApprovalsFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -149,7 +149,7 @@ const QueueModal = ({
                       <strong>Draft EOI/RFP:</strong>
                       {detailsData.draftEOIOrRFPFileName
                         ? detailsData.draftEOIOrRFPFileName
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -290,7 +290,7 @@ const QueueModal = ({
                         <strong>PAC/Brand PAC:</strong>
                         {detailsData.uploadPACOrBrandPACFileName
                           ? detailsData.uploadPACOrBrandPACFileName
-                              .split(", ")
+                              .split(",")
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
@@ -338,11 +338,11 @@ const QueueModal = ({
                     </div>
                     <div className="detail-item">
                       <strong>Vendor Name:</strong>{" "}
-                      {detailsData.vendorsName || "N/A"}
+                      {detailsData.vendorName || "N/A"}
                     </div>
                     <div className="detail-item">
                       <strong>Invoice No:</strong>{" "}
-                      {detailsData.vendorsInvoiceNo || "N/A"}
+                      {detailsData.vendorInvoiceNo || "N/A"}
                     </div>
                   </Col>
                   <Col span={12}>
@@ -365,7 +365,7 @@ const QueueModal = ({
                   </Col>
                 </Row>
               </div>
-
+            {/*
               <div className="detail-section">
                 <Typography.Title level={5} className="section-title">
                   <ProfileOutlined /> Material Details
@@ -395,6 +395,77 @@ const QueueModal = ({
                 </Row>
               </div>
 
+              */}
+               <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <BarsOutlined /> Material Details
+                </Typography.Title>
+                <Table
+                  dataSource={detailsData.cpMaterials}
+                  pagination={false}
+                  bordered
+                  scroll={{ x: true }}
+                  rowKey="materialCode"
+                  columns={[
+                    {
+                      title: "Material Code",
+                      dataIndex: "materialCode",
+                      width: 120,
+                    },
+                    {
+                      title: "Description",
+                      dataIndex: "materialDescription",
+                      ellipsis: true,
+                    },
+                     {
+                      title: "Material Category",
+                      dataIndex: "materialCategory",
+                      ellipsis: true,
+                    },
+                     {
+                      title: "Material SubCategory",
+                      dataIndex: "materialSubCategory",
+                      ellipsis: true,
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      align: "right",
+                    },
+                    {
+                      title: "Currency",
+                      dataIndex: "currency",
+                      align: "right",
+                    },
+                    {
+                      title: "GSt",
+                      dataIndex: "gst",
+                      align: "right",
+                    },
+                    {
+                      title: "Unit Price",
+                      dataIndex: "unitPrice",
+                      align: "right",
+                      render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    { title: "UOM", dataIndex: "uom", width: 100 },
+                    {
+                      title: "Budget Code",
+                      dataIndex: "budgetCode",
+                      width: 120,
+                    }, {
+                      title: "Total Price",
+                      dataIndex: "totalPrice",
+                      align: "right",
+                      render: (text) => (
+                        <span style={{ fontWeight: 500 }}>
+                          ₹{text?.toFixed(2)}
+                        </span>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
               <div className="detail-section">
                 <Typography.Title level={5} className="section-title">
                   <ProjectOutlined /> Project Details
@@ -603,7 +674,7 @@ const QueueModal = ({
                       <strong>Tender Documents:</strong>
                       {detailsData.uploadTenderDocuments
                         ? detailsData.uploadTenderDocuments
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -627,7 +698,7 @@ const QueueModal = ({
                       <strong>Specific Terms:</strong>
                       {detailsData.uploadSpecificTermsAndConditions
                         ? detailsData.uploadSpecificTermsAndConditions
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
@@ -652,7 +723,7 @@ const QueueModal = ({
                       <strong>General Terms:</strong>
                       {detailsData.uploadGeneralTermsAndConditions
                         ? detailsData.uploadGeneralTermsAndConditions
-                            .split(", ")
+                            .split(",")
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
