@@ -28,6 +28,7 @@ import {
   ToolOutlined,
 } from "@ant-design/icons";
 import QueueHistory from "./QueueHistory";
+import MaterialHistory from "./MaterialIndentHistory";
 
 const QueueModal = ({
   modalVisible,
@@ -36,6 +37,10 @@ const QueueModal = ({
   detailsData,
   historyVisible,
   setHistoryVisible,
+  materialHistoryVisible,
+  setMaterialHistoryVisible,
+  selectedMaterialCode,
+  setSelectedMaterialCode,
 }) => {
   return (
     <Modal
@@ -248,7 +253,24 @@ const QueueModal = ({
                       dataIndex: "vendorNames",
                       width: 120,
                       render: (text) => (text ? text.join(", ") : "N/A"),
-                    },
+                    }, {
+    title: "Action",
+    dataIndex: "materialCode",
+    width: 130,
+    render: (code) => (
+      <Button
+        type="link"
+        icon={<HistoryOutlined />}
+        onClick={() => {
+          setSelectedMaterialCode(code);
+          setMaterialHistoryVisible(true); 
+        }}
+      >
+        View Material History
+      </Button>
+    ),
+  },
+                    
                   ]}
                 />
               </div>
@@ -1043,6 +1065,12 @@ const QueueModal = ({
         open={historyVisible}
         onCancel={() => setHistoryVisible(false)}
       />
+      <MaterialHistory
+        open={materialHistoryVisible}
+        materialCode={selectedMaterialCode}
+        onCancel={() => setMaterialHistoryVisible(false)}
+      />
+
     </Modal>
   );
 };

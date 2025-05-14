@@ -241,6 +241,10 @@ const QueueRequest = ({ workflowId, requestType }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [workflowCounts, setWorkflowCounts] = useState({});
+  const [materialHistoryVisible, setMaterialHistoryVisible] = useState(false);
+  const [selectedMaterialCode, setSelectedMaterialCode] = useState(null);
+
+
 
 
   // --- 2. Fetch the current user details from the UserMaster API ---
@@ -1389,6 +1393,10 @@ const {userId} = useSelector(state => state.auth)
         detailsData={detailsData}
         historyVisible={historyVisible}
         setHistoryVisible={setHistoryVisible}
+        materialHistoryVisible={materialHistoryVisible}
+        setMaterialHistoryVisible={setMaterialHistoryVisible}
+        selectedMaterialCode={selectedMaterialCode}
+        setSelectedMaterialCode={setSelectedMaterialCode}
       />
       <MaterialDetailModal 
         visible={materialModalOpen}
