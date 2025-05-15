@@ -1,3 +1,5 @@
+import { handleSearch } from "../../../utils/CommonFunctions";
+
 export const locatorMaster = [
     {
         value: "1",
@@ -17,7 +19,7 @@ export const locatorMaster = [
     },
 ]
 
-export const grvFields = [
+export const grvFields =(formData)=> [
     {
         heading: "Order Details",
         colCnt: 5,
@@ -48,9 +50,9 @@ export const grvFields = [
             {
                 name: "grnNo",
                 label: "GRN No",
-                type: "text",
-                disabled: true,
-                span: 2
+                type: "search",
+              //  disabled: true,
+                span: 2,
             },
             {
                 name: "grnDate",
@@ -125,18 +127,19 @@ export const grvFields = [
                 label: "Unit Price",
                 type: "text",
                 required: true
-            },
-            {
+            },...(formData.isDepreciationDisabled ? [] : [{
                 name: "depriciationRate",
                 label: "Depreciation Rate",
                 type: "text",
                 required: true
-            },
+            }]),
             {
                 name: "bookValue",
                 label: "Book Value",
                 type: "text",
-                required: true
+                required: true,
+                disabled: true,
+            
             },
             
             {
@@ -197,8 +200,8 @@ export const igpGrnFields = [
             {
                 name: "grnNo",
                 label: "GRN No",
-                type: "text",
-                disabled: true,
+                type: "search",
+             //   disabled: true,
                 span: 2
             },
             {

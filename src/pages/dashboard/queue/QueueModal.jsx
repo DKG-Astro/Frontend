@@ -254,22 +254,22 @@ const QueueModal = ({
                       width: 120,
                       render: (text) => (text ? text.join(", ") : "N/A"),
                     }, {
-    title: "Action",
-    dataIndex: "materialCode",
-    width: 130,
-    render: (code) => (
-      <Button
-        type="link"
-        icon={<HistoryOutlined />}
-        onClick={() => {
-          setSelectedMaterialCode(code);
-          setMaterialHistoryVisible(true); 
-        }}
-      >
-        View Material History
-      </Button>
-    ),
-  },
+                      title: "Action",
+                      dataIndex: "materialCode",
+                      width: 130,
+                      render: (code) => (
+                      <Button
+                        type="link"
+                        icon={<HistoryOutlined />}
+                        onClick={() => {
+                        setSelectedMaterialCode(code);
+                        setMaterialHistoryVisible(true); 
+                        }}
+                        >
+                      View Material History
+                    </Button>
+                  ),
+                },
                     
                   ]}
                 />

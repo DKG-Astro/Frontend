@@ -1,4 +1,5 @@
-export const grvFields = [
+
+ export const grvFields =  [
     {
         heading: "GRV Details",
         colCnt: 5,
@@ -13,9 +14,10 @@ export const grvFields = [
             {
                 name: "grvNo",
                 label: "GRV No",
-                type: "text",
-                disabled: true,
+                type: "search",
+              //  disabled: true,
                 span: 2,
+                //disabled: !!formData?.giNo, 
                 // required: true
             },
             {
@@ -95,3 +97,4 @@ export const grvFields = [
         ]
     }
 ];
+ 

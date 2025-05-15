@@ -10,7 +10,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { useLocation } from "react-router-dom";
-
+import { Input } from 'antd'; 
 const GoodsInspection = () => {
   const printRef = useRef();
   const handlePrint = useReactToPrint({
@@ -60,8 +60,20 @@ const GoodsInspection = () => {
       })
     }
   }
+const handleGISearch = async () => {
+  try {
+    const { data } = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GI&processNo=${formData?.giNo}`);
+    setFormData(prev => ({
+      ...prev,
+      ...data?.responseData,
+      giNo: data.responseData?.processId,
+    }));
+  } catch (error) {
+    message.error(error?.response?.data?.responseStatus?.message || "Error fetching GI data.");
+  }
+};
 
-  
+  /*
 
   const handleSearch = useCallback(async () => {
     try {
@@ -71,7 +83,66 @@ const GoodsInspection = () => {
     } catch(error) {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
-  }, [formData.gprnNo])
+  }, [formData.gprnNo])*/
+  const mergeData = (giDtls = {}, gprnDtls = {}) => {
+  return {
+    // From giDtls
+    inspectionNo: giDtls.inspectionNo || '',
+    gprnNo: giDtls.gprnNo || '',
+    installationDate: giDtls.installationDate || '',
+    commissioningDate: giDtls.commissioningDate || '',
+    materialDtlList: giDtls.materialDtlList || [],
+
+    // Selected fields from gprnDtls
+    date: gprnDtls.date || '',
+    challanNo: gprnDtls.challanNo || '',
+    vendorId: gprnDtls.vendorId || '',
+    vendorEmail: gprnDtls.vendorEmail || '',
+    vendorName: gprnDtls.vendorName || '',
+    vendorContact: gprnDtls.vendorContact || '',
+    fieldStation: gprnDtls.fieldStation || '',
+    indentorName: gprnDtls.indentorName || '',
+    locationId: gprnDtls.locationId || giDtls.locationId || '',
+    deliveryDate: gprnDtls.deliveryDate,
+    supplyExpectedDate: gprnDtls.supplyExpectedDate,
+    poId: gprnDtls.poId,
+    gprnNo:gprnDtls.processId,
+    consigneeDetail:gprnDtls.consigneeDetail
+
+  };
+};
+
+  const handleSearch = useCallback(async (value, isGprnSearch) => {
+  if (!value) {
+    message.warning("Please enter a valid value.");
+    return;
+  }
+
+  try {
+    let data;
+    
+    if (isGprnSearch) {
+      // GI API call
+      const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GI&processNo=${value}`);
+      data = response.data?.responseData?.giDtls;
+      const formData = mergeData(response.data?.responseData?.giDtls, response.data?.responseData?.gprnDtls);
+      setFormData(formData);
+    } else{
+      // GPRN API call
+      const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${value}`);
+      data = response.data?.responseData;
+  
+
+    // Update form data based on the API response
+    setFormData({
+      ...data,
+      gprnNo: data?.processId, // Update gprnNo with the processId from the response
+    });}
+  } catch (error) {
+    message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
+  }
+}, []);
+
 
   const {userId, locationId} = useSelector(state => state.auth);
 
@@ -103,13 +174,21 @@ const GoodsInspection = () => {
         colCnt: 5, // optional
         fieldList: [
             {
-                name: "gprnNo", // required
-                label: "GPRN No", // optional
-                type:"search", // required
-                disabled: true, //optional
-                required: true, // option
-                span: 2
-            },{
+            name: "gprnNo",
+            label: "GPRN No",
+            type:"search",
+            //disabled: true,
+            required: true,
+            span: 2,
+            render: () => (
+            <Input
+            placeholder="Enter GPRN No"
+            value={formData.gprnNo}  
+            onChange={(e) => handleChange("gprnNo", e.target.value)}
+            onBlur={(e) => handleSearch(e.target.value, false)}
+            onPressEnter={(e) => handleSearch(e.target.value, false)}
+            />
+            )},{
               name: "poId",
               label: "PO Id.",
               type: "text",
@@ -120,10 +199,18 @@ const GoodsInspection = () => {
             {
                 name: "giNo",
                 label: "Gi No.",
-                type: "text",
-                disabled: true,
-                span: 2
-                // required: true
+               // disabled: true,
+                span: 2,
+                type: "search",
+                 render: () => (
+                <Input
+                placeholder="Enter GI No"
+                value={formData.giNo}
+                onChange={(e) => handleChange("giNo", e.target.value)}
+                onBlur={(e) => handleSearch(e.target.value, true)}
+                onPressEnter={(e) => handleSearch(e.target.value, true)}
+                />
+                )
             },
             {
                 name: "date",
@@ -473,7 +560,8 @@ const GoodsInspection = () => {
   useEffect(() => {
     if(processNo) {
       // setFormData({gprnNo: processNo})
-      handleSearch();
+     // handleSearch();
+     handleSearch(processNo, false);
     }
   }, [processNo, handleSearch])
 

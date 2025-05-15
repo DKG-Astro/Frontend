@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import CustomModal from '../../../components/CustomModal';
 import dayjs from 'dayjs';
+import { Input } from 'antd'; 
+
 
 const GPRN = () => {
   const printRef = useRef();
@@ -25,13 +27,20 @@ const GPRN = () => {
     deliveryDate: dayjs().format('DD/MM/YYYY'),
     supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
   });
+ 
+
+
 
   const handleChange = (fieldName, value) => {
     if (typeof fieldName === 'string') {
-
+      if (fieldName === "gprnNo") {
+        setFormData(prev => ({ ...prev, gprnNo: value }));
+       // handleSearch(value); 
+        return;
+        }
       if (fieldName === "poId") {
         setFormData(prev => ({ ...prev, poId: value }))
-        handleSearch(value)
+        handleSearch(value, false)
         return;
       }
       setFormData(prev => ({ ...prev, [fieldName]: value }))
@@ -79,14 +88,14 @@ const GPRN = () => {
       setSubmitBtnLoading(false)
     }
   }
-
+/*
   const handleSearch = async (value) => {
     try {
       const { data } = await axios.get(`api/purchase-orders/${value ? value : formData.poId}`)
 
       const { data: vendorData } = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
       const { data: indentData } = await axios.get(`/api/indents/${data?.responseData?.indentIds[0]}`)
-
+      
       setFormData({
         poId: data?.responseData?.poId,
         vendorId: data?.responseData?.vendorId,
@@ -106,7 +115,83 @@ const GPRN = () => {
       
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
     }
+  }*/
+ const handleSearch = async (value, isGprnSearch) => {
+  try {
+    if (isGprnSearch) {
+     
+      const { data: gprnData } = await axios.get("/api/process-controller/getSubProcessDtls", {
+        params: {
+          processStage: "GPRN",
+          processNo : value,
+        }
+      });
+     setFormData({
+      poId: gprnData?.responseData?.poId,
+      vendorId: gprnData?.responseData?.vendorId,
+      vendorName: gprnData?.responseData?.vendorName,
+      vendorEmail: gprnData?.responseData?.vendorEmail,
+      vendorContactNo: gprnData?.responseData?.vendorContact,
+      project: gprnData?.responseData?.project || "N/A",
+      indentorName: gprnData?.responseData?.indentorName,
+      consigneeDetail: gprnData?.responseData?.consigneeDetail,
+      challanNo: gprnData?.responseData?.challanNo,
+      fieldStation: gprnData?.responseData?.fieldStation,
+      warrantyYears: gprnData?.responseData?.warrantyYears,
+      locationId: gprnData?.responseData?.locationId,
+      date: gprnData?.responseData?.date,
+      deliveryDate: gprnData?.responseData?.deliveryDate || "",
+      supplyExpectedDate: gprnData?.responseData?.supplyExpectedDate,
+      receivedBy:gprnData?.responseData?.createdBy,
+      materialDtlList: gprnData?.responseData?.materialDtlList?.map((mat) => ({
+      ...mat,
+      materialDesc: mat.materialDesc,
+      uomId: mat.uomId,
+      orderedQuantity: mat.orderedQuantity || 0,
+      receivedQuantity: mat.receivedQuantity || 0,
+      warranty: mat.warranty,
+      totalAmount: mat.unitPrice * (mat.receivedQuantity || 0),
+      imageBase64: mat.imageBase64 || [],
+      })),
+    });
+
+
+    } else {
+      
+      const { data } = await axios.get(`/api/purchase-orders/${value || formData.poId}`);
+  
+      const { data: vendorData } = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
+      const { data: indentData } = await axios.get(`/api/indents/${data?.responseData?.indentIds[0]}`)
+    
+  
+      setFormData({
+        poId: data?.responseData?.poId,
+        vendorId: data?.responseData?.vendorId,
+        vendorName: vendorData?.responseData?.vendorName,
+        vendorEmail: vendorData?.responseData?.emailAddress,
+        vendorContactNo: vendorData?.responseData?.contactNo,
+        project: data?.responseData?.projectName || "N/A",
+        indentorName: indentData?.responseData?.indentorName,
+        consigneeDetail: data?.responseData?.consignesAddress,
+        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({
+          ...mat,
+          materialDesc: mat.materialDescription,
+          uomId: mat.uom,
+          orderedQuantity: mat.quantity,
+          quantityDelivered: mat.receivedQuantity || 0,
+          receivedQuantity: ""
+        })),
+        date: dayjs().format('DD/MM/YYYY'),
+        deliveryDate: data?.responseData?.deliveryDate || "",
+        supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
   }
+};
+
 
   useEffect(() => {
     const gprnDraft = localStorage.getItem("gprnDraft");
@@ -169,10 +254,17 @@ const GPRN = () => {
           options: pendingGprnList,
         },
         {
-          name: "gprnNo", // required
-          label: "GPRN No", // optional
-          type: "text", // required
-          disabled: true, //optional
+        name: "gprnNo",
+        label: "GPRN No",
+        type: "search",
+        render: (_, form) => (
+        <Input
+          value={formData.gprnNo}
+          onChange={(e) => handleChange("gprnNo", e.target.value)}
+          onBlur={(e) => handleSearch(e.target.value, true)}
+          onPressEnter={(e) => handleSearch(e.target.value, true)}
+        />
+        )
         },
         {
           name: "date",
@@ -377,11 +469,11 @@ const GPRN = () => {
         {
           name: "imageBase64",
           label: "Material Photographs",
-          type: "multiImage",  // changed from "image" to "multiImage"
+          type: "multiImage",// changed from "image" to "multiImage"
           span: 3,
           required: true,
-          accept: "image/*",
-          multiple: true  // added multiple property
+        //  accept: "image/*",
+         // multiple: true  // added multiple property
         }
       ]
     },

@@ -30,19 +30,9 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     }
   };
 
-  // useEffect(() => {
-  //   if (multiple) {
-  //     setPreviewData(value || []);
-  //     setFileNames((value || []).map((_, i) => `File ${i + 1}`));
-  //   } else {
-  //     setPreviewData(value || '');
-  //     setFileNames(value ? 'Uploaded File' : '');
-  //   }
-  // }, [value]);
-
   function isPdfBase64(base64) {
     if (!base64) return false;
-  
+
     try {
       const base64Data = base64.split(',')[1];
       const decoded = atob(base64Data.slice(0, 20)); // decode first ~20 chars
@@ -51,7 +41,6 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
       return false;
     }
   }
-  
 
   const handleDelete = (index) => {
     if (multiple) {
@@ -68,13 +57,13 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
   };
 
   useEffect(() => {
-    if(value) {
+    if (value) {
       if (multiple) {
         setPreviewData(value || []);
         setFileNames((value || []).map((_, i) => `File ${i + 1}`));
       } else {
         setPreviewData(value || '');
-        setFileNames(value? 'Uploaded File' : '');
+        setFileNames(value ? 'Uploaded File' : '');
       }
     }
   }, [value, multiple]);
@@ -83,7 +72,6 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
     <Form.Item
       label={label}
       name={name}
-      // required={required}
       rules={[{ required: required, message: `${label} is required` }]}
       className="mb-0"
     >
@@ -102,71 +90,81 @@ const ImageUploadBase64 = ({ value, onChange, required, label, name, multiple = 
           </Button>
         </Upload>
 
-        <div className="grid grid-cols-2 gap-4">
+      
+        {/*<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-full">*/}
+        <div className="flex flex-wrap gap-4 mt-2">
           {multiple ? (
             previewData.map((preview, index) => (
-              <div key={index} className="relative mt-2">
-                {(fileNames[index]?.toLowerCase().endsWith('.pdf') || isPdfBase64(preview) )? (
-                  <iframe
-                    // src={preview}
-                    src={`data:application/pdf;${preview.split(";")[1]}`}
-                    title={`PDF Preview ${index + 1}`}
-                    className="w-[200px] h-[200px] border rounded"
-                  />
-                ) : (
-                  <img
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="max-w-[200px] max-h-[200px] object-contain border rounded"
-                  />
-                )}
-                <Button
-                  type="primary"
-                  danger
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  onClick={() => handleDelete(index)}
-                  className="absolute top-2 right-2"
-                />
-                {fileNames[index] && (
-                  <div className="text-sm text-gray-600 mt-1">{fileNames[index]}</div>
-                )}
-              </div>
-            ))
+          <div
+            key={index}
+            className="relative w-[150px] h-[150px] flex-shrink-0 border border-gray-300 rounded overflow-hidden"
+          >
+            {(fileNames[index]?.toLowerCase().endsWith('.pdf') || isPdfBase64(preview)) ? (
+            <iframe
+              src={`data:application/pdf;${preview.split(";")[1]}`}
+              title={`PDF Preview ${index + 1}`}
+              className="w-full h-full"
+            />
           ) : (
-            previewData && (
-              <div className="relative mt-2">
-                {(fileNames?.toLowerCase().endsWith('.pdf') || isPdfBase64(previewData)) ? (
-                  <iframe
-                  src={`data:application/pdf;${previewData.split(";")[1]}`}
-                    title="PDF Preview"
-                    className="w-[200px] h-[200px] border rounded"
-                  />
-                ) : (
-                  <img
-                    src={previewData}
-                    alt="Preview"
-                    className="max-w-[200px] max-h-[200px] object-contain border rounded"
-                  />
-                )}
-                <Button
-                  type="primary"
-                  danger
-                  icon={<DeleteOutlined />}
-                  size="small"
-                  onClick={() => handleDelete()}
-                  className="absolute top-2 right-2"
-                />
-                {fileNames && (
-                  <div className="text-sm text-gray-600 mt-1">{fileNames}</div>
-                )}
-              </div>
-            )
+          <img
+            src={preview}
+            alt={`Preview ${index + 1}`}
+            className="w-full h-full object-contain"
+          />
           )}
-        </div>
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            size="small"
+            onClick={() => handleDelete(index)}
+            className="absolute top-2 right-2"
+          />
+        {fileNames[index] && (
+          <div className="text-sm text-gray-600 mt-1 truncate">
+            {fileNames[index]}
+          </div>
+        )}
       </div>
+    ))
+  ) : (
+    previewData && (
+      <div className="relative w-[150px] h-[150px] flex-shrink-0 border border-gray-300 rounded overflow-hidden">
+        {(fileNames?.toLowerCase().endsWith('.pdf') || isPdfBase64(previewData)) ? (
+          <iframe
+            src={`data:application/pdf;${previewData.split(";")[1]}`}
+            title="PDF Preview"
+            className="w-full h-full"
+          />
+        ) : (
+          <img
+            src={previewData}
+            alt="Preview"
+            className="w-full h-full object-contain"
+          />
+        )}
+        <Button
+          type="primary"
+          danger
+          icon={<DeleteOutlined />}
+          size="small"
+          onClick={() => handleDelete()}
+          className="absolute top-2 right-2"
+        />
+        {fileNames && (
+          <div className="text-sm text-gray-600 mt-1 truncate">
+            {fileNames}
+          </div>
+        )}
+      </div>
+    )
+  )}
+</div>
+</div>
     </Form.Item>
   );
 };
+
+
 
 export default ImageUploadBase64;
