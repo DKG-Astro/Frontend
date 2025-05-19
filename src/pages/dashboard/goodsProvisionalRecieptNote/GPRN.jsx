@@ -151,7 +151,7 @@ const GPRN = () => {
       receivedQuantity: mat.receivedQuantity || 0,
       warranty: mat.warranty,
       totalAmount: mat.unitPrice * (mat.receivedQuantity || 0),
-      imageBase64: mat.imageBase64 || [],
+    //  imageBase64: mat.imageBase64[0] || " ",
       })),
     });
 

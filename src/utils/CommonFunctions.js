@@ -1,5 +1,5 @@
 import { Checkbox, Form, message, Select } from "antd";
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined,DownloadOutlined } from '@ant-design/icons';
 import FormItemInput from "antd/es/form/FormItemInput";
 import axios from "axios";
 import CustomDatePicker from "../components/DKG_CustomDatePicker";
@@ -9,6 +9,8 @@ import ImageUploadBase64 from "../components/ImageUploadBas64";
 import InputDatePicker from "../components/DatePicker";
 import UploadFile from "../components/UploadFile";
 import Btn from "../components/DKG_Btn";
+import DownloadFile from "../components/DowloadFile";
+
 
 export const apiCall = async (method, url, token, payload = null) => {
 
@@ -304,6 +306,24 @@ export const apiCall = async (method, url, token, payload = null) => {
                 />
             </Form.Item>
         );
+        case "downloadFile":
+          return (
+          <Form.Item
+          label={field?.label}
+          name={field?.name}
+          key={field?.name}
+          rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+          >
+          <DownloadFile
+          fileName={field?.fileName}
+          fileLabel={field?.downloadText || "Download File"}
+          />
+          </Form.Item>
+        );
+
+
+
+
         // case "multiselect":
         // return (
         //       <Form.Item

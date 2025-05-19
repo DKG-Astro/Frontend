@@ -537,12 +537,39 @@ const Tender = () => {
           type: "checkbox", //should be a checkbox field (true or false)
           span: 1
         },
+        ...(formData.bidSecurityDeclaration ? [{
+          name: "bidSecurityDownload",
+          type: "downloadFile",
+          fileName: "bid.pdf",
+          downloadText: "Download Bid Security Template",
+          required: true,
+          span: 2,
+          },{
+                    name: "bidSecurityDeclarationFileName",
+                    label: "Upload Bid Security Declaration",
+                    type: "multiImage",
+                    required: true,
+                }] : []),
         {
           name: "mllStatusDeclaration",
           label: "MLL Status Declaration",
           type: "checkbox", // should be a checkbox field (true or false)
           span: 1
-        }
+        },
+        ...(formData.mllStatusDeclaration ? [{
+          name: "mllStatusDeclaration",
+          type: "downloadFile",
+          fileName: "mll.pdf",
+          downloadText: "Download Mll Security Template",
+          required: true,
+          span: 2,
+          },{
+                    name: "mllStatusDeclarationFileName",
+                    label: "Upload MLL Security Declaration",
+                    type: "multiImage",
+                    required: true,
+                }] : []),
+        
       ]
     }
   ];
