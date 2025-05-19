@@ -50,7 +50,7 @@ const QueueHistory = ({ requestId, open, onCancel }) => {
         setLoading(true);
         try {
           const response = await axios.get(
-            `/workflowTransitionHistory?requestId=${requestId}`
+            `http://103.181.158.220:8081/astro-service/workflowTransitionHistory?requestId=${requestId}`
           );
           
           // Access responseData array from the API response

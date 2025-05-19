@@ -95,12 +95,21 @@ const PO = () => {
       // 3. Update state and form
       setMaterials(allMaterials);
 
+    // Auto-fill vendor details from vendorId
+    const selectedVendor = vendors.find((v) => v.id === tenderDto.vendorId);
+
       setFormData((prev) => ({
         ...prev,
         tenderId,
         materialDtlList: allMaterials,
         incoTerms: tenderDto.incoTerms,
         paymentTerms: tenderDto.paymentTerms,
+        vendorId: tenderDto.vendorId,
+        vendorName: selectedVendor?.value || "",
+        vendorAddress: selectedVendor?.address || "",
+        vendorAccountNumber: selectedVendor?.accountNumber || "",
+        vendorsIfscCode: selectedVendor?.ifscCode || "",
+        vendorAccountName: selectedVendor?.accountName || "",
       }));
     } catch (error) {
       console.error("Tender selection error:", error);

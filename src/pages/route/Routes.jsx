@@ -39,6 +39,7 @@ import PO from "../dashboard/purchaseOrder/PO";
 import SO from "../dashboard/serviceOrder/SO";
 import Indent1 from "../dashboard/indentCreation/Indent1";
 import CustomLayout from "../../components/DKG_CustomLayout";
+import Quotations from '../dashboard/tenderRequest/Quotations';
 
 const RoutesComponent = () => {
   return (
@@ -57,6 +58,7 @@ const RoutesComponent = () => {
               <Route path="tender">
                 <Route path="request" element={<Tender />} />
                 <Route path="evaluation" element={<Form4a />} />
+                <Route path="/procurement/tender/Quotations" element={<Quotations />} />
               </Route>
               <Route path="purchaseOrder" element={<PO />} />
               <Route path="serviceOrder" element={<SO />} />

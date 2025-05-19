@@ -13,6 +13,9 @@ const ApprovedTenders = () => {
     navigate("/procurement/tender/evaluation", { state: { tenderId, bidType } });
   }
 
+   const handleQuotationsClick = (tenderId, bidType) => {
+    navigate("/procurement/tender/Quotations", { state: { tenderId, bidType } });
+  }
   const columns = [
     {
       title: "Tender ID",
@@ -33,9 +36,14 @@ const ApprovedTenders = () => {
       dataIndex: "actions",
       key: "actions",
       render: (text, record) => (
+        <>
           <Btn onClick={() => handleRowClick(record.tenderId, record.bidType)}>
             Upload Docs
             </Btn>
+            <Btn onClick={() => handleQuotationsClick(record.tenderId, record.bidType)}>
+            Quotations
+            </Btn>
+        </>
       ),
     },
   ]

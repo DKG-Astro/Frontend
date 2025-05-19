@@ -296,7 +296,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
     setLoadingPreviousRoles(true);
     try {
       const response = await axios.get(
-        `/allPreviousWorkflowRole?workflowId=${encodeURIComponent(
+        `http://103.181.158.220:8081/astro-service/allPreviousWorkflowRole?workflowId=${encodeURIComponent(
           workflowId
         )}&requestId=${encodeURIComponent(requestId)}`
       );
