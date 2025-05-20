@@ -19,7 +19,9 @@ const { tenderId, bidType } = location.state || {};
   const [quotationData, setQuotationData] = useState([]);
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedVendor, setSelectedVendor] = useState(null);
+  const [selectedVendor, setSelectedVendor] = useState(null);
+  const [notSubmittedVendors, setNotSubmittedVendors] = useState([]);
+
 
   const fetchQuotations = async () => {
     try {
@@ -28,6 +30,15 @@ const { tenderId, bidType } = location.state || {};
       setQuotationData(data);
     } catch (error) {
       message.error('Failed to fetch vendor quotations');
+    }
+  };
+
+  const fetchNotSubmittedVendors = async () => {
+    try {
+    const res = await axios.get(`http://localhost:8081/astro-service/api/vendor-quotation/NotSubmitVendors/${tenderId}`);
+    setNotSubmittedVendors(res.data.responseData || []);
+    } catch (error) {
+    message.error("Failed to fetch vendors who didn't submit quotations");
     }
   };
 
@@ -53,7 +64,7 @@ const fetchTenderDetails = async () => {
 useEffect(() => {
   if (tenderId) {
     fetchQuotations();
-   
+    fetchNotSubmittedVendors();
   }
 }, [tenderId]);
 /*tenderUpdateDto , fetchTenderDetails();*/
@@ -107,6 +118,23 @@ const handleSubmit = async () => {
       dataIndex: 'quotationFileName',
       key: 'quotationFileName',
     },
+     {
+    title: 'View File',
+    key: 'view',
+    render: (_, record) => (
+      record.quotationFileName ? (
+        <a
+          href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${record.quotationFileName}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View
+        </a>
+      ) : (
+        'No File'
+      )
+    ),
+  },
   ];
  
 
@@ -120,6 +148,11 @@ const handleSubmit = async () => {
       <Heading title={`Quotation Evaluation for Tender ID: ${tenderId} and BidType :${bidType}`} />
 
        <FormBody layout="vertical">
+        {notSubmittedVendors.length > 0 && (
+          <div style={{ marginBottom: '1rem', fontWeight: 'bold', }}>
+            The following vendors have not submitted quotations: {notSubmittedVendors.join(', ')}
+          </div>
+        )}
         <Table
           dataSource={quotationData}
           columns={columns}
