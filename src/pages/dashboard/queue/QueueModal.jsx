@@ -188,12 +188,12 @@ const QueueModal = ({
                   <Row gutter={24}>
                     <Col span={12}>
                       <div className="detail-item">
-                        <strong>Date:</strong> {detailsData.preBidMeetingDate}
+                        <strong>Tentative Meeting Date:</strong> {detailsData.preBidMeetingDate}
                       </div>
                     </Col>
                     <Col span={12}>
                       <div className="detail-item">
-                        <strong>Venue:</strong> {detailsData.preBidMeetingVenue}
+                        <strong>Tentative Meeting Location:</strong> {detailsData.preBidMeetingVenue}
                       </div>
                     </Col>
                   </Row>
@@ -220,6 +220,14 @@ const QueueModal = ({
                       title: "Description",
                       dataIndex: "materialDescription",
                       ellipsis: true,
+                    }, {
+                      title: "Material Category",
+                      dataIndex: "materialCategory",
+                      ellipsis: true,
+                    }, {
+                      title: "Material SubCategory",
+                      dataIndex: "materialSubCategory",
+                      ellipsis: true,
                     },
                     {
                       title: "Quantity",
@@ -231,6 +239,11 @@ const QueueModal = ({
                       dataIndex: "unitPrice",
                       align: "right",
                       render: (text) => `₹${text?.toFixed(2)}`,
+                    },
+                    {
+                      title: "Currency",
+                      dataIndex: "currency",
+                      align: "right",
                     },
                     {
                       title: "Total Price",
@@ -247,6 +260,11 @@ const QueueModal = ({
                       title: "Budget Code",
                       dataIndex: "budgetCode",
                       width: 120,
+                    },
+                    {
+                      title: "Mode Of Procurement",
+                      dataIndex: "modeOfProcurement",
+                      ellipsis: true,
                     },
                     {
                       title: "Vendor Names",
@@ -289,7 +307,7 @@ const QueueModal = ({
                       <strong>Reason:</strong> {detailsData.reason || "N/A"}
                     </div>
                     <div>
-                        <strong>Justification</strong> {detailsData.proprietaryJustification || "N/A"}
+                        <strong>Proprietary And Limited Declaration:</strong> {detailsData.proprietaryAndLimitedDeclaration || "N/A"}
                     </div>
                     </Col>
                     </Row>
@@ -338,6 +356,87 @@ const QueueModal = ({
                       <div className="detail-item">
                         <strong>Justification:</strong>{" "}
                         {detailsData.justification || "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+              {detailsData.buyBack && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Buy Back
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Buy Back:</strong>{" "}
+                        {String(detailsData.buyBack) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Buy Back File:</strong>
+                        {detailsData.uploadBuyBackFileNames
+                          ? detailsData.uploadBuyBackFileNames
+                              .split(",")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`http://103.181.158.220:8081/astro-service/file/view/Indent/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.uploadPACOrBrandPACFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Model Number:</strong>{" "}
+                        {detailsData.modelNumber || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Serial Number:</strong>{" "}
+                        {detailsData.serialNumber || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Date Of Purchase:</strong> 
+                        {detailsData.dateOfPurchase}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+              {detailsData.isItARateContractIndent && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Rate Contract Indent
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>isItARateContractIndent:</strong>{" "}
+                        {String(detailsData.isItARateContractIndent) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Estimated Rate:</strong>{" "}
+                        {detailsData.estimatedRate || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Contract Period(Months):</strong>{" "}
+                        {detailsData.periodOfContract || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Job Type:</strong>
+                        {detailsData.singleAndMultipleJob || "N/A"}
                       </div>
                     </Col>
                   </Row>
@@ -767,6 +866,119 @@ const QueueModal = ({
                   </Col>
                 </Row>
               </div>
+               <div className="detail-section">
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Typography.Title level={5} className="section-title">
+                      <AuditOutlined /> Commercial Terms:
+                    </Typography.Title>
+                    <div className="detail-item">
+                      <strong>Inco Terms</strong>{" "}
+                      {detailsData.incoTerms || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Consignee Address</strong>{" "}
+                      {detailsData.consignes || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>Billing Address</strong> {detailsData.billinngAddress || "N/A"}
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <Typography.Title level={5} className="section-title">
+                      <AuditOutlined /> Payment & Performance:
+                    </Typography.Title>
+                    <div className="detail-item">
+                      <strong>Payment Terms</strong>{" "}
+                      {detailsData.paymentTerms || "N/A"}
+                    </div>
+                    <div className="detail-item">
+                      <strong>LD Clause</strong>{" "}
+                      {detailsData.ldClause || "N/A"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+               {detailsData.bidSecurityDeclaration && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Bid Security
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Bid Security Declaration:</strong>{" "}
+                        {String(detailsData.bidSecurityDeclaration) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Bid Security Declaration File:</strong>
+                        {detailsData.bidSecurityDeclarationFileName
+                          ? detailsData.bidSecurityDeclarationFileName
+                              .split(",")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.bidSecurityDeclarationFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+              {detailsData.mllStatusDeclaration && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Mll Status
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Mll Status Declaration:</strong>{" "}
+                        {String(detailsData.mllStatusDeclaration) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Mll Status Declaration File:</strong>
+                        {detailsData.mllStatusDeclarationFileName
+                          ? detailsData.mllStatusDeclarationFileName
+                              .split(",")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.mllStatusDeclarationFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
 
               {detailsData.indentResponseDTO &&
                 detailsData.indentResponseDTO.length > 0 && (
