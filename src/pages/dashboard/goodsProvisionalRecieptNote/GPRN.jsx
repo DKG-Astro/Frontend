@@ -1,5 +1,5 @@
 import { Card, message } from 'antd'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Heading from '../../../components/DKG_Heading'
 import CustomForm from '../../../components/DKG_CustomForm';
 import { renderFormFields } from '../../../utils/CommonFunctions';
@@ -17,6 +17,10 @@ const GPRN = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
+
+  const location = useLocation()
+
+  const processNo = location?.state?.processNo || null;
 
   const [fsDd, setFsDd] = useState([])
 
@@ -241,6 +245,12 @@ const GPRN = () => {
   useEffect(() => {
     populatePendingGprn();
   }, [])
+
+  useEffect(() => {
+    if (processNo) {
+      handleSearch(processNo)
+    }
+  }, [processNo, handleSearch])
 
   const generalDtls = [
     {

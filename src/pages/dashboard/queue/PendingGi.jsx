@@ -18,6 +18,9 @@ const PendingGi = () => {
         message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve GPRN');
       }
     };
+    const handleEdit = async (record) => {
+      navigate("inventory/gprn", {state: {processNo: "INV" + record.processId + "/" + record.subProcessId, data: record}});
+    };
 
     const handleReject = async (record) => {
       try {
@@ -25,6 +28,19 @@ const PendingGi = () => {
           processNo: "INV" + record.processId + "/" + record.subProcessId,
         });
         message.success('GPRN rejected successfully');
+        // setRejectComment('');
+        populateData();
+      } catch (error) {
+        message.error(error?.response?.data?.responseStatus?.message || 'Failed to reject GPRN');
+      }
+    };
+
+    const changeRequest = async (record) => {
+      try {
+        await axios.post(`/api/process-controller/changeReqGprn`, {
+          processNo: "INV" + record.processId + "/" + record.subProcessId,
+        });
+        message.success('GPRN change request successful.');
         // setRejectComment('');
         populateData();
       } catch (error) {
@@ -104,11 +120,23 @@ const PendingGi = () => {
               </Button>
               <Button
                 danger
-                onClick={() => handleReject(record)}> Reject </Button>
+                onClick={() => handleReject(record)}> Reject 
+              </Button>
+              <Button
+                onClick={() => changeRequest(record)}> Change Request 
+              </Button>
             </Space>
           )
         }
-        
+
+        if(record.status.trim() === "CHANGE REQUEST"){
+          return(
+            <Button type="primary" onClick={() => handleEdit(record)}>
+                Edit data
+          </Button>
+          )
+        }
+        console.log("status", record.status, record.status.length);
         return null; // For REJECTED status
       }
     }
