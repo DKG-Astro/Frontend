@@ -242,13 +242,29 @@ const GPRN = () => {
     }
   }
 
+  const searchByProcessNo = async (processNo) => {
+    try {
+      const { data } = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${processNo}`)
+      const { data: vendorData } = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
+      setFormData({
+        ...data?.responseData,
+        vendorName: vendorData?.responseData?.vendorName,
+        vendorEmail: vendorData?.responseData?.emailAddress,
+        vendorContactNo: vendorData?.responseData?.contactNo,
+      })
+    }
+    catch (error) {
+     message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
+    }
+  }
+
   useEffect(() => {
     populatePendingGprn();
   }, [])
 
   useEffect(() => {
     if (processNo) {
-      handleSearch(processNo)
+      searchByProcessNo(processNo)
     }
   }, [processNo, handleSearch])
 

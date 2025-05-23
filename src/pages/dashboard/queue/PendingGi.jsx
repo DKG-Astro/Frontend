@@ -19,7 +19,7 @@ const PendingGi = () => {
       }
     };
     const handleEdit = async (record) => {
-      navigate("inventory/gprn", {state: {processNo: "INV" + record.processId + "/" + record.subProcessId, data: record}});
+      navigate("/inventory/gprn", {state: {processNo: "INV" + record.processId + "/" + record.subProcessId, data: record}});
     };
 
     const handleReject = async (record) => {
