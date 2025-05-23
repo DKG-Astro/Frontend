@@ -9,7 +9,11 @@ import ImageUploadBase64 from "../components/ImageUploadBas64";
 import InputDatePicker from "../components/DatePicker";
 import UploadFile from "../components/UploadFile";
 import Btn from "../components/DKG_Btn";
+<<<<<<< HEAD
 import DownloadFile from "../components/DowloadFile";
+=======
+// import DownloadFile from "../components/DowloadFile";
+>>>>>>> 506a839 (search)
 
 
 export const apiCall = async (method, url, token, payload = null) => {
@@ -238,7 +242,7 @@ export const apiCall = async (method, url, token, payload = null) => {
             required={field?.required}
             disabled={field?.disabled}
             onChange={handleChange}
-            onSearch={handleSearch}
+            onSearch={field?.onSearch ? field.onSearch : handleSearch}
             className="w-full"
           />
         );
@@ -306,6 +310,7 @@ export const apiCall = async (method, url, token, payload = null) => {
                 />
             </Form.Item>
         );
+<<<<<<< HEAD
         case "downloadFile":
           return (
           <Form.Item
@@ -320,6 +325,22 @@ export const apiCall = async (method, url, token, payload = null) => {
           />
           </Form.Item>
         );
+=======
+        // case "downloadFile":
+        //   return (
+        //   <Form.Item
+        //   label={field?.label}
+        //   name={field?.name}
+        //   key={field?.name}
+        //   rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+        //   >
+        //   <DownloadFile
+        //   fileName={field?.fileName}
+        //   fileLabel={field?.downloadText || "Download File"}
+        //   />
+        //   </Form.Item>
+        // );
+>>>>>>> 506a839 (search)
 
 
 
