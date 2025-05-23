@@ -71,9 +71,14 @@ const GPRN = () => {
   const onFinish = async () => {
     const payload = { ...formData, locationId, createdBy: userId }
 
+    if(processNo) {
+      payload.processNo = processNo
+    }
+
     try {
+      const url = processNo ? `/api/process-controller/updateGprn` : `/api/process-controller/saveGprn`;
       setSubmitBtnLoading(true)
-      const { data } = await axios.post("/api/process-controller/saveGprn", payload)
+      const { data } = await axios.post(url, payload)
 
       setFormData({
         ...formData,
@@ -251,6 +256,7 @@ const GPRN = () => {
         vendorName: vendorData?.responseData?.vendorName,
         vendorEmail: vendorData?.responseData?.emailAddress,
         vendorContactNo: vendorData?.responseData?.contactNo,
+        materialDtlList: data?.responseData?.materialDtlList.map((mat, idx) => ({...mat, totalAmount: (mat.unitPrice || 0) * (mat.receivedQuantity || 0) })),
       })
     }
     catch (error) {
@@ -413,7 +419,7 @@ const GPRN = () => {
           // disabled: true
         },
         {
-          name: "warranty",
+          name: "warrantyTerms",
           label: "Warranty",
           type: "text",
           span: 2,
@@ -544,6 +550,8 @@ const GPRN = () => {
     }
   ]
 
+  console.log("FORMDATA: ", formData)
+
   return (
     <Card className='a4-container' ref={printRef}>
       <Heading title="Goods Provisional Receipt Note" />
@@ -560,7 +568,7 @@ const GPRN = () => {
           handlePrint={handlePrint}
         />
       </CustomForm>
-      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="GPRN" processNo={formData?.gprnNo} />
+      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="GPRN" processNo={processNo ? formData?.processNo : formData?.gprnNo} update />
     </Card>
   )
 }
