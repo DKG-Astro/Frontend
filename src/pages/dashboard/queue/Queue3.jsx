@@ -6,7 +6,7 @@ import GatePass from './GatePass'
 const Queue3 = () => {
   return (
     <Tabs>
-     <Tabs.TabPane tab="Pending GI" key="gi">
+     <Tabs.TabPane tab="Pending GI And Change Request GPRN" key="gi">
             <PendingGi />
     </Tabs.TabPane> 
      <Tabs.TabPane tab="Gate Pass" key="gatepass">

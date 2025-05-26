@@ -5,6 +5,7 @@ import axios from 'axios';
 import TableComponent from '../../../components/DKG_Table';
 import { useNavigate } from 'react-router-dom';
 import Btn from '../../../components/DKG_Btn';
+import { useSelector } from 'react-redux';
 
 const PendingGi = () => {
     const navigate = useNavigate();
@@ -142,20 +143,23 @@ const PendingGi = () => {
     }
   ];
 
-  const api = "/api/process-controller/getPendingGi";
+  const { userId } = useSelector(state => state.auth)
+
+  const api = "/api/process-controller/getGiStatusWise?status=AWAITING%20APPROVAL";
+  const api2 = `/api/process-controller/getGiStatusWise?status=CHANGE%20REQUEST&createdBy=${userId}`;
 
   const [ds, setDs] = useState([]);
 
   const populateData = async () => {
     try{
-        const {data} = await axios.get(api);
-        
-        const responseData = data?.responseData || [];
-        setDs(responseData);
+        const [apiData, api2Data] = await Promise.all([axios.get(api), axios.get(api2)]);
+        const responseData = apiData?.data?.responseData || [];
+        const responseData2 = api2Data?.data?.responseData || [];
+        setDs([...responseData, ...responseData2]);
     }
     catch(e){
         message.error("Erorr fetching details.");
-        ;
+        console.log("E: ", e);
     }
   }
   useEffect(() => {
