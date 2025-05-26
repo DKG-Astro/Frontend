@@ -61,7 +61,7 @@ const reasonDropdown = [
 
 const Indent1 = () => {
 
-    const { userName, mobileNumber, email, userId } = useSelector(state => state.auth)
+    const { userName, mobileNumber, email, userId, employeeDepartment } = useSelector(state => state.auth)
 
     const printRef = useRef();
 
@@ -620,6 +620,7 @@ const Indent1 = () => {
             reason: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.reason : null,
             proprietaryJustification: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.proprietaryJustification : null,
             createdBy: userId,
+            employeeDepartment: employeeDepartment,
             materialDetails: formData.materialDetails.map((item) => {
                 return {
                     ...item,

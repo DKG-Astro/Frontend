@@ -13,7 +13,8 @@ const initialState = {
   locationId: null,
   userName: null,
   mobileNumber: null,
-  email: null
+  email: null,
+  emplemployeeDepartment: null,
 };
 
 export const login = createAsyncThunk(
@@ -61,6 +62,7 @@ const authSlice = createSlice({
       state.mobileNumber = null;
       state.email = null;
       state.locationId = null;
+      state.employeeDepartment = null;
     }
   },
   extraReducers: (builder) => {
@@ -76,6 +78,7 @@ const authSlice = createSlice({
           roleId,
           role,
           userId,
+          emplemployeeDepartment,
           readPermission,
           writePermission
         } = action.payload;
@@ -89,6 +92,7 @@ const authSlice = createSlice({
         state.userName = action?.payload?.userName;
         state.email = action?.payload?.email;
         state.mobileNumber = action?.payload?.mobileNumber;
+        state.emplemployeeDepartment = action?.payload?.emplemployeeDepartment;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
