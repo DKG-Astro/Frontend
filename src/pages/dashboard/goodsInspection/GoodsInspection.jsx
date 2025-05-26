@@ -121,7 +121,7 @@ const handleGISearch = async () => {
   try {
     let data;
     
-    if (isGprnSearch) {
+    if (!isGprnSearch) {
       // GI API call
       const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GI&processNo=${value}`);
       data = response.data?.responseData?.giDtls;

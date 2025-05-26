@@ -254,6 +254,7 @@ const assetFields = [
     };
 
     if(formData?.assetId) {
+      
       updateAsset(payload);
       return;
     }
