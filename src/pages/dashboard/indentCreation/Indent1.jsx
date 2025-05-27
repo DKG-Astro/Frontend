@@ -63,6 +63,7 @@ const Indent1 = () => {
 
     const { userName, mobileNumber, email, userId, employeeDepartment } = useSelector(state => state.auth)
 
+    console.log(employeeDepartment);
     const printRef = useRef();
 
     const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
