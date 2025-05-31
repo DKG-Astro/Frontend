@@ -40,6 +40,11 @@ import SO from "../dashboard/serviceOrder/SO";
 import Indent1 from "../dashboard/indentCreation/Indent1";
 import CustomLayout from "../../components/DKG_CustomLayout";
 import Quotations from '../dashboard/tenderRequest/Quotations';
+import PoList from '../reports/PoList';
+import SoList from '../reports/SoList';
+import PoStatus from '../reports/PoStatus';
+import SoStatus from "../reports/SoStatus";
+import IndentList from "../reports/IndentList";
 
 const RoutesComponent = () => {
   return (
@@ -74,6 +79,11 @@ const RoutesComponent = () => {
               <Route path="technoMom" element={<TechnoMom />} />
               <Route path="vendorContract" element={<VendorContract />} />
               <Route path="procurementActivity" element={<ProcurementActivityReport />} />
+              <Route path="PoList" element={<PoList />} />
+              <Route path="SoList" element={<SoList />} />
+              <Route path="PoStatus" element={<PoStatus />} />
+              <Route path="SoStatus" element={<SoStatus />} />
+              <Route path="IndentList" element={<IndentList />} />
             </Route>
 
             <Route path="/invReports" element={<InvReportsMain />}>

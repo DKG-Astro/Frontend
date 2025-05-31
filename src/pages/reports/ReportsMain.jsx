@@ -6,6 +6,11 @@ import IndentReport from './IndentReport';
 import TechnoMom from './TechnoMom';
 import VendorContract from './VendorContractReport';
 import ProcurementActivityReport from './ProcurementActivityReport';
+import PoList from './PoList';
+import SoList from './SoList';
+import PoStatus from './PoStatus';
+import SoStatus from './SoStatus';
+import IndentList from './IndentList';
 
 const ReportsMain = () => {
     const tiles = [
@@ -39,6 +44,36 @@ const ReportsMain = () => {
             icon: <SolutionOutlined />,
             path: "/reports/procurementActivity"
         },
+        {
+            id: 6,
+            title: "Po List",
+            icon: <SolutionOutlined />,
+            path: "/reports/PoList"
+        },
+        {
+            id: 7,
+            title: "Po Status",
+            icon: <BarChartOutlined />,
+            path: "/reports/PoStatus"
+        },
+         {
+            id: 8,
+            title: "So List",
+            icon: <SolutionOutlined />,
+            path: "/reports/SoList"
+        },
+         {
+            id: 9,
+            title: "So Status",
+            icon: <BarChartOutlined />,
+            path: "/reports/SoStatus"
+        },
+         {
+            id: 10,
+            title: "Indent List",
+            icon: <SolutionOutlined />,
+            path: "/reports/IndentList"
+        },
     ]
     const [activeTab, setActiveTab] = useState(1)
     const renderReports = () => {
@@ -53,6 +88,16 @@ const ReportsMain = () => {
                 return <VendorContract/>
             case 5:
                 return <ProcurementActivityReport />
+            case 6:
+                return <PoList />
+            case 7:
+                return <PoStatus />
+            case 8:
+                return <SoList />
+            case 9:
+                return <SoStatus />
+            case 10:
+                return <IndentList />
             default:
                 return <h1>Contingency Purchase Report</h1>
         }
