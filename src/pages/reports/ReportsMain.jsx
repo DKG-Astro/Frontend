@@ -11,6 +11,9 @@ import SoList from './SoList';
 import PoStatus from './PoStatus';
 import SoStatus from './SoStatus';
 import IndentList from './IndentList';
+import QuarterlyVigilanceSoReport from './QuarterlyVigilanceSoReport';
+import ShortClosedCancelledOrderReport from './ShortClosedCancelledOrderReport';
+import MonthlyProcurementReport from './MonthlyProcurementReport';
 
 const ReportsMain = () => {
     const tiles = [
@@ -74,6 +77,24 @@ const ReportsMain = () => {
             icon: <SolutionOutlined />,
             path: "/reports/IndentList"
         },
+        {
+            id:11,
+            title:"Quarterly Vigilance Report",
+             icon: <SolutionOutlined />,
+            path: "/reports/QuarterlyVigilanceSoReport"
+        },
+        {
+            id:12,
+            title:"Short Closed Cancelled Order",
+            icon: <SolutionOutlined />,
+            path: "/reports/ShortClosedCancelledOrderReport"
+        },
+         {
+            id:13,
+            title:"Monthly Procurement Report",
+            icon: <SolutionOutlined />,
+            path: "/reports/MonthlyProcurementReport"
+        },
     ]
     const [activeTab, setActiveTab] = useState(1)
     const renderReports = () => {
@@ -98,6 +119,12 @@ const ReportsMain = () => {
                 return <SoStatus />
             case 10:
                 return <IndentList />
+            case 11:
+                return <QuarterlyVigilanceSoReport />
+            case 12:
+                return <ShortClosedCancelledOrderReport />
+            case 13:
+                return <MonthlyProcurementReport />
             default:
                 return <h1>Contingency Purchase Report</h1>
         }

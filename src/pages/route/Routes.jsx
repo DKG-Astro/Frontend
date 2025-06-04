@@ -45,6 +45,9 @@ import SoList from '../reports/SoList';
 import PoStatus from '../reports/PoStatus';
 import SoStatus from "../reports/SoStatus";
 import IndentList from "../reports/IndentList";
+import QuarterlyVigilanceSoReport from '../reports/QuarterlyVigilanceSoReport';
+import ShortClosedCancelledOrderReport from "../reports/ShortClosedCancelledOrderReport";
+import MonthlyProcurementReport from "../reports/MonthlyProcurementReport";
 
 const RoutesComponent = () => {
   return (
@@ -84,6 +87,9 @@ const RoutesComponent = () => {
               <Route path="PoStatus" element={<PoStatus />} />
               <Route path="SoStatus" element={<SoStatus />} />
               <Route path="IndentList" element={<IndentList />} />
+              <Route path="QuarterlyVigilanceSoReport" element={<QuarterlyVigilanceSoReport />} />
+              <Route path="ShortClosedCancelledOrderReport" element={<ShortClosedCancelledOrderReport />} />
+              <Route path="MonthlyProcurementReport" element={<MonthlyProcurementReport />} />
             </Route>
 
             <Route path="/invReports" element={<InvReportsMain />}>
