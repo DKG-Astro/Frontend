@@ -203,7 +203,7 @@ const JobForm = () => {
     
         const response = await fetch(
          // "/api/job-master",
-         "http://localhost:8081/astro-service/api/job-master",
+         "/api/job-master",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -276,14 +276,17 @@ const JobForm = () => {
                      { required: true, message: "Please select material category!" },
                    ]}
                  >
-                   <Select placeholder="Select Material Category">
+                   <Select placeholder="Select Job Category">
                      {/*materialCategories.map((category) => (
                        <Option key={category} value={category}>
                          {category}
                        </Option>
                      ))*/}
-                     <Option value="Capital">Capital</Option>
-                     <Option value="Consumable">Consumable</Option>
+                     <Option value="AMC">AMC (Annual Maintenance Contract)</Option>
+                     <Option value="Rate Contract">Rate Contract</Option>
+                     <Option value="Repair And Service">Repair & Service</Option>
+                     <Option value="Internet Service">Internet Service</Option>
+                     <Option value="Other Service">Other Service</Option>
                    </Select>
                  </Form.Item>
        

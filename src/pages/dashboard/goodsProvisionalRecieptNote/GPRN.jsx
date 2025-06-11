@@ -10,12 +10,14 @@ import axios from 'axios';
 import CustomModal from '../../../components/CustomModal';
 import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
+import PrintFormate from '../../../utils/PrintFormate'
+import GprnPrintFormat from '../../../utils/GprnPrintFormat';
 
 const GPRN = () => {
-  const printRef = useRef();
-  const handlePrint = useReactToPrint({
+  //const printRef = useRef();
+ /* const handlePrint = useReactToPrint({
     content: () => printRef.current,
-  });
+  });*/
 
   const location = useLocation()
 
@@ -465,9 +467,16 @@ const GPRN = () => {
   ]
 
   console.log("FORMDATA: ", formData)
+  
+      const printComponentRef = useRef(); 
+      const handlePrint = useReactToPrint({
+  content: () => printComponentRef.current,
+  documentTitle: `GPRN - ${formData?.gprnNo || "Draft"}`
+});
+
 
   return (
-    <Card className='a4-container' ref={printRef}>
+    <Card className='a4-container'>
       <Heading title="Goods Provisional Receipt Note" />
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData, handleSearch)}
@@ -483,6 +492,11 @@ const GPRN = () => {
         />
       </CustomForm>
       <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="GPRN" processNo={processNo ? formData?.processNo : formData?.gprnNo} update />
+
+      <div style={{ display: "none" }}>
+               <GprnPrintFormat ref={printComponentRef} formData={formData} />
+
+             </div>
     </Card>
   )
 }

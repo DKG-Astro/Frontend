@@ -8,6 +8,7 @@ import ButtonContainer from '../../../components/ButtonContainer'
 import { useReactToPrint } from 'react-to-print'
 import axios from 'axios'
 import CustomModal from '../../../components/CustomModal'
+import PrintFormate from '../../../utils/PrintFormate'
 
 const proprietaryLimitedDeclarationLabel = "The budgetary quote was obtained informing the vendor about:  (i) IIA's Payment Terms - 100% payment within 30 days from acceptance (ii). Applicability of providing performance & warranty security. (iii) Applicability of LD Clause."
 
@@ -68,10 +69,10 @@ const Indent1 = () => {
 
     const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
 
-    const handlePrint = useReactToPrint({
+   /* const handlePrint = useReactToPrint({
         content: () => printRef.current,
-    });
-
+    });*/
+    
     const [formData, setFormData] = useState({
         indentorName: userName,
         indentorMobileNo: mobileNumber,
@@ -111,6 +112,13 @@ const Indent1 = () => {
     const budgetCodeDropdown = [...new Set(projectMaster.map(p => p.budgetType))].map(bt => ({ label: bt, value: bt }))
 
     const [modalOpen, setModalOpen] = useState(false);
+
+    const printComponentRef = useRef(); 
+
+    const handlePrint = useReactToPrint({
+        content: () => printComponentRef.current,
+        documentTitle: `Indent - ${formData?.indentId || "Draft"}`
+    });
 
     const inputFields = [
         {
@@ -676,8 +684,12 @@ const Indent1 = () => {
                     draftBtnEnabled
                     handlePrint={handlePrint}
                 />
+               
             </CustomForm>
             <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Indent" processNo={formData?.indentId} />
+             <div style={{ display: "none" }}>
+                <PrintFormate ref={printComponentRef} data={formData} />
+             </div>
         </Card>
     )
 }
