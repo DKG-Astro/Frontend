@@ -274,6 +274,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
       fetchData(auth.role);
     }
   }, [auth.role, workflowId]);
+  console.log("auth"+auth.role);
 
   // // --- Helper function: Fetch workflowTransitionId for a given requestId ---
   // const fetchWorkflowTransitionId = async (requestId) => {
@@ -300,7 +301,14 @@ const QueueRequest = ({ workflowId, requestType }) => {
           workflowId
         )}&requestId=${encodeURIComponent(requestId)}`
       );
-      setPreviousRoles(response.data.responseData || []);
+      //setPreviousRoles(response.data.responseData || []);
+      const roles = response.data.responseData || [];
+      const filteredRoles = roles.filter(
+      (role) =>
+        role.trim().toLowerCase() !== (auth?.role || "").trim().toLowerCase()
+    );
+
+    setPreviousRoles(filteredRoles);
     } catch (error) {
       message.error("Failed to fetch previous roles.");
       console.error("Fetch previous roles error:", error);
@@ -789,6 +797,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
           roleName
         )}`
       );
+
+
       //   const apiData = response.data.responseData;
       //   const formattedData = apiData.map((item, index) => ({
       //     key: index.toString(),
@@ -1167,8 +1177,10 @@ const {userId} = useSelector(state => state.auth)
                         loadingPreviousRoles || previousRoles.length === 0
                       }
                     >
-                      {previousRoles.map((role) => (
+                      {previousRoles .map((role) => (
                         <Select.Option key={role} value={role}>
+                      
+
                           {role}
                         </Select.Option>
                       ))}

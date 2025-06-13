@@ -46,7 +46,7 @@ export const CpDetails =(formData = {}) => [
       name: "materialDescription",
       label: "Description",
       type: "select",
-      span: 3,
+      span: 2,
       options: [], // Will be populated from API data
       showSearch: true,
       filterOption: (input, option) =>
@@ -84,14 +84,14 @@ export const CpDetails =(formData = {}) => [
       label: "Gst",
       type: "text",
       required: true,
-      span: 1,
+      span: 2,
     },
     {
       name: "budgetCode",
       label: "Budget Code",
       type: "select",
       required: true,
-      span: 3,
+      span: 2,
       options: [
         {
           value: "Capital",

@@ -28,7 +28,7 @@ const MaterialHistory = ({ materialCode, open, onCancel }) => {
         setLoading(true);
         try {
           const response = await axios.get(
-            `http://localhost:8081/astro-service/api/indents/materialHistory/${materialCode}`
+            `/api/indents/materialHistory/${materialCode}`
           );
 
           const historyData = Array.isArray(response?.data?.responseData)
