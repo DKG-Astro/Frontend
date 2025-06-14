@@ -552,7 +552,7 @@ const Tender = () => {
                 }] : []),
         {
           name: "mllStatusDeclaration",
-          label: "MLL Status Declaration",
+          label: "MII Status Declaration",
           type: "checkbox", // should be a checkbox field (true or false)
           span: 1
         },
@@ -565,7 +565,7 @@ const Tender = () => {
           span: 2,
           },*/{
                     name: "mllStatusDeclarationFileName",
-                    label: "Upload MLL Security Declaration",
+                    label: "Upload MII Security Declaration",
                     type: "multiImage",
                     required: true,
                 }] : []),

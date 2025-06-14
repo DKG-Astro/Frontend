@@ -848,8 +848,9 @@ const QueueRequest = ({ workflowId, requestType }) => {
             createdBy: item.createdBy,
             projectName: item.projectName,
             budgetCode: item.budgetCode,
-            procurementType: item.procurementType,
-            consignee: item.deliveryAddress,
+            modeOfProcurement: item.modeOfProcurement,
+            consignee: item.consignee,
+            amount: item.amount,
           }),
           ...(item.workflowId === 5 && {
             createdBy: item.createdBy,
@@ -957,8 +958,9 @@ const {userId} = useSelector(state => state.auth)
           project: apiData.projectName,
           budgetName: apiData.budgetCode,
           indentTitle: "Tender",
-          procurementMode: apiData.procurementType,
-          consignee: apiData.deliveryAddress,
+          modeOfProcurement: apiData.modeOfProcurement,
+          consignee: apiData.consignee,
+          amount: apiData.amount,
         }[field];
 
       case 5:
