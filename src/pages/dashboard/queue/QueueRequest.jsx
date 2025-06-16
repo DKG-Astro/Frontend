@@ -1100,17 +1100,31 @@ const {userId} = useSelector(state => state.auth)
           )
         }
 
-        if((userId === 18) && !record.requestId.startsWith('M')) {
-          return (
-            <Button
-              type="primary"
-              onClick={() => fetchWorkflowDetails(record)}
-            >
-              Edit
-            </Button>
-          )
-        }
         
+        if ((userId === 18) && !record.requestId.startsWith('M')) {
+  if (record.status === "Approved") return null;
+
+  return (
+    <Space>
+      <Button
+        type="primary"
+        onClick={() =>
+          navigate("/procurement/indent/creation", {
+            state: { indentId: record.requestId }
+          })
+        }
+      >
+        Edit
+      </Button>
+      <Button type="link" onClick={() => handleApprove(record)}>
+        Approve
+      </Button>
+    </Space>
+  );
+}
+
+      
+
         // For user ID 29, show all options
         if (userId === 29) {
 

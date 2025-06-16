@@ -9,6 +9,7 @@ import { useReactToPrint } from 'react-to-print'
 import axios from 'axios'
 import CustomModal from '../../../components/CustomModal'
 import PrintFormate from '../../../utils/PrintFormate'
+import { useLocation } from "react-router-dom";
 
 const proprietaryLimitedDeclarationLabel = "The budgetary quote was obtained informing the vendor about:  (i) IIA's Payment Terms - 100% payment within 30 days from acceptance (ii). Applicability of providing performance & warranty security. (iii) Applicability of LD Clause."
 
@@ -68,6 +69,10 @@ const Indent1 = () => {
     const printRef = useRef();
 
     const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
+    const location = useLocation();
+    const { indentId } = location.state || {};
+
+    console.log("Request ID:", indentId); 
 
    /* const handlePrint = useReactToPrint({
         content: () => printRef.current,
@@ -129,6 +134,7 @@ const Indent1 = () => {
                     name: "indentId",
                     label: "Indent ID",
                     type: "search",
+                    disabled: formData?.indentId ? true : false
                     // disabled: true,
 
                 },
@@ -596,7 +602,13 @@ const Indent1 = () => {
             message.error("Error while fetching indent data.")
         }
     }
+    useEffect(() => {
+        if (indentId) {
+        handleSearch(indentId); 
+    }
+    }, [indentId]);
 
+/*
     const onFinish = async () => {
         if (selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") {
             let minFourVendorSelected = true;
@@ -654,7 +666,71 @@ const Indent1 = () => {
         finally {
             setSubmitBtnLoading(false)
         }
+    }*/
+   const onFinish = async () => {
+    if (selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") {
+        let minFourVendorSelected = true;
+
+        formData.materialDetails.forEach((item) => {
+            if (item.vendorNames.length < 4) {
+                message.error("At least 4 vendors should be selected for Limited Pre Approved Vendor Tender.");
+                minFourVendorSelected = false;
+                return;
+            }
+        });
+
+        if (!minFourVendorSelected) return;
     }
+
+    const payload = {
+        ...formData,
+        fileType: "Indent",
+        uploadBuyBackFileNames: formData.buyBack ? formData.uploadBuyBackFileNames : null,
+        uploadPACOrBrandPACFileName: formData.brandPac ? formData.uploadPACOrBrandPACFileName : null,
+        brandAndModel: formData.brandPac ? formData.brandAndModel : null,
+        preBidMeetingDate: formData.isPreBidMeetingRequired ? formData.preBidMeetingDate : null,
+        preBidMeetingVenue: formData.isPreBidMeetingRequired ? formData.preBidMeetingVenue : null,
+        estimatedRate: formData.isItARateContractIndent ? formData.estimatedRate : null,
+        periodOfContract: formData.isItARateContractIndent ? formData.periodOfContract : null,
+        singleAndMultipleJob: formData.isItARateContractIndent ? formData.singleAndMultipleJob : null,
+        justification: formData.brandPac ? formData.justification : null,
+        reason: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.reason : null,
+        proprietaryJustification: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.proprietaryJustification : null,
+        createdBy: userId,
+        employeeDepartment: employeeDepartment,
+        materialDetails: formData.materialDetails.map((item) => ({
+            ...item,
+            vendorNames: selectedModeOfProcurement === "Proprietary/Single Tender" ? [item.vendorNames] : item.vendorNames,
+        }))
+    };
+
+    try {
+        setSubmitBtnLoading(true);
+        let response;
+
+        if (formData?.indentId) {
+            // Update existing indent
+            response = await axios.put(`/api/indents/${formData.indentId}`, payload);
+           // data = response.data;
+            message.success("Indent updated successfully");
+        } else {
+            // Create new indent
+            response = await axios.post("/api/indents", payload);
+        }
+
+        setFormData({
+            ...formData,
+            indentId: response?.data?.responseData?.indentId
+        });
+
+        setModalOpen(true);
+    } catch (error) {
+        message.error(error.message || "Error submitting indent.");
+    } finally {
+        setSubmitBtnLoading(false);
+    }
+    };
+
 
     
 
