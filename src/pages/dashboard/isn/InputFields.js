@@ -16,21 +16,21 @@ export const isnFields = [
                 type: "date",
                 required: true
             },
-            {
-                name: "issueNoteType",
-                label: "Type",
-                type: "select",
-                options: [
-                    {
-                        value: "Returnable",
-                        label: "Returnable"
-                    },
-                    {
-                        value: "Non Returnable",
-                        label: "Non Returnable"
-                    }
-                ],
-            }
+            // {
+            //     name: "issueNoteType",
+            //     label: "Type",
+            //     type: "select",
+            //     options: [
+            //         {
+            //             value: "Returnable",
+            //             label: "Returnable"
+            //         },
+            //         {
+            //             value: "Non Returnable",
+            //             label: "Non Returnable"
+            //         }
+            //     ],
+            // }
         ]
     },
     {
