@@ -1,4 +1,4 @@
-import { Button, Form, message } from 'antd'
+import {Input, Button, Form, message } from 'antd'
 import React, { useState } from 'react'
 import CustomDatePicker from './DKG_CustomDatePicker'
 import { useSelector } from 'react-redux';
@@ -6,7 +6,7 @@ import { apiCall } from '../utils/CommonFunctions';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import Btn from './DKG_Btn';
 import TableComponent from './DKG_Table';
-
+/*
 const CustomReport = ({api, columns, title, showFilter}) => {
     const { token } = useSelector((state) => state.auth);
     const [form] = Form.useForm()
@@ -90,4 +90,118 @@ const CustomReport = ({api, columns, title, showFilter}) => {
   )
 }
 
-export default CustomReport
+export default CustomReport*/
+
+const CustomReport = ({ api, columns, title, filterType = "date" }) => {
+  const { token } = useSelector((state) => state.auth);
+  const [form] = Form.useForm();
+
+  const [filter, setFilter] = useState({
+    startDate: null,
+    endDate: null,
+  });
+
+  const [textFilter, setTextFilter] = useState('');
+  const [dataSource, setDataSource] = useState([]);
+
+  const populateData = async () => {
+    if (filterType === "date") {
+      if (!filter.startDate || !filter.endDate) {
+        message.error("Please enter start date and end date both.");
+        return;
+      }
+    } else if (filterType === "text") {
+      if (!textFilter) {
+        message.error("Please enter a value.");
+        return;
+      }
+    }
+
+    try {
+      let newApi = api;
+      if (filterType === "date") {
+        newApi = `${api}?startDate=${filter.startDate}&endDate=${filter.endDate}`;
+      } else if (filterType === "text") {
+        if (!textFilter) {
+          message.error("Please enter a value.");
+        return;
+        }
+        newApi = api.replace(/\{.*?\}/g, encodeURIComponent(textFilter));
+      }
+
+      const { data } = await apiCall('GET', newApi, token);
+      setDataSource(data?.responseData);
+    } catch (error) {
+      message.error("Error fetching data.");
+    }
+  };
+
+  const handleChange = (fieldName, value) => {
+    setFilter((prev) => ({ ...prev, [fieldName]: value }));
+  };
+
+  return (
+    <div>
+      <h1 className="!text-lg font-semibold text-center mb-8">{title}</h1>
+
+      <Form
+        form={form}
+        onFinish={populateData}
+        className="grid md:grid-cols-4 grid-cols-2 gap-x-2 items-center px-2 pt-0 border !py-4 border-darkBlueHover mb-8"
+      >
+        {filterType === "date" && (
+          <>
+            <CustomDatePicker
+              className="no-margin"
+              defaultValue={filter.startDate}
+              placeholder="From date"
+              name="startDate"
+              onChange={handleChange}
+              required
+            />
+            <CustomDatePicker
+              className="no-margin"
+              defaultValue={filter.endDate}
+              placeholder="To date"
+              name="endDate"
+              onChange={handleChange}
+              required
+            />
+          </>
+        )}
+
+        {filterType === "text" && (
+           <Form.Item
+              name="textFilter"
+              className="w-full m-0"
+              style={{ marginBottom: 0 }}
+            >
+            <Input
+              className="w-full h-[40px]" 
+              placeholder="Enter search text"
+              value={textFilter}
+              onChange={(e) => setTextFilter(e.target.value)}
+            />
+            </Form.Item>
+
+        )}
+
+        <Btn htmlType="submit" className="w-full">
+          Search
+        </Btn>
+
+        <Button
+          className="flex gap-2 items-center border-darkBlue text-darkBlue"
+          onClick={() => window.location.reload()}
+        >
+          <CloseCircleOutlined />
+          <span>Reset</span>
+        </Button>
+      </Form>
+
+      <TableComponent dataSource={dataSource} columns={columns} />
+    </div>
+  );
+};
+
+export default CustomReport;

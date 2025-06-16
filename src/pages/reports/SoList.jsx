@@ -122,7 +122,7 @@ const SoList = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="So List" showFilter />
+      <CustomReport columns={columns} api={api} title="So List" filterType="date"/>
     </div>
   );
 };

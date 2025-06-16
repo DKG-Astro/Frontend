@@ -157,7 +157,7 @@ const IndentReport = () => {
   ];
   
   
-  return <CustomReport showFilter api={api} columns={columns} title="Indent Report" />
+  return <CustomReport showFilter api={api} columns={columns} title="Indent Report" filterType="date"/>
 }
 
 export default IndentReport

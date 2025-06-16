@@ -54,7 +54,7 @@ const MonthlyProcurementReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Monthly Procurement Report" showFilter />
+      <CustomReport columns={columns} api={api} title="Monthly Procurement Report" filterType="date" />
     </div>
   );
 };

@@ -48,6 +48,7 @@ import IndentList from "../reports/IndentList";
 import QuarterlyVigilanceSoReport from '../reports/QuarterlyVigilanceSoReport';
 import ShortClosedCancelledOrderReport from "../reports/ShortClosedCancelledOrderReport";
 import MonthlyProcurementReport from "../reports/MonthlyProcurementReport";
+import IndentStatus from '../reports/IndentStatus'
 
 const RoutesComponent = () => {
   return (
@@ -90,6 +91,7 @@ const RoutesComponent = () => {
               <Route path="QuarterlyVigilanceSoReport" element={<QuarterlyVigilanceSoReport />} />
               <Route path="ShortClosedCancelledOrderReport" element={<ShortClosedCancelledOrderReport />} />
               <Route path="MonthlyProcurementReport" element={<MonthlyProcurementReport />} />
+              <Route path="IndentStatus" element={<IndentStatus />} />
             </Route>
 
             <Route path="/invReports" element={<InvReportsMain />}>

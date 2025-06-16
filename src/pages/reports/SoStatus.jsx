@@ -130,7 +130,7 @@ const SoStatus = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="So Status" showFilter />
+      <CustomReport columns={columns} api={api} title="So Status" filterType="date"/>
     </div>
   );
 };

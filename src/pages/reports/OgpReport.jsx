@@ -37,7 +37,7 @@ const OgpReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="OGP Report" showFilter />
+      <CustomReport columns={columns} api={api} title="OGP Report" filterType="date" />
     </div>
   );
 };

@@ -37,7 +37,7 @@ const GoodsIssueReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Goods Issue Report" showFilter />
+      <CustomReport columns={columns} api={api} title="Goods Issue Report" filterType="date" />
     </div>
   );
 };

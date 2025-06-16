@@ -83,7 +83,7 @@ const VendorContract = () => {
       filterable: true
     },
   ];
-  return <CustomReport showFilter api={api} columns={columns} title="Vendor Contract Report" />
+  return <CustomReport api={api} columns={columns} title="Vendor Contract Report" filterType="date" />
 }
 
 export default VendorContract

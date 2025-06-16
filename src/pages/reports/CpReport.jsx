@@ -61,7 +61,7 @@ const CpReport = () => {
     },
   ];
   
-  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" />
+  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" filterType="date"/>
 }
 
 export default CpReport

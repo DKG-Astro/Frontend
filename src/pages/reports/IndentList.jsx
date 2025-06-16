@@ -156,7 +156,7 @@ const IndentList = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Indent List" showFilter />
+      <CustomReport columns={columns} api={api} title="Indent List" filterType="date" />
     </div>
   );
 };

@@ -127,7 +127,7 @@ const PoList = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Po List" showFilter />
+      <CustomReport columns={columns} api={api} title="Po List" filterType="date"/>
     </div>
   );
 };

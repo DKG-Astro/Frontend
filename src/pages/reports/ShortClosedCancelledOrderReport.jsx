@@ -76,7 +76,7 @@ const ShortClosedCancelledOrderReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Short Closed Cancelled Order Report" showFilter />
+      <CustomReport columns={columns} api={api} title="Short Closed Cancelled Order Report" filterType="date" />
     </div>
   );
 };

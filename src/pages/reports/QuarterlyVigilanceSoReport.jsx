@@ -69,7 +69,7 @@ const QuarterlyVigilanceSoReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Quarterly Vigilance Report"  />
+      <CustomReport columns={columns} api={api} title="Quarterly Vigilance Report" filterType="none"/>
     </div>
   );
 };

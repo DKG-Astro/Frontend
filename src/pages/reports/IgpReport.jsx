@@ -36,7 +36,7 @@ const IgpReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="IGP Report" showFilter />
+      <CustomReport columns={columns} api={api} title="IGP Report" filterType="date" />
     </div>
   );
 };

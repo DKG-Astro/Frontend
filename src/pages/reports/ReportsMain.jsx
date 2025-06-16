@@ -14,6 +14,7 @@ import IndentList from './IndentList';
 import QuarterlyVigilanceSoReport from './QuarterlyVigilanceSoReport';
 import ShortClosedCancelledOrderReport from './ShortClosedCancelledOrderReport';
 import MonthlyProcurementReport from './MonthlyProcurementReport';
+import IndentStatus from './IndentStatus';
 
 const ReportsMain = () => {
     const tiles = [
@@ -95,6 +96,12 @@ const ReportsMain = () => {
             icon: <SolutionOutlined />,
             path: "/reports/MonthlyProcurementReport"
         },
+         {
+            id:14,
+            title:"Indent Status",
+            icon: <SolutionOutlined />,
+            path: "/reports/IndentStatus"
+        },
     ]
     const [activeTab, setActiveTab] = useState(1)
     const renderReports = () => {
@@ -125,6 +132,8 @@ const ReportsMain = () => {
                 return <ShortClosedCancelledOrderReport />
             case 13:
                 return <MonthlyProcurementReport />
+            case 14:
+                return <IndentStatus/>
             default:
                 return <h1>Contingency Purchase Report</h1>
         }

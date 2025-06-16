@@ -17,7 +17,7 @@ const AssetReport = () => {
        const api = "/api/reports/asset"
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Asset Report" />
+      <CustomReport columns={columns} api={api} title="Asset Report"  filterType="none"/>
     </div>
   )
 }

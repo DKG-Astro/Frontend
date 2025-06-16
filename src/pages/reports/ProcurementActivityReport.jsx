@@ -41,7 +41,7 @@ const ProcurementActivityReport = () => {
       filterable: true
     },
   ];
-  return <CustomReport showFilter api={api} columns={columns} title="Procurement Activity Report" />
+  return <CustomReport api={api} columns={columns} title="Procurement Activity Report" filterType="date" />
 }
 
 export default ProcurementActivityReport

@@ -34,7 +34,7 @@ const StockReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Stock Report" />
+      <CustomReport columns={columns} api={api} title="Stock Report" filterType="none" />
     </div>
   );
 };

@@ -130,7 +130,7 @@ const PoStatus = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Po Status" showFilter />
+      <CustomReport columns={columns} api={api} title="Po Status" filterType="date"/>
     </div>
   );
 };
