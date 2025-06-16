@@ -83,8 +83,15 @@ export const ogpFields = [
         ]
     },
     {
-        heading: "Receiver Details",
+        heading: "Receiver and Sender Details",
         fieldList: [
+            {
+                name: "senderName",
+                label: "Sender Name",
+                type: "text",
+                required: true,
+                disabled: true
+            },
             {
                 name: "receiverName",
                 label: "Receiver Name",
@@ -198,8 +205,15 @@ export const ogpFieldsPo = [
         ]
     },
     {
-        heading: "Receiver Details",
+        heading: "Receiver And Sender Details",
         fieldList: [
+            {
+                name: "senderName",
+                label: "Sender Name",
+                type: "text",
+                required: true,
+                disabled: true
+            },
             {
                 name: "receiverName",
                 label: "Receiver Name",

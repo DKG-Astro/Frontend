@@ -16,13 +16,15 @@ const Ogp = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
+const senderName = useSelector(state => state.auth.userName)
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [formData, setFormData] = useState({
     issueNoteId: "",
     ogpDate: null,
-    materialDtlList: []
+    materialDtlList: [],
+    senderName: senderName
   });
 
   const handleChange = (fieldName, value) => {
