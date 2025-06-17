@@ -1101,28 +1101,70 @@ const {userId} = useSelector(state => state.auth)
         }
 
         
-        if ((userId === 18) && !record.requestId.startsWith('M')) {
-  if (record.status === "Approved") return null;
+        if ((auth.role == "Indent Creator") && !record.requestId.startsWith('M')) {
+          if (record.status === "Approved") return null;
 
-  return (
-    <Space>
-      <Button
-        type="primary"
-        onClick={() =>
-          navigate("/procurement/indent/creation", {
-            state: { indentId: record.requestId }
-          })
+            return (
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    navigate("/procurement/indent/creation", {
+                    state: { indentId: record.requestId }
+                  })
+                  }
+                >
+                  Edit
+              </Button>
+              <Button type="link" onClick={() => handleApprove(record)}>
+                  Approve
+              </Button>
+            </Space>
+          );
         }
-      >
-        Edit
-      </Button>
-      <Button type="link" onClick={() => handleApprove(record)}>
-        Approve
-      </Button>
-    </Space>
-  );
-}
 
+         if ((auth.role == "Tender Creator")) {
+          if (record.status === "Approved") return null;
+
+            return (
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    navigate("/procurement/tender/request", {
+                    state: { indentId: record.requestId }
+                  })
+                  }
+                >
+                  Edit
+              </Button>
+              <Button type="link" onClick={() => handleApprove(record)}>
+                  Approve
+              </Button>
+            </Space>
+          );
+        }
+        if ((auth.role == "PO Creator")) {
+          if (record.status === "Approved") return null;
+
+            return (
+              <Space>
+                <Button
+                  type="primary"
+                  onClick={() =>
+                    navigate("/procurement/purchaseOrder", {
+                    state: { poId: record.requestId }
+                  })
+                  }
+                >
+                  Edit
+              </Button>
+              <Button type="link" onClick={() => handleApprove(record)}>
+                  Approve
+              </Button>
+            </Space>
+          );
+        }
       
 
         // For user ID 29, show all options

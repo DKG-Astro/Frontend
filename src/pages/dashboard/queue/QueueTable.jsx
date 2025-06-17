@@ -8,7 +8,7 @@ import Queue3 from "./Queue3";
 import Queue1 from "./Queue1";
 
 const { Text } = Typography;
-const RESTRICTED_USER_IDS = new Set([25, 31, 34, 36]);
+const RESTRICTED_USER_IDS = new Set([]);
 
 const QueueTable = () => {
   const auth = useSelector((state) => state.auth);

@@ -9,6 +9,7 @@ import { renderFormFields } from "../../../utils/CommonFunctions";
 import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { PoDetails } from "./InputFields";
+import { useLocation } from "react-router-dom";
 
 const PO = () => {
   const printRef = useRef();
@@ -19,6 +20,7 @@ const PO = () => {
   // Redux selectors
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
+  
 
   // Data states
   const [vendors, setVendors] = useState([]);
@@ -29,6 +31,10 @@ const PO = () => {
     consignesAddress: "Bangalore",
     billingAddress: "Koramangala, Bangalore - 560034",
   });
+  const location = useLocation();
+      const { poId } = location.state || {};
+  
+      console.log("PO ID:", poId); 
 
   // Fetch initial data
   const populateDropdowns = async () => {
@@ -201,7 +207,12 @@ const PO = () => {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
-
+   useEffect(() => {
+          if (poId) {
+          handleSearch(poId); 
+      }
+      }, [poId]);
+/*
   // Form submission
   const onFinish = async () => {
     try {
@@ -235,7 +246,54 @@ const PO = () => {
     } finally {
       setSubmitBtnLoading(false);
     }
+  };*/
+  const onFinish = async () => {
+    try {
+      if (!formData.tenderId) {
+        message.error("Please select a Tender ID before submitting.");
+        return;
+      }
+      setSubmitBtnLoading(true);
+
+      const payload = {
+        ...formData,
+        createdBy: actionPerformer,
+        purchaseOrderAttributes: (formData.materialDtlList || []).map((m) => ({
+        budgetCode: m.budgetCode || "",
+        currency: m.currency || "",
+        duties: Number(m.duties) || 0,
+        exchangeRate: Number(m.exchangeRate) || 0,
+        freightCharge: Number(m.freightCharge) || 0,
+        gst: Number(m.gst) || 0,
+        materialCode: m.materialCode || "",
+        materialDescription: m.materialDescription || "",
+        quantity: Number(m.quantity) || 0,
+        rate: Number(m.rate) || 0,
+      })),
+    };
+
+    let data;
+    if (formData.poId) {
+      // Update
+      const response = await axios.put(`/api/purchase-orders/${formData.poId}`, payload);
+      data = response.data;
+      message.success("Purchase Order updated successfully");
+    } else {
+      // Create
+      const response = await axios.post("/api/purchase-orders", payload);
+      data = response.data;
+      message.success("Purchase Order created successfully");
+    }
+
+    setGeneratedPOId(data.responseData.poId);
+    setModalOpen(true);
+    } catch (error) {
+      message.error("Failed to submit purchase order");
+    } finally {
+      setSubmitBtnLoading(false);
+    }
   };
+
 
   const handleSearch = async (value) => {
     try {
