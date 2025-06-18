@@ -11,6 +11,7 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { TenderDetails } from "./InputFields";
 import { multiply } from "lodash";
+import { useLocation } from "react-router-dom";
 
 const { Option } = Select;
 
@@ -36,6 +37,10 @@ const Tender = () => {
     (state) => state.auth
   );
 
+   const location = useLocation();
+        const { tenderId } = location.state || {};
+    
+        console.log("Tender ID:", tenderId); 
   //const [formData, setFormData] = useState({});
   const [formData, setFormData] = useState({
     indentId: [],  
@@ -132,7 +137,9 @@ const Tender = () => {
         if (indentData?.materialDetails) {
           allMaterials.push(...indentData.materialDetails);
         }
+       
       }
+      
   
       const formattedMaterials = allMaterials.map((material) => ({
         materialCode: material.materialCode,
@@ -200,8 +207,9 @@ const Tender = () => {
     setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
   
+
   
-  
+  /*
   const handleSearch = async () => {
     if (!searchTenderId) {
       message.error("Please enter a Tender ID");
@@ -217,12 +225,63 @@ const Tender = () => {
       message.error("Failed to fetch tender details");
       console.error("Search error:", error);
     }
-  };
+  };*/
+  const handleSearch = async (value) => {
+  try {
+    const { data } = await axios.get(
+      `/api/tender-requests/base64Files/${value || formData.tenderId}`
+    );
+
+    const responseData = data?.responseData || {};
+
+    const indentIds = Array.isArray(responseData.indentIds)
+      ? responseData.indentIds
+      : responseData.indentIds
+      ? [responseData.indentIds]
+      : [];
+
+    // Directly use projectName from response
+    const formattedIndentIds = indentIds.map((id) => ({
+      value: id,
+      label: `Indent ${id} (${responseData.projectName || ""})`,
+    }));
+
+    setSelectedProjectName(responseData.projectName);
+
+    setFormData((prev) => ({
+      ...prev,
+      ...responseData,
+      indentId: indentIds,
+    }));
+
+    form.setFieldsValue({
+      ...responseData,
+      indentId: formattedIndentIds,
+    });
+
+    if (indentIds.length) {
+      await handleIndentSearch(indentIds);
+    }
+  } catch (error) {
+    console.error("Search error:", error);
+    message.error(
+      error?.response?.data?.responseStatus?.message || "Error fetching tender data."
+    );
+  }
+};
+
+  useEffect(() => {
+          if (tenderId) {
+          handleSearch(tenderId); 
+      }
+      }, [tenderId]);
+
+
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
-
+/*
   const onFinish = async () => {
     const { materialDetails, indentMaterials, ...filteredData } = formData;
   
@@ -254,12 +313,77 @@ const Tender = () => {
       setSubmitBtnLoading(false);
     }
   };
-  
+  */
+  const onFinish = async () => {
+  try {
+    setSubmitBtnLoading(true);
+
+    const payload = {
+      ...formData,
+      createdBy: userId,
+      lastUpdatedBy: userId,
+      fileType: "Tender",
+      materialDetails: (formData.materialDetails || []).map((m) => ({
+        materialCode: m.materialCode || "",
+        materialDescription: m.materialDescription || "",
+        uom: m.uom || "",
+        quantity: Number(m.quantity) || 0,
+        unitPrice: Number(m.unitPrice) || 0,
+        materialCategory: m.materialCategory || "",
+        materialSubCategory: m.materialSubCategory || "",
+        budgetCode: m.budgetCode || "",
+        totalPrice: Number(m.totalPrice) || 0,
+        modeOfProcurement: m.modeOfProcurement || "",
+        vendorNames: m.vendorNames || "",
+      })),
+    };
+
+    let data;
+
+    if (tenderId) {
+      // Update
+      const response = await axios.put(`/api/tender-requests/${tenderId}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      data = response.data;
+      message.success("Tender updated successfully");
+    } else {
+      //Create
+      const response = await axios.post("/api/tender-requests", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      data = response.data;
+      message.success("Tender created successfully");
+    }
+
+    if (data?.responseData?.tenderId) {
+      setGeneratedTenderId(data.responseData.tenderId);
+      setIsPrintEnabled(true);
+      setModalOpen(true);
+    }
+  } catch (error) {
+    message.error("Failed to submit tender");
+    console.error("Tender submit error:", error);
+  } finally {
+    setSubmitBtnLoading(false);
+  }
+};
+
 
 
 
 
   const TenderDetails = [
+    {
+      heading: "Tender Search",
+      colCnt: 1,
+      fieldList: [{
+        name: "tenderId",
+        label: "Tender Id",
+        type: "search",
+        span: 1
+      }]
+    },
     {
       heading: "Tender Basic Details",
       colCnt: 4,
@@ -573,6 +697,8 @@ const Tender = () => {
       ]
     }
   ];
+  
+ 
 
 
   return (
@@ -591,7 +717,8 @@ const Tender = () => {
           formData,
           "",
           null,
-          setFormData
+          setFormData,
+          handleSearch
         )}
 
         <ButtonContainer

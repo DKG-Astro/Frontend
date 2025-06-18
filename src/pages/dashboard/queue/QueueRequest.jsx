@@ -1132,7 +1132,7 @@ const {userId} = useSelector(state => state.auth)
                   type="primary"
                   onClick={() =>
                     navigate("/procurement/tender/request", {
-                    state: { indentId: record.requestId }
+                    state: { tenderId: record.requestId }
                   })
                   }
                 >
