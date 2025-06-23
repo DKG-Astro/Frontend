@@ -211,7 +211,7 @@ useEffect(() => {
                 {twoColRow("CONSIGNEE", data.consignesLocation, "PRE-BID MEETING", data.preBidMeetingDate ? `${data.preBidMeetingDate}, ${data.preBidMeetingVenue}` : "N/A")}
                 <tr>
                   <td className="border border-black p-2 font-semibold w-[30%]">JUSTIFICATION FOR PROPRIETARY</td>
-                  <td className="border border-black p-2" colSpan={3}>{data.proprietaryJustification || "—"}</td>
+                  <td className="border border-black p-2" colSpan={3}>{data.proprietaryAndLimitedDeclaration || "—"}</td>
                 </tr>
               </tbody>
             </table>

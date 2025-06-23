@@ -12,6 +12,7 @@ import CustomModal from "../../../components/CustomModal";
 import { TenderDetails } from "./InputFields";
 import { multiply } from "lodash";
 import { useLocation } from "react-router-dom";
+import TenderPrintFormat from "../../../utils/TenderPrintFormat";
 
 const { Option } = Select;
 
@@ -277,10 +278,16 @@ const Tender = () => {
       }, [tenderId]);
 
 
-
+/*
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
-  });
+  });*/
+     const printComponentRef = useRef(); 
+  
+      const handlePrint = useReactToPrint({
+          content: () => printComponentRef.current,
+          documentTitle: `Tender - ${formData?.tenderId || "Draft"}`
+      });
 /*
   const onFinish = async () => {
     const { materialDetails, indentMaterials, ...filteredData } = formData;
@@ -740,6 +747,9 @@ const Tender = () => {
         title="Tender Submission Successful"
         processNo={generatedTenderId}
       />
+      <div style={{ display: "none" }}>
+                <TenderPrintFormat ref={printComponentRef} data={formData} />
+      </div>
     </Card>
   );
 };
