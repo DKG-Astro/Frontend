@@ -87,7 +87,7 @@ const MaterialDetailModal = ({ visible, setVisible, materialData }) => {
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`http://103.181.158.220:8081/astro-service/file/view/Material/${fileName.trim()}`}
+                                  href={`/file/view/Material/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -297,7 +297,7 @@ const QueueRequest = ({ workflowId, requestType }) => {
     setLoadingPreviousRoles(true);
     try {
       const response = await axios.get(
-        `http://103.181.158.220:8081/astro-service/allPreviousWorkflowRole?workflowId=${encodeURIComponent(
+        `/allPreviousWorkflowRole?workflowId=${encodeURIComponent(
           workflowId
         )}&requestId=${encodeURIComponent(requestId)}`
       );

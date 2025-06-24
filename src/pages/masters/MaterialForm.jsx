@@ -50,7 +50,7 @@ const MaterialForm = ({materialCode}) => {
       const fetchMaterialData = async () => {
         try {
           const response = await fetch(
-            `http://103.181.158.220:8081/astro-service/api/material-master-util/${materialCode}`
+            `/api/material-master-util/${materialCode}`
           );
           const data = await response.json();
           
@@ -72,7 +72,7 @@ const MaterialForm = ({materialCode}) => {
                 uid: `${index}`,
                 name: fileName.trim(),
                 status: "done",
-                url: `http://103.181.158.220:8081/astro-service/file/view/Material/${fileName.trim()}`, // Update if different
+                url: `/file/view/Material/${fileName.trim()}`, // Update if different
               }));
             setFileList(fileArray);
           }
@@ -90,7 +90,7 @@ const MaterialForm = ({materialCode}) => {
   const fetchInitialData = async () => {
     try {
       const response = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/material-master"
+        "/api/material-master"
       );
       const data = await response.json();
 
@@ -124,7 +124,7 @@ const MaterialForm = ({materialCode}) => {
       setMaterialDetailsMap(materialMap);
       setMaterialList(Object.keys(materialMap));
       const uomResponse = await fetch(
-        "http://103.181.158.220:8081/astro-service/api/uom-master"
+        "/api/uom-master"
       );
       const uomData = await uomResponse.json();
 
@@ -209,7 +209,7 @@ const MaterialForm = ({materialCode}) => {
             formData.append("file", file.originFileObj);
       
             const uploadResponse = await fetch(
-              "http://103.181.158.220:8081/astro-service/file/upload?fileType=Material",
+              "/file/upload?fileType=Material",
               { method: "POST", body: formData }
             );
       
@@ -250,8 +250,8 @@ const MaterialForm = ({materialCode}) => {
 
       // Updated URL for PUT request
       const url = isEditMode
-        ? `http://103.181.158.220:8081/astro-service/api/material-master-util/update/${materialCode}`
-        : "http://103.181.158.220:8081/astro-service/api/material-master-util/register";
+        ? `/api/material-master-util/update/${materialCode}`
+        : "/api/material-master-util/register";
 
       const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",

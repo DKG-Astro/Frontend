@@ -25,7 +25,7 @@ const { tenderId, bidType } = location.state || {};
 
   const fetchQuotations = async () => {
     try {
-      const response = await axios.get(`http://localhost:8081/astro-service/api/vendor-quotation/${tenderId}`);
+      const response = await axios.get(`/api/vendor-quotation/${tenderId}`);
       const data = response.data?.responseData || [];
       setQuotationData(data);
     } catch (error) {
@@ -35,7 +35,7 @@ const { tenderId, bidType } = location.state || {};
 
   const fetchNotSubmittedVendors = async () => {
     try {
-    const res = await axios.get(`http://localhost:8081/astro-service/api/vendor-quotation/NotSubmitVendors/${tenderId}`);
+    const res = await axios.get(`/api/vendor-quotation/NotSubmitVendors/${tenderId}`);
     setNotSubmittedVendors(res.data.responseData || []);
     } catch (error) {
     message.error("Failed to fetch vendors who didn't submit quotations");
@@ -82,7 +82,7 @@ const handleSubmit = async () => {
 
   try {
     setIsSubmitting(true);
-    await axios.put(`http://localhost:8081/astro-service/api/tender-requests/update/${tenderId}`, updatedTender);
+    await axios.put(`/api/tender-requests/update/${tenderId}`, updatedTender);
     message.success("Tender updated successfully");
     navigate("/queue");
   } catch (error) {
@@ -124,7 +124,7 @@ const handleSubmit = async () => {
     render: (_, record) => (
       record.quotationFileName ? (
         <a
-          href={`http://103.181.158.220:8081/astro-service/file/view/Tender/${record.quotationFileName}`}
+          href={`/file/view/Tender/${record.quotationFileName}`}
           target="_blank"
           rel="noopener noreferrer"
         >

@@ -17,7 +17,7 @@ const JobCreation = () => {
       try {
         // Fetch Job Categories
         const jobResponse = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/job-master"
+          "/api/job-master"
         );
         const jobData = await jobResponse.json();
         
@@ -27,7 +27,7 @@ const JobCreation = () => {
 
         // Fetch UOM Options
         const uomResponse = await fetch(
-          "http://103.181.158.220:8081/astro-service/api/uom-master"
+          "/api/uom-master"
         );
         const uomData = await uomResponse.json();
         
