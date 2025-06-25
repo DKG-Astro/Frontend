@@ -267,7 +267,7 @@ const Indent1 = () => {
                     label: "Budget Code",
                     type: "select",
                     options: budgetCodeDropdown,
-                    required: true
+                  //  required: true
                 },
                 {
                     name: "vendorNames",

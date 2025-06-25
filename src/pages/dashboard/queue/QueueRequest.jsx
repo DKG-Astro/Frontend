@@ -18,6 +18,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import QueueModal from "./QueueModal";
 import { useNavigate } from "react-router-dom";
+import { baseURL } from '../../../App';
 // import { render } from "@testing-library/react";
 
 const { Text } = Typography;
@@ -87,7 +88,7 @@ const MaterialDetailModal = ({ visible, setVisible, materialData }) => {
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Material/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Material/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >

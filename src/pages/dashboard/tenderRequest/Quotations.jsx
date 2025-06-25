@@ -6,6 +6,7 @@ import Heading from '../../../components/DKG_Heading'
 import { Table, Checkbox, message } from 'antd'
 import axios from 'axios'
 import Btn from '../../../components/DKG_Btn'
+import { baseURL } from '../../../App';
 
 
 const Quotations =  ()  => {
@@ -124,7 +125,7 @@ const handleSubmit = async () => {
     render: (_, record) => (
       record.quotationFileName ? (
         <a
-          href={`/file/view/Tender/${record.quotationFileName}`}
+          href={`${baseURL}/file/view/Tender/${record.quotationFileName}`}
           target="_blank"
           rel="noopener noreferrer"
         >

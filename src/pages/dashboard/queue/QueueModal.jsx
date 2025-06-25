@@ -29,6 +29,9 @@ import {
 } from "@ant-design/icons";
 import QueueHistory from "./QueueHistory";
 import MaterialHistory from "./MaterialIndentHistory";
+import { baseURL } from '../../../App';
+
+
 
 const QueueModal = ({
   modalVisible,
@@ -112,7 +115,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Indent/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -135,7 +138,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Indent/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -158,7 +161,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Indent/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -334,7 +337,7 @@ const QueueModal = ({
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
-                                    href={`/file/view/Indent/${fileName.trim()}`}
+                                    href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -382,7 +385,7 @@ const QueueModal = ({
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
-                                    href={`/file/view/Indent/${fileName.trim()}`}
+                                    href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -799,7 +802,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Tender/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -823,7 +826,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Tender/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -848,7 +851,7 @@ const QueueModal = ({
                             .map((fileName, index) => (
                               <div key={index}>
                                 <a
-                                  href={`/file/view/Tender/${fileName.trim()}`}
+                                  href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
@@ -920,7 +923,7 @@ const QueueModal = ({
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
-                                    href={`/file/view/Tender/${fileName.trim()}`}
+                                    href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -960,7 +963,7 @@ const QueueModal = ({
                               .map((fileName, index) => (
                                 <div key={index}>
                                   <a
-                                    href={`/file/view/Tender/${fileName.trim()}`}
+                                    href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
