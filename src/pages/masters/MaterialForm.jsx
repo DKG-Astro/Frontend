@@ -26,6 +26,8 @@ import { modeOfProcurementList } from "../../utils/Constants";
 import { useLocation, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import TextAreaComponent from "../../components/DKG_TextAreaComponent";
+import axios from "axios";
+
 
 const MaterialForm = ({materialCode}) => {
   const auth = useSelector((state) => state.auth);
@@ -49,12 +51,12 @@ const MaterialForm = ({materialCode}) => {
     if (materialCode) {
       const fetchMaterialData = async () => {
         try {
-          const response = await fetch(
+         /* const response = await fetch(
             `/api/material-master-util/${materialCode}`
           );
-          const data = await response.json();
-          
-
+          const data = await response.json();*/
+          const response = await axios.get(`/api/material-master-util/${materialCode}`);
+          const data = response.data;
           if (data.responseStatus?.statusCode === 0) {
             const materialData = data.responseData;
             setExistingData(materialData);
@@ -89,10 +91,9 @@ const MaterialForm = ({materialCode}) => {
 
   const fetchInitialData = async () => {
     try {
-      const response = await fetch(
-        "/api/material-master"
-      );
-      const data = await response.json();
+      const response = await axios.get("/api/material-master");
+      const data = response.data;
+
 
       if (!data.responseData) throw new Error("Invalid material data");
 
@@ -123,10 +124,8 @@ const MaterialForm = ({materialCode}) => {
 
       setMaterialDetailsMap(materialMap);
       setMaterialList(Object.keys(materialMap));
-      const uomResponse = await fetch(
-        "/api/uom-master"
-      );
-      const uomData = await uomResponse.json();
+     const uomResponse = await axios.get("/api/uom-master");
+     const uomData = uomResponse.data;
 
       if (!uomData.responseData) throw new Error("Invalid UOM data");
 
@@ -208,12 +207,18 @@ const MaterialForm = ({materialCode}) => {
             const formData = new FormData();
             formData.append("file", file.originFileObj);
       
-            const uploadResponse = await fetch(
+          /*  const uploadResponse = await fetch(
               "/file/upload?fileType=Material",
               { method: "POST", body: formData }
             );
       
-            const uploadResult = await uploadResponse.json();
+            const uploadResult = await uploadResponse.json();*/
+            const uploadResponse = await axios.post(
+              "/file/upload?fileType=Material",
+              formData
+              );
+            const uploadResult = uploadResponse.data;
+
             if (uploadResult?.responseData?.fileName) {
               uploadedFileNames.push(uploadResult.responseData.fileName);
             }
@@ -253,26 +258,34 @@ const MaterialForm = ({materialCode}) => {
         ? `/api/material-master-util/update/${materialCode}`
         : "/api/material-master-util/register";
 
-      const response = await fetch(url, {
+    /*  const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      });*/
+      const response = isEditMode
+      ? await axios.put(url, payload)
+      : await axios.post(url, payload);
 
-      if (!response.ok) {
+
+     /* if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.responseStatus?.message || "Operation failed"
         );
-      }
+      }*/
+      const errorMsg = error.response?.data?.responseStatus?.message || error.message;
+      message.error(`Submission failed: ${errorMsg}`);
+
 
       if (isEditMode) {
         message.success("Material updated successfully!");
         // Refresh data after update
         location.state?.reload && window.location.reload();
       } else {
-        const result = await response.json();
-        setGeneratedMaterialCode(result.responseData?.materialCode);
+       // const result = await response.json();
+       // setGeneratedMaterialCode(result.responseData?.materialCode);
+       setGeneratedMaterialCode(response.data.responseData?.materialCode);
         setShowMaterialCodePopup(true);
       }
     } catch (error) {
