@@ -274,8 +274,8 @@ const MaterialForm = ({materialCode}) => {
           errorData.responseStatus?.message || "Operation failed"
         );
       }*/
-      const errorMsg = error.response?.data?.responseStatus?.message || error.message;
-      message.error(`Submission failed: ${errorMsg}`);
+      //const errorMsg = error.response?.data?.responseStatus?.message || error.message;
+      //message.error(`Submission failed: ${errorMsg}`);
 
 
       if (isEditMode) {
@@ -289,7 +289,8 @@ const MaterialForm = ({materialCode}) => {
         setShowMaterialCodePopup(true);
       }
     } catch (error) {
-      message.error(`Submission failed: ${error.message}`);
+      const errorMsg = error.response?.data?.responseStatus?.message || error.message;
+      message.error(`Submission failed: ${errorMsg}`);
       console.error("Submission error:", error);
     } finally {
       setLoading(false);
