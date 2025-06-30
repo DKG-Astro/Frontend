@@ -39,7 +39,7 @@ const Tender = () => {
   );
 
    const location = useLocation();
-        const { tenderId } = location.state || {};
+        const { tenderId, indentIds } = location.state || {};
     
         console.log("Tender ID:", tenderId); 
   //const [formData, setFormData] = useState({});
@@ -207,6 +207,7 @@ const Tender = () => {
   
     setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
+
   
 
   
@@ -272,10 +273,12 @@ const Tender = () => {
 };
 
   useEffect(() => {
-          if (tenderId) {
+      if (tenderId) {
           handleSearch(tenderId); 
+      }else if (indentIds?.length) {
+        handleChange("indentId", indentIds); 
       }
-      }, [tenderId]);
+      }, [tenderId, indentIds]);
 
 
 /*

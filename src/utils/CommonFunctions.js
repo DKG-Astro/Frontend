@@ -320,6 +320,31 @@ export const apiCall = async (method, url, token, payload = null) => {
           />
           </Form.Item>
         );
+        case "checkboxWithLabelText":
+        return (
+          <Form.Item
+            key={field?.name}
+            name={field?.name}
+            valuePropName="checked"
+            rules={[
+        {
+          required: field?.required,
+        //  message: "Please accept this declaration to proceed.",
+        },
+      ]}
+          >
+          <Checkbox
+            disabled={field?.disabled}
+            onChange={(e) => handleChange(field?.name, e.target.checked)}
+            checked={formData[field.name]}
+          >
+          <span style={{ textAlign: "justify", display: "inline-block" }}>
+            {field?.label}
+          </span>
+          </Checkbox>
+         </Form.Item>
+        );
+
 
 
 

@@ -201,6 +201,11 @@ const ContingencyPurchase = () => {
     message.error("Please add at least one material detail.");
     return;
   }
+   if (!formData.declarationOne || !formData.declarationTwo) {
+    message.error("Please accept both declarations to submit.");
+    return;
+  }
+
 
   const cpMaterials = formData.materialDetails.map(material => ({
     materialCode: material.materialCode,

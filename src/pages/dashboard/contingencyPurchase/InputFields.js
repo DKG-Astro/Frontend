@@ -249,5 +249,70 @@ export const CpDetails =(formData = {}) => [
       type: "text",
     }
   ],
+},{
+  heading: "",
+  colCnt: 4,
+  fieldList: [
+    {
+      name: "purpose",
+      label: "purpose",
+      type: "text",
+      required: true,
+    },
+    {
+      name: "countryOfOrigin",
+      label: "Country of Origin",
+      type: "select",
+      required: true,
+      options: [
+        { label: "India", value: "India" },
+        { label: "United States", value: "United States" },
+        { label: "China", value: "China" },
+        { label: "Germany", value: "Germany" },
+        { label: "France", value: "France" },
+        { label: "Japan", value: "Japan" },
+        { label: "United Kingdom", value: "United Kingdom" },
+        { label: "Canada", value: "Canada" },
+        { label: "Australia", value: "Australia" },
+        { label: "South Korea", value: "South Korea" },
+        { label: "Brazil", value: "Brazil" },
+        { label: "Italy", value: "Italy" },
+        { label: "Singapore", value: "Singapore" },
+        { label: "South Africa", value: "South Africa" },
+        { label: "Mexico", value: "Mexico" },
+        { label: "Russia", value: "Russia" },
+        { label: "Netherlands", value: "Netherlands" },
+        { label: "Switzerland", value: "Switzerland" },
+        { label: "UAE", value: "UAE" },
+        { label: "Saudi Arabia", value: "Saudi Arabia" },
+        { label: "Malaysia", value: "Malaysia" },
+        { label: "Indonesia", value: "Indonesia" },
+        { label: "Thailand", value: "Thailand" },
+        { label: "Vietnam", value: "Vietnam" },
+        { label: "Bangladesh", value: "Bangladesh" }
+  ]
+}
+
+  ],
 },
+{
+  heading: "Declarations",
+  colCnt: 2,
+  fieldList: [
+    {
+      name: "declarationOne",
+      type: "checkboxWithLabelText",
+      label: "I, hereby declare that the proposed procurement of [Description of Goods/Services/Works - to be auto-fetched] complies with the Government of India’s Order (Public Procurement No. 1), dated July 23, 2020. The goods/services originate from [Country of Origin - to be auto-fetched], and the supplier [Supplier Name - to be auto-fetched] is registered with the DPIIT’s Competent Authority for supplying goods/services from [Country - to be auto-fetched], if applicable. I confirm that all necessary due diligence has been conducted to ensure compliance with the said order.",
+      span: 2,
+      required: true
+    },
+     {
+      name: "declarationTwo",
+      type: "checkboxWithLabelText",
+      label: "I, hereby declare that these goods/ services purchased are of the requisite quality and specification and have been purchased from a reliable supplier at a reasonable price.",
+      span: 2,
+      required: true
+    }
+  ]
+}
 ];

@@ -792,12 +792,19 @@ const QueueRequest = ({ workflowId, requestType }) => {
     if (!roleName) return;
     setLoading(true);
     try {
-      const response = await axios.get(
+     /* const response = await axios.get(
        // `http://103.181.158.220:8081/astro-service/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
           `/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(
           roleName
         )}`
-      );
+      );*/
+       const isPurchaseHead = roleName === "Purchase Head";
+    
+    const response = await axios.get(
+      isPurchaseHead
+        ? `/completedIndentWorkflowTransition?roleName=${encodeURIComponent(roleName)}`
+        : `/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(roleName)}`
+    );
 
 
       //   const apiData = response.data.responseData;
@@ -1054,14 +1061,28 @@ const {userId} = useSelector(state => state.auth)
       render: (_, record) =>
         getCommonField(record.workflowId, record, "consignee") || "-",
     },
-    {
+   /* {
       title: "Status",
       dataIndex: "status",
       key: "status",
       render: (status) => (
         <Tag color={status === "Approved" ? "green" : "volcano"}>{status}</Tag>
       ),
+    },*/
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const finalStatus = auth.role === "Purchase Head" ? "Completed" : status;
+        return (
+          <Tag color={finalStatus === "Approved" || finalStatus === "Completed" ? "green" : "volcano"}>
+            {finalStatus}
+          </Tag>
+        );
+      },
     },
+
     // {
     //   title: "Remarks",
     //   dataIndex: "remarks",
@@ -1072,7 +1093,28 @@ const {userId} = useSelector(state => state.auth)
     //     </span>
     //   ),
     // },
-    {
+    ...(auth.role === "Purchase Head"
+    ? [
+      {
+        title: "Actions",
+        key: "actions",
+        fixed: "right",
+         render: (_, record) => (
+          <Button
+            type="primary"
+            onClick={() =>
+             navigate("/procurement/tender/request", {
+              state: { indentIds: [record.requestId] }
+              })
+            }
+          >
+            Tender Creation
+          </Button>
+        ),
+      },
+    ]
+    : [
+      {
       title: "Actions",
       key: "actions",
       fixed: "right",
@@ -1403,7 +1445,9 @@ const {userId} = useSelector(state => state.auth)
         );
       },
     },
+    ]),
   ];
+
 
   // --- Filter Component remains unchanged ---
 
@@ -1428,6 +1472,7 @@ const {userId} = useSelector(state => state.auth)
         onReset={handleReset}
       />
        <Space style={{ marginBottom: 16 }}>
+         {auth.role !== "Purchase Head" && (
         <Button
           type="primary"
           onClick={handleApproveAll}
@@ -1435,6 +1480,31 @@ const {userId} = useSelector(state => state.auth)
         >
           Approve All
         </Button>
+         )}
+         {auth.role === "Purchase Head" && (
+         <Button
+            type="primary"
+            disabled={selectedRows.length === 0}
+            onClick={() => {
+            const selectedProjectNames = [
+            ...new Set(selectedRows.map(row => row.projectName))
+            ];
+
+            if (selectedProjectNames.length > 1) {
+            message.error("Selected indents belong to different projects");
+            return;
+            }
+
+            navigate("/procurement/tender/request", {
+            state: {
+            indentIds: selectedRows.map(row => row.requestId)
+            }
+          });
+        }}
+      >
+      Multiple Indent Ids Tender Creation
+      </Button>
+      )}
         {Object.entries(workflowCounts).map(([id, count]) => (
         <Tag key={id} color="blue">
          Pending RequestIds Count: {count}
