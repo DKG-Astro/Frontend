@@ -236,9 +236,9 @@ const TenderPrintFormat = forwardRef(({ data = {} }, ref) => {
 
 {/* Note, Signature & Footer - OUTSIDE border */}
 <div className="mt-4 text-[13px]">
-  <p className="font-semibold mb-4">
+ { /*<p className="font-semibold mb-4">
     <strong>Note:</strong> 1. THE TERMS AND CONDITIONS AS IN THE OVERLEAF OF THIS ENQUIRY MUST BE COMPLIED WITH CAREFULLY.
-  </p>
+  </p>*/}
 
  {/* Signature Block - aligned and padded */}
 <div className="flex justify-end mt-8 text-[13px] pr-10">
