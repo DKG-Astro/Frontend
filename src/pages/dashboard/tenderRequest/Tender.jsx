@@ -641,9 +641,13 @@ const Tender = () => {
         {
           name: "paymentTerms",
           label: "Payment Terms",
-          type: "text",
+          type: "select",
           required: true,
-          span: 1
+          span: 2,
+           options: [
+            { value: "100% payment within 30 days from the date of acceptance.", label: "100% payment within 30 days from the date of acceptance." },
+            { value: "Quarterly in advance on submission of invoice (in case of AMCs)", label: "Quarterly in advance on submission of invoice (in case of AMCs)" }
+          ] 
         },
         {
           name: "ldClause",

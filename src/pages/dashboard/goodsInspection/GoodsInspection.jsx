@@ -222,13 +222,13 @@ const handleGISearch = async () => {
                 name: "installationDate",
                 label: "Installation Date",
                 type: "date",
-                required: true
+               // required: true
             },
             {
                 name: "commissioningDate",
                 label: "Commission Date",
                 type: "date",
-                required: true
+               // required: true
             },
             // {
             //     name: "project",

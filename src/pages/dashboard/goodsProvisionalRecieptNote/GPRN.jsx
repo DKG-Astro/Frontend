@@ -12,6 +12,31 @@ import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 import PrintFormate from '../../../utils/PrintFormate'
 import GprnPrintFormat from '../../../utils/GprnPrintFormat';
+const warrantyDropdown = [
+  { label: "1 Year", value: "1 Year" },
+  { label: "2 Years", value: "2 Years" },
+  { label: "3 Years", value: "3 Years" },
+  { label: "4 Years", value: "4 Years" },
+  { label: "5 Years", value: "5 Years" },
+  { label: "6 Years", value: "6 Years" },
+  { label: "7 Years", value: "7 Years" },
+  { label: "8 Years", value: "8 Years" },
+  { label: "9 Years", value: "9 Years" },
+  { label: "10 Years", value: "10 Years" },
+  { label: "11 Years", value: "11 Years" },
+  { label: "12 Years", value: "12 Years" },
+  { label: "13 Years", value: "13 Years" },
+  { label: "14 Years", value: "14 Years" },
+  { label: "15 Years", value: "15 Years" },
+  { label: "16 Years", value: "16 Years" },
+  { label: "17 Years", value: "17 Years" },
+  { label: "18 Years", value: "18 Years" },
+  { label: "19 Years", value: "19 Years" },
+  { label: "20 Years", value: "20 Years" }
+];
+
+
+
 
 const GPRN = () => {
   //const printRef = useRef();
@@ -337,9 +362,11 @@ const GPRN = () => {
         {
           name: "warrantyTerms",
           label: "Warranty",
-          type: "text",
+          type: "select",
           span: 2,
-          required: true
+          required: true,
+          options: warrantyDropdown,
+          
         },
         {
           name: "orderedQuantity",
@@ -378,7 +405,7 @@ const GPRN = () => {
         },
         {
           name: "makeNo",
-          label: "Make No.",
+          label: "Make",
           type: "text",
           span: 2,
           required: true,
@@ -416,7 +443,7 @@ const GPRN = () => {
         },
         {
           name: "imageBase64",
-          label: "Material Photographs",
+          label: "Material Photograph",
           type: "multiImage",  // changed from "image" to "multiImage"
           span: 3,
           required: true,

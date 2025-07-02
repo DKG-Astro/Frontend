@@ -328,7 +328,8 @@ const Indent1 = () => {
                     name: "purpose",
                     label: "Purpose",
                     type: "text",
-                    span: 2
+                    span: 2,
+                    required: true,
                 },
                 ...(selectedModeOfProcurement === "Proprietary/Single Tender" ? [
                     {
