@@ -4,11 +4,10 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { fetchMasters } from './store/slice/masterSlice';
 
-//axios.defaults.baseURL="http://103.181.158.220:8081/astro-service";
+// axios.defaults.baseURL="http://103.181.158.220:8081/astro-service";
 //axios.defaults.baseURL="http://localhost:8081/astro-service";
 export const baseURL = "http://localhost:8081/astro-service";
 axios.defaults.baseURL = baseURL;
-
 
 
 function App() {

@@ -503,6 +503,7 @@ const Indent1 = () => {
     }
 
     const handleChange = (fieldName, value) => {
+        console.log("Fieldname, value: ", fieldName, value)
         if (typeof fieldName === "string") {
             setFormData({
                 ...formData,
@@ -561,7 +562,17 @@ const Indent1 = () => {
         }
         else {
             const { materialDetails } = formData;
-            materialDetails[index][name] = value
+
+
+            
+            if(name === "vendorNames" && formData.materialDetails[index]?.modeOfProcurement === "Proprietary/Single Tender"){
+                materialDetails[index][name] = []
+                materialDetails[index][name].push(value)
+                
+            }else{
+                materialDetails[index][name] = value
+            }
+
             setFormData({
                 ...formData,
                 materialDetails: materialDetails
@@ -667,6 +678,8 @@ const Indent1 = () => {
             setSubmitBtnLoading(false)
         }
     }*/
+
+    console.log("Formdata: ", formData)
    const onFinish = async () => {
     if (selectedModeOfProcurement === "Limited Pre Approved Vendor Tender") {
         let minFourVendorSelected = true;
@@ -698,10 +711,7 @@ const Indent1 = () => {
         proprietaryJustification: selectedModeOfProcurement === "Proprietary/Single Tender" ? formData.proprietaryJustification : null,
         createdBy: userId,
         employeeDepartment: employeeDepartment,
-        materialDetails: formData.materialDetails.map((item) => ({
-            ...item,
-            vendorNames: selectedModeOfProcurement === "Proprietary/Single Tender" ? [item.vendorNames] : item.vendorNames,
-        }))
+        materialDetails: formData.materialDetails
     };
 
     try {
