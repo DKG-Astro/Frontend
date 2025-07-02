@@ -695,6 +695,19 @@ const Indent1 = () => {
 
         if (!minFourVendorSelected) return;
     }
+    let proprietaryInvalid = false;
+
+    formData.materialDetails.forEach((item, index) => {
+    if (item.modeOfProcurement === "Proprietary/Single Tender") {
+        if (!item.vendorNames || item.vendorNames.length !== 1) {
+            message.error(`Material ${index + 1}: Please select one vendor for Proprietary/Single Tender.`);
+            proprietaryInvalid = true;
+            return;
+        }
+    }
+    });
+
+    if (proprietaryInvalid) return;
 
     const payload = {
         ...formData,
@@ -713,6 +726,7 @@ const Indent1 = () => {
         createdBy: userId,
         employeeDepartment: employeeDepartment,
         materialDetails: formData.materialDetails
+       
     };
 
     try {
