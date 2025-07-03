@@ -46,6 +46,8 @@ const GPRN = () => {
 
   const location = useLocation()
 
+  const {roleId} = useSelector(state => state.auth)
+
   const processNo = location?.state?.processNo || null;
 
   const [fsDd, setFsDd] = useState([])
@@ -80,7 +82,12 @@ const GPRN = () => {
           prevMaterialDtlList[fieldName[1]].totalAmount = (unitPrice * quantity).toFixed(2);
         }
 
-        return { ...prev, materialDtlList: prevMaterialDtlList }
+        let totQuant = 0
+        prevMaterialDtlList.forEach(mat => {
+          totQuant += parseFloat(mat.receivedQuantity || 0)
+        })
+
+        return { ...prev, materialDtlList: prevMaterialDtlList, totalQuantity: totQuant }
       })
     }
   }
@@ -457,6 +464,11 @@ const GPRN = () => {
       colCnt: 3,
       fieldList: [
         {
+          name: "totalQuantity",
+          label: "Total Quantity",
+          type: "text",
+        },
+        {
           name: "consigneeDetail",
           label: "Consignee Details",
           type: "select",
@@ -464,18 +476,18 @@ const GPRN = () => {
           required: true,
           span: 2
         },
-        {
-          name: "warrantyYears",
-          label: "Warranty Years",
-          type: "text",
-          required: true
-        },
-        {
-          name: "warranty",
-          label: "Warranty",
-          type: "text",
-          span: 3
-        }
+        // {
+        //   name: "warrantyYears",
+        //   label: "Warranty Years",
+        //   type: "text",
+        //   required: true
+        // },
+        // {
+        //   name: "warranty",
+        //   label: "Warranty",
+        //   type: "text",
+        //   span: 3
+        // }
       ]
     },
     {
@@ -492,14 +504,22 @@ const GPRN = () => {
       ]
     }
   ]
-
-  console.log("FORMDATA: ", formData)
   
       const printComponentRef = useRef(); 
       const handlePrint = useReactToPrint({
   content: () => printComponentRef.current,
   documentTitle: `GPRN - ${formData?.gprnNo || "Draft"}`
 });
+
+if(roleId === 16){
+  return (
+    <Card className='a4-container'>
+      <h1 className="font-semibold text-center text-xl text-red-500">
+      You dont have access to create GPRN
+      </h1>
+    </Card>
+  )
+}
 
 
   return (
