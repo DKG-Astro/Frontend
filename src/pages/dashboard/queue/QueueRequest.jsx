@@ -150,8 +150,8 @@ const VendorDetailModal = ({ visible, setVisible, vendorData }) => {
         <Descriptions.Item label="Address">
           {vendorData.address}
         </Descriptions.Item>
-        <Descriptions.Item label="Landline Number">
-          {vendorData.landlineNumber}
+        <Descriptions.Item label="Alternate Email/Phone Number">
+          {vendorData.alternateEmailOrPhoneNumber}
         </Descriptions.Item>
         <Descriptions.Item label="Fax Number">
           {vendorData.faxNumber}
@@ -170,6 +170,33 @@ const VendorDetailModal = ({ visible, setVisible, vendorData }) => {
         </Descriptions.Item>
         <Descriptions.Item label="IFSC Code">
           {vendorData.ifscCode}
+        </Descriptions.Item>
+         <Descriptions.Item label="Swift Code">
+          {vendorData.swiftCode}
+        </Descriptions.Item>
+         <Descriptions.Item label="Bic Code">
+          {vendorData.bicCode}
+        </Descriptions.Item>
+         <Descriptions.Item label="IBAN ABA Number">
+          {vendorData.ibanAbaNumber}
+        </Descriptions.Item>
+         <Descriptions.Item label="Sort Code">
+          {vendorData.sortCode}
+        </Descriptions.Item>
+         <Descriptions.Item label="Bank Routing Number">
+          {vendorData.bankRoutingNumber}
+        </Descriptions.Item>
+         <Descriptions.Item label="Bank Address">
+          {vendorData.bankAddress}
+        </Descriptions.Item>
+        <Descriptions.Item label="Country">
+          {vendorData.country}
+        </Descriptions.Item>
+        <Descriptions.Item label="State">
+          {vendorData.state}
+        </Descriptions.Item>
+        <Descriptions.Item label="Place">
+          {vendorData.place}
         </Descriptions.Item>
         <Descriptions.Item label="Registered Platform">
           {vendorData.registeredPlatform? "True" : "false"}
