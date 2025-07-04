@@ -3,10 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import FormContainer from '../../../components/DKG_FormContainer'
 import FormBody from '../../../components/DKG_FormBody'
 import Heading from '../../../components/DKG_Heading'
-import { Table, Checkbox, message } from 'antd'
+import { Table, Checkbox, message, Popover, Input, Button  } from 'antd'
 import axios from 'axios'
 import Btn from '../../../components/DKG_Btn'
 import { baseURL } from '../../../App';
+
 
 
 const Quotations =  ()  => {
@@ -22,6 +23,10 @@ const { tenderId, bidType } = location.state || {};
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [notSubmittedVendors, setNotSubmittedVendors] = useState([]);
+  const [rejectComment, setRejectComment] = useState('');
+  const [rejectedVendorId, setRejectedVendorId] = useState(null);
+
+
 
 
   const fetchQuotations = async () => {
@@ -136,7 +141,64 @@ const handleSubmit = async () => {
       )
     ),
   },
+  {
+    title: 'Reject',
+    key: 'reject',
+    render: (_, record) => (
+      record.status !== 'Rejected' ? (
+        <Popover
+          content={
+            <div style={{ padding: 12 }}>
+              <Input.TextArea
+                placeholder="Enter reject comment"
+                rows={3}
+                value={rejectedVendorId === record.vendorId ? rejectComment : ''}
+                onChange={(e) => {
+                  setRejectedVendorId(record.vendorId);
+                  setRejectComment(e.target.value);
+                }}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleReject(record)}
+                style={{ marginTop: 8 }}
+              >
+                Submit
+              </Button>
+            </div>
+          }
+          title="Reject Vendor"
+          trigger="click"
+        >
+          <Button danger type="link">Reject</Button>
+        </Popover>
+      ) : (
+        <span style={{ color: 'red' }}>Rejected</span>
+      )
+    )
+  }
   ];
+  const handleReject = async (record) => {
+  if (!rejectComment.trim()) {
+    return message.warning("Please enter a rejection comment.");
+  }
+
+  try {
+    await axios.put("/api/vendor-quotation/updateVendorQuotation-status", {
+      tenderId,
+      vendorId: record.vendorId,
+      status: "Rejected",
+      remarks: rejectComment
+    });
+    message.success(`Vendor ${record.vendorId} rejected`);
+    setRejectComment('');
+    setRejectedVendorId(null);
+    fetchQuotations(); // Refresh list
+  } catch (err) {
+    message.error("Failed to reject vendor");
+  }
+};
+
  
 
 
