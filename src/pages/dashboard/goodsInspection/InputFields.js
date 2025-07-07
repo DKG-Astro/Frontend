@@ -216,7 +216,7 @@ export const generalDtls = [
                 label: "Installation Report",
                 type: "image",
                 span: 3,
-                required: true,
+              //  required: true,
                 accept: "image/*"
             },
             // {

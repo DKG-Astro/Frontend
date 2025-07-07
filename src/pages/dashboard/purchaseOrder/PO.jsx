@@ -200,6 +200,15 @@ const PO = () => {
         setFormData((prev) => {
           const updated = [...(prev.materialDtlList || [])];
           updated[index] = { ...updated[index], [field]: value };
+          const item = updated[index];
+          const rate = parseFloat(item.rate || 0);
+          const exchangeRate = parseFloat(item.exchangeRate || 0);
+
+      if (item.currency && item.currency !== "INR" && rate > 0 && exchangeRate > 0) {
+        updated[index].inrEquivalent = (rate * exchangeRate).toFixed(2);
+      } else {
+        updated[index].inrEquivalent = "";
+      }
           return { ...prev, materialDtlList: updated };
         });
       }
@@ -212,6 +221,7 @@ const PO = () => {
           handleSearch(poId); 
       }
       }, [poId]);
+
 /*
   // Form submission
   const onFinish = async () => {
@@ -298,13 +308,18 @@ const PO = () => {
   const handleSearch = async (value) => {
     try {
       const { data } = await axios.get(
-        `/api/purchase-orders/${value ? value : formData.poId}`
+        `/api/purchase-orders/base64Files/${value ? value : formData.poId}`
       );
       const responseData = data?.responseData || {};
 
       setFormData({
         ...responseData,
         materialDtlList: responseData?.purchaseOrderAttributes || [],
+       // comparativeStatementFileName: responseData?.comparativeStatementFileNameList || [],
+       comparativeStatementFileName: Array.isArray(responseData?.comparativeStatementFileNameList)
+        ? responseData.comparativeStatementFileNameList
+        : [],
+
       });
     } catch (error) {
       ;
@@ -313,6 +328,41 @@ const PO = () => {
       );
     }
   };
+  const hydratedPoDetailsWithConditionalFields = hydratedPoDetails.map((section) => {
+  if (section.name === "materialDtlList") {
+    return {
+      ...section,
+      children: section.children.map((child) => {
+        if (child.name === "exchangeRate") {
+          return {
+            ...child,
+            required: (formData?.materialDtlList || []).some(
+              (m) => m.currency && m.currency !== "INR"
+            ),
+            shouldShow: () =>
+              (formData?.materialDtlList || []).some(
+                (m) => m.currency && m.currency !== "INR"
+              ),
+          };
+        }
+
+        if (child.name === "inrEquivalent") {
+          return {
+            ...child,
+            shouldShow: () =>
+              (formData?.materialDtlList || []).some(
+                (m) => m.currency && m.currency !== "INR"
+              ),
+          };
+        }
+
+        return child;
+      }),
+    };
+  }
+  return section;
+});
+
 
   // Load initial data
   useEffect(() => {
@@ -341,7 +391,8 @@ const PO = () => {
       <Heading title="Purchase Order Creation" />
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(
-          hydratedPoDetails,
+         // hydratedPoDetails,
+         hydratedPoDetailsWithConditionalFields,
           handleChange,
           formData,
           "",

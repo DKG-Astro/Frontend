@@ -473,9 +473,10 @@ const QueueModal = ({
                     <div className="detail-item">
                       <strong>Amount To Be Paid:</strong>
                       <span className="amount">
-                        {detailsData.amountToBePaid
+                        {/*detailsData.amountToBePaid
                           ? `₹${detailsData.amountToBePaid.toFixed(2)}`
-                          : "N/A"}
+                          : "N/A"*/}
+                          {detailsData.totalCpValue?.toFixed(2)}
                       </span>
                     </div>
                     <div className="detail-item">
@@ -658,6 +659,37 @@ const QueueModal = ({
                     <div className="detail-item">
                       <strong>LD Clause:</strong>{" "}
                       {detailsData.ifLdClauseApplicable ? "Yes" : "No"}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+               <div className="detail-section">
+                <Typography.Title level={5} className="section-title">
+                  <FilePdfOutlined /> Document Details
+                </Typography.Title>
+                <Row gutter={24}>
+                  <Col span={8}>
+                    <div className="detail-item">
+                      <strong>PO Document:</strong>
+                      {detailsData.comparativeStatementFileName
+                        ? detailsData.comparativeStatementFileName
+                            .split(",")
+                            .map((fileName, index) => (
+                              <div key={index}>
+                                <a
+                                  href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {fileName.trim()} (View)
+                                </a>
+                                {index <
+                                  detailsData.comparativeStatementFileName.split(", ")
+                                    .length -
+                                    1 && ", "}
+                              </div>
+                            ))
+                        : "N/A"}
                     </div>
                   </Col>
                 </Row>

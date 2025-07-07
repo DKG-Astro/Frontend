@@ -106,6 +106,13 @@ const ContingencyPurchase = () => {
       message.error('Failed to load dropdown data');
     }
   };
+  //  Calculates total price with GST
+const calculateTotalPrice = (quantity, unitPrice, gst = 0) => {
+  const base = (quantity || 0) * (unitPrice || 0);
+  const gstAmount = (base * gst) / 100;
+  return base + gstAmount;
+};
+
 
  
   
@@ -134,7 +141,7 @@ const ContingencyPurchase = () => {
                 return prev;
               }
             
-              // Check for consistent materialCategory
+             /* // Check for consistent materialCategory
               const selectedCategory = materialData.materialCategory;
               const existingCategories = updatedMaterials
                 .filter((_, idx) => idx !== index && _.materialCategory)
@@ -144,35 +151,43 @@ const ContingencyPurchase = () => {
               if (existingCategories.length && isCategoryMismatch) {
                 message.warning('All materials must belong to the same category');
                 return prev;
-              }
+              }*/
             
               updatedMaterials[index] = {
                 ...currentMaterial,
                 materialCode: newMaterialCode,
                 materialDescription: newDescription,
                 ...materialData,
-                totalPrice: calculateTotalPrice(currentMaterial.quantity, materialData.unitPrice),
+               // totalPrice: calculateTotalPrice(currentMaterial.quantity, materialData.unitPrice),
+                totalPrice: calculateTotalPrice(currentMaterial.quantity, materialData.unitPrice, materialData.gst || 0),
+                gst: materialData.gst || 0, 
               };
             }
             
   
-          // Quantity / Unit Price change
-          else if (field === 'quantity' || field === 'unitPrice') {
-            const quantity = field === 'quantity' ? value : currentMaterial.quantity || 0;
-            const unitPrice = field === 'unitPrice' ? value : currentMaterial.unitPrice || 0;
-            const total = calculateTotalPrice(quantity, unitPrice);
-  
-            if (total > 50000) {
-              message.warning('Total price cannot exceed 50,000');
-              return prev;
-            }
-  
-            updatedMaterials[index] = {
-              ...currentMaterial,
-              [field]: value,
-              totalPrice: total,
-            };
-          }
+         
+         // Quantity, Unit Price or GST change
+else if (field === 'quantity' || field === 'unitPrice' || field === 'gst') {
+  const quantity = field === 'quantity' ? value : currentMaterial.quantity || 0;
+  const unitPrice = field === 'unitPrice' ? value : currentMaterial.unitPrice || 0;
+  const gst = field === 'gst' ? value : currentMaterial.gst || 0;
+
+  const total = calculateTotalPrice(quantity, unitPrice, gst);
+
+  // ⚠️ Warn if total exceeds 50,000
+  if (total > 50000) {
+    message.warning('Total price including GST cannot exceed ₹50,000');
+    return prev;
+  }
+
+  updatedMaterials[index] = {
+    ...currentMaterial,
+    [field]: value,
+    totalPrice: total,
+    gst: gst,
+  };
+}
+
   
           // Other fields
           else {
@@ -190,9 +205,9 @@ const ContingencyPurchase = () => {
     }
   };
   
-  const calculateTotalPrice = (quantity, unitPrice) => {
+ /* const calculateTotalPrice = (quantity, unitPrice) => {
     return (quantity || 0) * (unitPrice || 0);
-  };
+  };*/
   
 
   const onFinish = async () => {
@@ -203,6 +218,14 @@ const ContingencyPurchase = () => {
   }
    if (!formData.declarationOne || !formData.declarationTwo) {
     message.error("Please accept both declarations to submit.");
+    return;
+  }
+  const grandTotal = formData.materialDetails.reduce((sum, material) => {
+    return sum + (material.totalPrice || 0);
+  }, 0);
+
+  if (grandTotal > 50000) {
+    message.error("Total value of all materials (including GST) must not exceed ₹50,000.");
     return;
   }
 
@@ -219,6 +242,7 @@ const ContingencyPurchase = () => {
     materialSubCategory: material.materialSubCategory,
     currency: material.currency,
     gst: material.gst,
+    countryOfOrigin: material.countryOfOrigin,
   }));
 
   const payload = {
@@ -306,6 +330,7 @@ const handleSearch = async (value) => {
             currency: '',
             totalPrice: '',
             gst: '',
+            countryOfOrigin:'',
           },
         ],
       });
@@ -322,7 +347,8 @@ const handleSearch = async (value) => {
       !lastMaterial.uom ||
       !lastMaterial.unitPrice ||
       !lastMaterial.currency ||
-      !lastMaterial.totalPrice
+      !lastMaterial.totalPrice ||
+      !lastMaterial.countryOfOrigin
     ) {
       message.error("Please fill all the fields of the last row before adding a new row");
       return;
@@ -344,6 +370,7 @@ const handleSearch = async (value) => {
           currency: '',
           totalPrice: '',
           gst: '',
+          countryOfOrigin:'',
         },
       ],
     }));

@@ -1,3 +1,12 @@
+import { getNames } from 'country-list';
+
+const countryNames = getNames(); // ['India', 'USA', 'Germany', ...]
+
+const countryOptions = countryNames.map((country) => ({
+  label: country,
+  value: country,
+}));
+
 export const CpDetails =(formData = {}) => [
   {
       heading: "Contingency Search",
@@ -64,6 +73,7 @@ export const CpDetails =(formData = {}) => [
       name: "quantity",
       label: "Quantity",
       type: "text",
+      required: true,
     },
     {
       name: "unitPrice",
@@ -155,6 +165,14 @@ export const CpDetails =(formData = {}) => [
       span: 2,
       disabled: true,
     },
+    {
+      name: "countryOfOrigin",
+      label: "Country of Origin",
+      type: "select",
+      required: true,
+      span: 2,
+      options: countryOptions, 
+    }
   ],
 },
 {
@@ -259,43 +277,8 @@ export const CpDetails =(formData = {}) => [
       type: "text",
       required: true,
     },
-    {
-      name: "countryOfOrigin",
-      label: "Country of Origin",
-      type: "select",
-      required: true,
-      options: [
-        { label: "India", value: "India" },
-        { label: "United States", value: "United States" },
-        { label: "China", value: "China" },
-        { label: "Germany", value: "Germany" },
-        { label: "France", value: "France" },
-        { label: "Japan", value: "Japan" },
-        { label: "United Kingdom", value: "United Kingdom" },
-        { label: "Canada", value: "Canada" },
-        { label: "Australia", value: "Australia" },
-        { label: "South Korea", value: "South Korea" },
-        { label: "Brazil", value: "Brazil" },
-        { label: "Italy", value: "Italy" },
-        { label: "Singapore", value: "Singapore" },
-        { label: "South Africa", value: "South Africa" },
-        { label: "Mexico", value: "Mexico" },
-        { label: "Russia", value: "Russia" },
-        { label: "Netherlands", value: "Netherlands" },
-        { label: "Switzerland", value: "Switzerland" },
-        { label: "UAE", value: "UAE" },
-        { label: "Saudi Arabia", value: "Saudi Arabia" },
-        { label: "Malaysia", value: "Malaysia" },
-        { label: "Indonesia", value: "Indonesia" },
-        { label: "Thailand", value: "Thailand" },
-        { label: "Vietnam", value: "Vietnam" },
-        { label: "Bangladesh", value: "Bangladesh" }
-  ]
-}
-
-  ],
-},
-{
+    ]},
+  {
   heading: "Declarations",
   colCnt: 2,
   fieldList: [

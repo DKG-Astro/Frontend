@@ -32,7 +32,8 @@ const warrantyDropdown = [
   { label: "17 Years", value: "17 Years" },
   { label: "18 Years", value: "18 Years" },
   { label: "19 Years", value: "19 Years" },
-  { label: "20 Years", value: "20 Years" }
+  { label: "20 Years", value: "20 Years" },
+  { label: "NA", value: "NA" },
 ];
 
 

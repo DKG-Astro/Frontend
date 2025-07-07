@@ -1,3 +1,11 @@
+import countryList from "react-select-country-list";
+
+const countryOptions = countryList().getData().map(c => ({
+  label: c.label,
+  value: c.label
+}));
+
+
 export const PoDetails = [
     {
       heading: "PO Search",
@@ -108,7 +116,15 @@ export const PoDetails = [
             label: "Freight Charges",
             type: "text", 
             span: 2
+        },
+        {
+            name: "inrEquivalent",
+            label: "Equivalent INR",
+            type: "text",
+            disabled: true,
+            span: 2
         }
+
       ]
     },
     {
@@ -138,14 +154,30 @@ export const PoDetails = [
         {
           name: "applicablePbgToBeSubmitted",
           label: "Applicable PBG to be Submitted",
-          type: "text",
-          span: 2
+          type: "select",
+          span: 2,
+          options: [
+            ...Array.from({ length: 20 }, (_, i) => ({
+            label: String(i + 1),
+            value: String(i + 1),
+          })),
+          { label: "NA", value: "NA" },
+          ],
         },
         {
             name: "transporterAndFreightForWarderDetails",
-            label: "Transporter Details",
-            type: "text",
-            span: 2
+            label: "Freight Forwarder",
+            type: "select",
+            options: countryOptions,
+            span: 2,
+            required: false
+        },
+        {
+                    name: "comparativeStatementFileName",
+                    label: "Comparative Statement",
+                    type: "multiImage",
+                    span:2,
+                    //required: true,
         }
       ]
     },
