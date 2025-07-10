@@ -91,10 +91,17 @@ export const CpDetails =(formData = {}) => [
     },
     {
       name: "gst",
-      label: "Gst",
-      type: "text",
+      label: "GST (%)",
+      type: "select",
       required: true,
       span: 2,
+      options: [
+        { label: "Nil", value: "0" },
+        { label: "5%", value: "5" },
+        { label: "12%", value: "12" },
+        { label: "18%", value: "18" },
+        { label: "28%", value: "28" }
+      ]
     },
     {
       name: "budgetCode",
@@ -183,7 +190,8 @@ export const CpDetails =(formData = {}) => [
       name: "vendorName",
       label: "Vendor Name",
       type: "select",
-      required: true,
+     // required: true,
+      required: formData.paymentTo !== "employee", 
       span: 2,
     },
     {

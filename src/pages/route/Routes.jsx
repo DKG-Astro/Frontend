@@ -49,6 +49,7 @@ import QuarterlyVigilanceSoReport from '../reports/QuarterlyVigilanceSoReport';
 import ShortClosedCancelledOrderReport from "../reports/ShortClosedCancelledOrderReport";
 import MonthlyProcurementReport from "../reports/MonthlyProcurementReport";
 import IndentStatus from '../reports/IndentStatus'
+import TenderEvaluator from "../dashboard/tenderRequest/TenderEvaluator";
 
 const RoutesComponent = () => {
   return (
@@ -67,6 +68,7 @@ const RoutesComponent = () => {
               <Route path="tender">
                 <Route path="request" element={<Tender />} />
                 <Route path="evaluation" element={<Form4a />} />
+                {/* <Route path="evaluation" element={<TenderEvaluator />} />*/}
                 <Route path="/procurement/tender/Quotations" element={<Quotations />} />
               </Route>
               <Route path="purchaseOrder" element={<PO />} />

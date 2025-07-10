@@ -42,33 +42,33 @@ const ReportsMain = () => {
             icon: <FileTextOutlined />,
             path: "/reports/vendorContract"
         },
-        {
+      /*  {
             id: 5,
             title: "Procurement Activity Report",
             icon: <SolutionOutlined />,
             path: "/reports/procurementActivity"
-        },
+        },*/
         {
             id: 6,
-            title: "Po List",
+            title: "PO List",
             icon: <SolutionOutlined />,
             path: "/reports/PoList"
         },
         {
             id: 7,
-            title: "Po Status",
+            title: "PO Status",
             icon: <BarChartOutlined />,
             path: "/reports/PoStatus"
         },
          {
             id: 8,
-            title: "So List",
+            title: "SO List",
             icon: <SolutionOutlined />,
             path: "/reports/SoList"
         },
          {
             id: 9,
-            title: "So Status",
+            title: "SO Status",
             icon: <BarChartOutlined />,
             path: "/reports/SoStatus"
         },

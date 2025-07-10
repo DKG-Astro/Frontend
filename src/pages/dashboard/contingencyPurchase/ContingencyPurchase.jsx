@@ -228,6 +228,14 @@ else if (field === 'quantity' || field === 'unitPrice' || field === 'gst') {
     message.error("Total value of all materials (including GST) must not exceed ₹50,000.");
     return;
   }
+  const hasChinaOrigin = formData.materialDetails.some(
+    (material) => material.countryOfOrigin?.toLowerCase() === "china"
+  );
+
+  if (hasChinaOrigin) {
+    message.error("Procurement from China is not allowed.");
+    return;
+  }
 
 
   const cpMaterials = formData.materialDetails.map(material => ({

@@ -92,6 +92,8 @@ const Indent1 = () => {
     const [materialMasterState, setMaterialMasterState] = useState(materialMaster)
 
     const [selectedModeOfProcurement, setSelectedModeOfProcurement] = useState("")
+    const [indentIdDropdown, setIndentIdDropdown] = useState([]);
+
 
     const locationDropdown = locationMaster.map((item) => {
         return {
@@ -133,9 +135,11 @@ const Indent1 = () => {
                 {
                     name: "indentId",
                     label: "Indent ID",
-                    type: "search",
-                    disabled: formData?.indentId ? true : false
+                   // type: "search",
+                  //  disabled: formData?.indentId ? true : false
                     // disabled: true,
+                    type: "select",
+                    options: indentIdDropdown, 
 
                 },
                 {
@@ -493,6 +497,24 @@ const Indent1 = () => {
         }
     }, [selectedModeOfProcurement])
 
+    useEffect(() => {
+    const fetchIndentIds = async () => {
+        try {
+            const { data } = await axios.get("/approved-indents"); 
+            const dropdownOptions = data.responseData.map(item => ({
+                label: item.indentId,
+                value: item.indentId
+            }));
+            setIndentIdDropdown(dropdownOptions);
+        } catch (err) {
+            message.error("Failed to load Indent IDs.");
+        }
+    };
+
+        fetchIndentIds();
+    }, []);
+
+
     const replaceMaterial = (prevMaterial, newMaterial) => {
         const prevMtlrDtl = materialMaster.find((item) => item.materialCode === prevMaterial.materialCode)
        setMaterialMasterState(prev => {
@@ -505,6 +527,15 @@ const Indent1 = () => {
 
     const handleChange = (fieldName, value) => {
         console.log("Fieldname, value: ", fieldName, value)
+        if (fieldName === "indentId") {
+            setFormData({
+            ...formData,
+            indentId: value
+        });
+        handleSearch(value);
+        return;
+        }
+
         if (typeof fieldName === "string") {
             setFormData({
                 ...formData,

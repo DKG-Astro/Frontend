@@ -32,6 +32,7 @@ const Tender = () => {
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescOptions, setMaterialDescOptions] = useState([]);
   const [selectedProjectName, setSelectedProjectName] = useState(null);
+  const [tenderIdOptions,setTenderIdOptions] = useState(null);
 
 
   const { userName, email, mobileNumber, token, userId } = useSelector(
@@ -49,6 +50,28 @@ const Tender = () => {
     billingAddress: "Koramangala, 2nd Block, Bangalore -560034",
 
   });
+  useEffect(() => {
+  const fetchTenderIds = async () => {
+    try {
+      const res = await axios.get("/getApprovedTenderIdForPOAndSO");
+      const tenderList = res.data?.responseData || [];
+
+      // Format for dropdown
+      const tenderOptions = tenderList.map((id) => ({
+        label: id,
+        value: id,
+      }));
+
+      // Store in state and use in TenderId field options
+      setTenderIdOptions(tenderOptions);
+    } catch (err) {
+      console.error("Failed to fetch tender IDs", err);
+    }
+  };
+
+  fetchTenderIds();
+}, []);
+
   
   
   useEffect(() => {
@@ -182,6 +205,11 @@ const Tender = () => {
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   };*/
   const handleChange = (fieldName, value) => {
+    if (fieldName === "tenderId") {
+        handleSearch(value);
+        setFormData((prev) => ({ ...prev, [fieldName]: value }));
+      return;
+    }
     if (fieldName === "indentId") {
       const selectedIndents = approvedIndents.filter(indent =>
         value.includes(indent.value)
@@ -390,7 +418,9 @@ const Tender = () => {
       fieldList: [{
         name: "tenderId",
         label: "Tender Id",
-        type: "search",
+        //type: "search",
+        type: "select",
+        options: tenderIdOptions,
         span: 1
       }]
     },

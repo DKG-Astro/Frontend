@@ -1,4 +1,5 @@
 import React, { useEffect, useState} from 'react'
+import { Modal, Spin, Tag } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom'
 import FormContainer from '../../../components/DKG_FormContainer'
 import FormBody from '../../../components/DKG_FormBody'
@@ -25,6 +26,24 @@ const { tenderId, bidType } = location.state || {};
   const [notSubmittedVendors, setNotSubmittedVendors] = useState([]);
   const [rejectComment, setRejectComment] = useState('');
   const [rejectedVendorId, setRejectedVendorId] = useState(null);
+  const [historyVisible, setHistoryVisible] = useState(false);
+  const [selectedVendorForHistory, setSelectedVendorForHistory] = useState(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyData, setHistoryData] = useState([]);
+
+  const fetchVendorHistory = async (vendorId) => {
+  try {
+    setHistoryLoading(true);
+    const res = await axios.get(`/api/vendor-quotation/vendorHistory/${tenderId}/${vendorId}`);
+    setHistoryData(res.data?.responseData || []);
+  } catch (error) {
+    message.error("Failed to fetch quotation history");
+    setHistoryData([]);
+  } finally {
+    setHistoryLoading(false);
+  }
+};
+
 
 
 
@@ -100,7 +119,7 @@ const handleSubmit = async () => {
 
   const columns = [
    {
-    title: 'Select',
+    title: 'Approve',
     key: 'select',
     render: (_, record) => (
     <Checkbox
@@ -118,6 +137,18 @@ const handleSubmit = async () => {
       title: 'Vendor ID',
       dataIndex: 'vendorId',
       key: 'vendorId',
+      render: (vendorId) => (
+    <a
+      style={{ color: '#1890ff' }}
+      onClick={() => {
+        setSelectedVendorForHistory(vendorId);
+        setHistoryVisible(true);
+        fetchVendorHistory(vendorId);
+      }}
+    >
+      {vendorId}
+    </a>
+  ),
     },
     {
       title: 'Quotation File Name',
@@ -176,8 +207,66 @@ const handleSubmit = async () => {
         <span style={{ color: 'red' }}>Rejected</span>
       )
     )
-  }
+  },
+  {
+  title: 'Change Request',
+  key: 'changeRequest',
+  render: (_, record) => (
+    record.status !== 'ChangeRequested' ? (
+      <Popover
+        content={
+          <div style={{ padding: 12 }}>
+            <Input.TextArea
+              placeholder="Enter change request comment"
+              rows={3}
+              value={rejectedVendorId === record.vendorId ? rejectComment : ''}
+              onChange={(e) => {
+                setRejectedVendorId(record.vendorId);
+                setRejectComment(e.target.value);
+              }}
+            />
+            <Button
+              type="primary"
+              onClick={() => handleChangeRequest(record)}
+              style={{ marginTop: 8 }}
+            >
+              Submit
+            </Button>
+          </div>
+        }
+        title="Send Change Request"
+        trigger="click"
+      >
+        <Button type="link" style={{ color: '#fa8c16' }}>Change Request</Button>
+      </Popover>
+    ) : (
+      <span style={{ color: '#fa8c16' }}>Requested</span>
+    )
+  )
+}
+
   ];
+ const handleChangeRequest = async (record) => {
+  if (!rejectComment.trim()) {
+    return message.warning("Please enter a change request comment.");
+  }
+
+  try {
+    await axios.post("/api/vendor-quotation/change-request", {
+      tenderId,
+      vendorId: record.vendorId,
+      remarks: rejectComment
+    });
+    message.success(`Change request sent to vendor ${record.vendorId}`);
+    setRejectComment('');
+    setRejectedVendorId(null);
+    fetchQuotations(); 
+  } catch (err) {
+    message.error("Failed to send change request");
+  }
+};
+
+
   const handleReject = async (record) => {
   if (!rejectComment.trim()) {
     return message.warning("Please enter a rejection comment.");
@@ -224,6 +313,57 @@ const handleSubmit = async () => {
         <div className="custom-btn" style={{ display: 'flex', gap: '10px' }}>
         <Btn onClick={handleSubmit}  loading={isSubmitting}>Submit Quotation</Btn>
       </div>
+      <Modal
+  open={historyVisible}
+  onCancel={() => setHistoryVisible(false)}
+  footer={null}
+  width={700}
+  title={`Quotation History for Vendor ${selectedVendorForHistory}`}
+>
+  {historyLoading ? (
+    <Spin tip="Loading history..." />
+  ) : (
+    <Table
+      dataSource={historyData}
+      rowKey={(record, index) => index}
+      bordered
+      size="small"
+      pagination={false}
+      columns={[
+        {
+          title: 'Status',
+          dataIndex: 'status',
+          key: 'status',
+          render: (text) => (
+            <Tag color={
+              text === 'Rejected'
+                ? 'red'
+                : text === 'CHANGE_REQUESTED'
+                ? 'orange'
+                : 'green'
+            }>
+              {text}
+            </Tag>
+          )
+        },
+        {
+          title: 'Remarks',
+          dataIndex: 'remarks',
+          key: 'remarks',
+          render: (text) => text || '--'
+        },
+        {
+          title: 'Date',
+          dataIndex: 'date',
+          key: 'date',
+          render: (text) => text ? new Date(text).toLocaleString('en-IN') : '--'
+        }
+      ]}
+      locale={{ emptyText: 'No quotation history found.' }}
+    />
+  )}
+</Modal>
+
       </FormBody>
     </FormContainer>
   )

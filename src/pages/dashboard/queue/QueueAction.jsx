@@ -4,6 +4,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import ApprovedTenders from "./ApprovedTenders";
 import SubworkflowTransition from "./SubworkflowTransition";
+import { Tabs } from "antd";
 
 const QueueAction = () => {
   // const columns = [
@@ -45,6 +46,7 @@ const QueueAction = () => {
   // );
 
   const {roleId} = useSelector((state) => state.auth);
+  const parsedRoleId = parseInt(roleId);
 
   if(parseInt(roleId) === 17){ // tender evaluator, show approved tender id
     return <ApprovedTenders />
@@ -53,6 +55,21 @@ const QueueAction = () => {
   if(parseInt(roleId) === 1){
     return <SubworkflowTransition />
   }
-};
+  /*
+ if (parsedRoleId === 1 || parsedRoleId === 17) {
+    return (
+      <Tabs defaultActiveKey="tenders">
+        <Tabs.TabPane tab="Tender IDs" key="tenders">
+          <ApprovedTenders />
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Subworkflow Tender IDs" key="subworkflow">
+          <SubworkflowTransition />
+        </Tabs.TabPane>
+      </Tabs>
+    );
+  }
 
+  return null;
+};*/
+}
 export default QueueAction;

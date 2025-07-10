@@ -4,8 +4,12 @@ import { Table } from 'antd'
 import { apiCall } from '../../../utils/CommonFunctions'
 import { set } from 'lodash'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from "react-redux";
 
 const ApprovedTenders = () => {
+//  const { roleName } = useSelector((state) => state.auth);
+    const auth = useSelector((state) => state.auth);
+  //console.log("roleName:", roleName);
 
   const navigate = useNavigate();
 
@@ -53,7 +57,7 @@ const ApprovedTenders = () => {
   const populateData = useCallback(async () => {
     try{
       const {data} = await apiCall("GET", "/getApprovedTender")
-
+      //const {data} = await apiCall("GET", `/getApprovedTender?roleName=${auth.role}`);
       const res = data?.responseData || [];
 
       setDataSource(res);

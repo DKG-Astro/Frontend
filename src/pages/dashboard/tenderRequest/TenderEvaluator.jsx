@@ -10,6 +10,9 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
 const TenderEvaluator = ({bidType, tenderId}) => {
+  
+console.log("Tender ID:", tenderId);
+  console.log("Bid Type:", bidType);
     const {userId} = useSelector(state => state.auth)
 
     const [uploadedDocs, setUploadedDocs] = useState([]);
