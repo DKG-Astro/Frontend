@@ -16,6 +16,8 @@ const PO = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [generatedPOId, setGeneratedPOId] = useState("");
+  const [poIdDropdown, setPoIdDropdown] = useState([]);
+  const [searchDone, setSearchDone] = useState(false);
 
   // Redux selectors
   const auth = useSelector((state) => state.auth);
@@ -72,6 +74,42 @@ const PO = () => {
       message.error("Failed to load dropdown data");
     }
   };
+   const handleSearchPoIds = async () => {
+  const { searchType, searchValue } = formData;
+
+  if (!searchValue || !searchType) {
+    message.warning("Please select search type and enter value.");
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`/api/purchase-orders/search`, {
+      params: {
+        type: searchType,
+        value: searchValue
+      }
+    });
+
+    const poList = data?.responseData || [];
+
+    const dropdownOptions = poList.map((item) => ({
+      label: item.poId,
+      value: item.poId
+    }));
+
+    setPoIdDropdown(dropdownOptions);
+
+    if (dropdownOptions.length === 0) {
+      message.warning("No po IDs found.");
+    } else {
+      message.success(`${dropdownOptions.length} Please Select PO Id in Po Id Drop Down.`);
+    }
+  } catch (error) {
+    message.error("Error fetching indent IDs.");
+  }
+};
+
+
 
   const handleTenderSelect = async (tenderId) => {
     try {
@@ -150,6 +188,28 @@ const PO = () => {
                     value: v.id,
                   })),
                 };
+                /* if (field.name === "poId") {
+                    return {
+                        ...field,
+                        options: poIdDropdown,
+                    };
+                }*/
+               if (field.name === "poId") {
+                return {
+                ...field,
+                options: poIdDropdown,
+                props: {
+                  onChange: (value) => handleSearch(value),
+                },
+                };
+              }
+
+                if (field.name === "searchValue") {
+                    return {
+                        ...field,
+                        onSearch: handleSearchPoIds,
+                    };
+                }
           return field;
         }),
       };
@@ -362,7 +422,7 @@ const PO = () => {
   }
   return section;
 });
-
+ 
 
   // Load initial data
   useEffect(() => {

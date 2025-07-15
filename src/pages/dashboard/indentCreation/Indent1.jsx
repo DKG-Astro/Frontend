@@ -93,6 +93,8 @@ const Indent1 = () => {
 
     const [selectedModeOfProcurement, setSelectedModeOfProcurement] = useState("")
     const [indentIdDropdown, setIndentIdDropdown] = useState([]);
+    const [searchDone, setSearchDone] = useState(false);
+
 
 
     const locationDropdown = locationMaster.map((item) => {
@@ -126,8 +128,78 @@ const Indent1 = () => {
         content: () => printComponentRef.current,
         documentTitle: `Indent - ${formData?.indentId || "Draft"}`
     });
+ 
+    const handleSearchIndentIds = async () => {
+  const { searchType, searchValue } = formData;
+
+  if (!searchValue || !searchType) {
+    message.warning("Please select search type and enter value.");
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`/api/indents/search`, {
+      params: {
+        type: searchType,
+        value: searchValue
+      }
+    });
+
+    const indentList = data?.responseData || [];
+
+    const dropdownOptions = indentList.map((item) => ({
+      label: item.indentId,
+      value: item.indentId
+    }));
+
+    setIndentIdDropdown(dropdownOptions);
+
+    if (dropdownOptions.length === 0) {
+      message.warning("No indent IDs found.");
+    } else {
+      message.success(`${dropdownOptions.length} Please Select Indent Id in Indent Id Drop Down.`);
+    }
+  } catch (error) {
+    message.error("Error fetching indent IDs.");
+  }
+};
+
+
 
     const inputFields = [
+        {
+            heading: "Search Indent",
+            colCnt: 2,
+            fieldList: [
+        {
+            name: "searchValue",
+            label: "Search Value",
+            type: "indentSearch",
+            onSearch: () => handleSearchIndentIds(),
+      // formData.searchType === "submittedDate" ? "date" : "text"
+        },
+    ]
+    },
+    {
+        heading: "Status",
+        colCnt:2,
+        fieldList:[
+            ...(searchDone ? [
+    {
+        name: "processStage",
+        label: "Process Stage",
+        type: "text",
+        disabled: true
+    },
+    {
+        name: "status",
+        label: "Status",
+        type: "text",
+        disabled: true
+    }
+] : [])
+        ]
+    },
         {
             heading: "Indentor Details",
             colCnt: 4,
@@ -496,7 +568,7 @@ const Indent1 = () => {
             })
         }
     }, [selectedModeOfProcurement])
-
+/*
     useEffect(() => {
     const fetchIndentIds = async () => {
         try {
@@ -512,7 +584,7 @@ const Indent1 = () => {
     };
 
         fetchIndentIds();
-    }, []);
+    }, []);*/
 
 
     const replaceMaterial = (prevMaterial, newMaterial) => {
@@ -640,11 +712,13 @@ const Indent1 = () => {
         try {
             const {data} = await axios.get(`/api/indents/indentData/${value}`)
             setFormData(data.responseData || {})
+            setSearchDone(true); 
         }
         catch(error){
             message.error("Error while fetching indent data.")
         }
     }
+   
     useEffect(() => {
         if (indentId) {
         handleSearch(indentId); 

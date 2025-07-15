@@ -35,6 +35,7 @@ const ContingencyPurchase = () => {
   const [materialDetailsMap, setMaterialDetailsMap] = useState({});
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescOptions, setMaterialDescOptions] = useState([]);
+   const [cpIdDropdown, setCpIdDropdown] = useState([]);
 
   // Form data state
   const [formData, setFormData] = useState({ materialDetails: [{}] });
@@ -113,11 +114,51 @@ const calculateTotalPrice = (quantity, unitPrice, gst = 0) => {
   return base + gstAmount;
 };
 
+ const handleSearchCpIds = async () => {
+  const { searchType, searchValue } = formData;
+
+  if (!searchValue || !searchType) {
+    message.warning("Please select search type and enter value.");
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`/api/contigency-purchase/search`, {
+      params: {
+        type: searchType,
+        value: searchValue
+      }
+    });
+
+    const cpList = data?.responseData || [];
+
+    const dropdownOptions = cpList.map((item) => ({
+      label: item.cpId,
+      value: item.cpId
+    }));
+
+    setCpIdDropdown(dropdownOptions);
+
+    if (dropdownOptions.length === 0) {
+      message.warning("No Cp IDs found.");
+    } else {
+      message.success(`${dropdownOptions.length} Please Select Cp Id in Cp Id Drop Down.`);
+    }
+  } catch (error) {
+    message.error("Error fetching Cp IDs.");
+  }
+};
+
 
  
   
 
   const handleChange = (name, value) => {
+     if (name === 'cpId') {
+        setFormData(prev => ({ ...prev, cpId: value }));
+        handleSearch(value);
+        return;
+    }
     if (Array.isArray(name)) {
       const [section, index, field] = name;
   
@@ -424,10 +465,13 @@ const hydratedCpDetails = useMemo(() => {
       return {
         ...section,
         fieldList: section.fieldList.map(field => {
+          if (field.name === 'cpId') return { ...field, options: cpIdDropdown, };
           if (field.name === 'projectName') return { ...field, options: projects };
           if (field.name === 'vendorName') return { ...field, options: vendors };
           if (field.name === 'paymentToVendor') return { ...field, options: vendors };
           if (field.name === 'paymentToEmployee') return { ...field, options: employees }; 
+          if (field.name === 'searchValue') return { ...field, onSearch: handleSearchCpIds };
+
           return field;
         })
       };
@@ -446,7 +490,7 @@ const hydratedCpDetails = useMemo(() => {
 
     return section;
   });
-}, [formData, projects, vendors, materialOptions, materialDescOptions, employees]);
+}, [formData, projects, vendors, materialOptions, materialDescOptions, employees,cpIdDropdown]);
 
 
 

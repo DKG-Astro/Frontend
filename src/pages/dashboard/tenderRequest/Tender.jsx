@@ -32,7 +32,7 @@ const Tender = () => {
   const [materialOptions, setMaterialOptions] = useState([]);
   const [materialDescOptions, setMaterialDescOptions] = useState([]);
   const [selectedProjectName, setSelectedProjectName] = useState(null);
-  const [tenderIdOptions,setTenderIdOptions] = useState(null);
+  const [tenderIdOptions,setTenderIdOptions] = useState([]);
 
 
   const { userName, email, mobileNumber, token, userId } = useSelector(
@@ -406,12 +406,60 @@ const Tender = () => {
     setSubmitBtnLoading(false);
   }
 };
+ const handleSearchTenderIds = async () => {
+  const { searchType, searchValue } = formData;
+
+  if (!searchValue || !searchType) {
+    message.warning("Please select search type and enter value.");
+    return;
+  }
+
+  try {
+    const { data } = await axios.get(`/api/tender-requests/search`, {
+      params: {
+        type: searchType,
+        value: searchValue
+      }
+    });
+
+    const tenderList = data?.responseData || [];
+
+    const dropdownOptions = tenderList.map((item) => ({
+      label: item.tenderId,
+      value: item.tenderId
+    }));
+
+    setTenderIdOptions(dropdownOptions);
+
+    if (dropdownOptions.length === 0) {
+      message.warning("No Tender IDs found.");
+    } else {
+      message.success(`${dropdownOptions.length} Please Select Tender Id in Tender Id Drop Down.`);
+    }
+  } catch (error) {
+    message.error("Error fetching Tender IDs.");
+  }
+};
+
 
 
 
 
 
   const TenderDetails = [
+      {
+            heading: "Search Indent",
+            colCnt: 2,
+            fieldList: [
+        {
+            name: "searchValue",
+            label: "Search Value",
+            type: "indentSearch",
+            onSearch: () => handleSearchTenderIds(),
+      // formData.searchType === "submittedDate" ? "date" : "text"
+        },
+    ]
+    },
     {
       heading: "Tender Search",
       colCnt: 1,
@@ -420,7 +468,7 @@ const Tender = () => {
         label: "Tender Id",
         //type: "search",
         type: "select",
-        options: tenderIdOptions,
+        options: tenderIdOptions || [],
         span: 1
       }]
     },

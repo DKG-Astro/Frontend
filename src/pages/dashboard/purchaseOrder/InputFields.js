@@ -7,13 +7,26 @@ const countryOptions = countryList().getData().map(c => ({
 
 
 export const PoDetails = [
+   {
+            heading: "Search PO",
+            colCnt: 2,
+            fieldList: [
+        {
+            name: "searchValue",
+            label: "Search Value",
+            type: "indentSearch",
+      // formData.searchType === "submittedDate" ? "date" : "text"
+        },
+    ]
+    },
     {
       heading: "PO Search",
       colCnt: 4,
       fieldList: [{
         name: "poId",
         label: "PO ID",
-        type: "search",
+       // type: "search",
+        type: "select",
         span: 1
       }]
     },

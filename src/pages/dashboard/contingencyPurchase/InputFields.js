@@ -8,6 +8,18 @@ const countryOptions = countryNames.map((country) => ({
 }));
 
 export const CpDetails =(formData = {}) => [
+   {
+            heading: "Search Indent",
+            colCnt: 2,
+            fieldList: [
+        {
+            name: "searchValue",
+            label: "Search Value",
+            type: "indentSearch",
+          //  onSearch: () => handleSearchIndentIds(),
+        },
+    ]
+    },
   {
       heading: "Contingency Search",
       colCnt: 4,
@@ -15,7 +27,8 @@ export const CpDetails =(formData = {}) => [
         {
           name: "cpId",
           label: "Contingency ID",
-          type: "search",
+          //type: "search",
+          type: "select",
           span: 1,
         },  
       ]

@@ -10,6 +10,7 @@ import InputDatePicker from "../components/DatePicker";
 import UploadFile from "../components/UploadFile";
 import Btn from "../components/DKG_Btn";
 import DownloadFile from "../components/DowloadFile";
+import CustomIndentSearch from "../components/CustomIndentSearch";
 
 
 export const apiCall = async (method, url, token, payload = null) => {
@@ -320,6 +321,19 @@ export const apiCall = async (method, url, token, payload = null) => {
           />
           </Form.Item>
         );
+        case "indentSearch":
+  return (
+    <CustomIndentSearch
+      label={field?.label}
+      name={field?.name}
+      searchType={formData.searchType}
+      setSearchType={(val) => handleChange("searchType", val)}
+      searchValue={formData.searchValue}
+      setSearchValue={(val) => handleChange("searchValue", val)}
+      onSearch={field?.onSearch}
+    />
+  );
+
         case "checkboxWithLabelText":
         return (
           <Form.Item
