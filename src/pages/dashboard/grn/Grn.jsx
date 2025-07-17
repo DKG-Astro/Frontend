@@ -9,6 +9,8 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
+import { useLocation } from "react-router-dom";
+
 
 
 const Grn = () => {
@@ -20,6 +22,9 @@ const Grn = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
   const [isDepreciationDisabled, setIsDepreciationDisabled] = useState(false);
+  const location = useLocation();
+const processNoFromState = location.state?.processNo;
+
 
   const [formData, setFormData] = useState({
     giNo: "",
@@ -173,6 +178,54 @@ const handleSearch = async () => {
       });
 
     } else if (processStage === "GRN") {
+    setFormData({
+        ...data?.responseData,
+        giNo: data?.responseData?.grnDtls?.giNo,
+        grnSubProcessId: data?.responseData?.grnDtls?.grnSubProcessId,
+        grnType: "GI",
+        grnNo: data?.responseData?.grnDtls?.grnNo,
+        grnDate: data?.responseData?.grnDtls?.grnDate,
+        installationDate: data?.responseData?.grnDtls?.installationDate,
+        commissioningDate: data?.responseData?.grnDtls?.commissioningDate,
+        indentorName: data?.responseData.grnDtls?.createdBy,
+        materialDtlList: data?.responseData?.grnDtls?.materialDtlList?.map(grnMaterial => {
+            const giMaterial = data?.responseData?.giDtls?.materialDtlList?.find(
+                m => m.assetId === grnMaterial.assetId
+            ) || {};
+
+            const gprnMaterial = data?.responseData?.gprnDtls?.materialDtlList?.find(
+                m => m.materialCode === giMaterial.materialCode
+            ) || {};
+
+            const unitPrice = parseFloat(gprnMaterial?.unitPrice || 0);
+            const acceptedQuantity = grnMaterial.quantity || 0;
+            const depriciationRate = grnMaterial.depriciationRate || 0;
+
+            let bookValue = 0;
+            if (isDepreciationDisabled) {
+                bookValue = acceptedQuantity * unitPrice;
+            } else {
+                bookValue = acceptedQuantity * unitPrice * (1 - depriciationRate / 100);
+            }
+
+            return {
+                ...grnMaterial,
+             //   materialCode: giMaterial.materialCode || "",
+             //   materialDesc: giMaterial.materialDesc || "",
+                assetDesc: giMaterial.assetDesc || "",
+                uomId: giMaterial.uomId || "",
+                receivedQuantity: giMaterial.receivedQuantity || 0,
+                unitPrice,
+                acceptedQuantity,
+                locatorId: grnMaterial.locatorId || 0,
+                depriciationRate,
+                bookValue: parseFloat(bookValue.toFixed(2)),
+            };
+        }),
+    });
+}
+
+ /*else if (processStage === "GRN") {
       console.log("Handling GRN Type:", data?.responseData?.grnDtls);
 
       setFormData({
@@ -192,7 +245,7 @@ const handleSearch = async () => {
       bookValue: material.bookValue || 0,  
     })),
       });
-    }
+    }*/
   } catch (error) {
     message.error(
       error?.response?.data?.responseStatus?.message || "Error fetching data."
@@ -207,7 +260,13 @@ const handleSearch = async () => {
 
     try {
       setSubmitBtnLoading(true);
-      const {data} = await axios.post("/api/process-controller/saveGrn", payload);
+     // const {data} = await axios.post("/api/process-controller/saveGrn", payload);
+    const isUpdate = !!formData.grnNo;
+    const apiUrl = isUpdate
+      ? "/api/process-controller/updateGrn"  
+      : "/api/process-controller/saveGrn";
+
+    const { data } = await axios.post(apiUrl, payload);
 
       setFormData(prev => ({
         ...prev,
@@ -215,7 +274,12 @@ const handleSearch = async () => {
       }));
 
       localStorage.removeItem("grnDraft");
+     // setModalOpen(true);
+      if (isUpdate) {
+      message.success("Updated Successfully.");
+    } else {
       setModalOpen(true);
+    }
     } catch(error) {
       message.error(error?.response?.data?.responseStatus?.message || "Failed to save GRN.");
     } finally {
@@ -230,6 +294,17 @@ const handleSearch = async () => {
       message.success("Form loaded from draft.");
     }
   }, []);
+  useEffect(() => {
+  if (processNoFromState) {
+    setFormData(prev => ({ ...prev, grnNo: processNoFromState }));
+  }
+}, [processNoFromState]);
+useEffect(() => {
+  if (formData?.grnNo) {
+    handleSearch();
+  }
+}, [formData?.grnNo]);
+
 
   return (
     <Card className="a4-container" ref={printRef}>

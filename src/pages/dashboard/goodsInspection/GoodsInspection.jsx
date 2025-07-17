@@ -126,6 +126,7 @@ const handleGISearch = async () => {
       const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GI&processNo=${value}`);
       data = response.data?.responseData?.giDtls;
       const formData = mergeData(response.data?.responseData?.giDtls, response.data?.responseData?.gprnDtls);
+      formData.giNo = data?.inspectionNo || "";
       setFormData(formData);
     } else{
       // GPRN API call
@@ -148,10 +149,15 @@ const handleGISearch = async () => {
 
   const onFinish = async () => {
     const payload = {...formData, locationId, createdBy: userId};
-
+    // const {data} = await axios.post("/api/process-controller/saveGi", payload);
     try {
       setSubmitBtnLoading(true);
-      const {data} = await axios.post("/api/process-controller/saveGi", payload);
+      const isUpdate = !!formData.giNo; 
+     const apiUrl = formData.giNo 
+      ? "/api/process-controller/updateGi"  // For update
+      : "/api/process-controller/saveGi";  // For create
+
+    const { data } = await axios.post(apiUrl, payload);
 
       setFormData(prev => ({
         ...prev,
@@ -159,7 +165,12 @@ const handleGISearch = async () => {
       }));
 
       localStorage.removeItem("goodsInspectionDraft");
+     // setModalOpen(true);
+    if (isUpdate) {
+      message.success("Updated Successfully.");
+    } else {
       setModalOpen(true);
+    }
     } catch(error) {
       message.error(error?.response?.data?.responseStatus?.message || "Failed to save Goods Inspection.");
     } finally {

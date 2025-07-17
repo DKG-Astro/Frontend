@@ -29,6 +29,15 @@ const senderName = useSelector(state => state.auth.userName)
 
   const handleChange = (fieldName, value) => {
 
+   if (fieldName === "ogpType") {
+    if (value === "Non Returnable") {
+      setFormData((prev) => ({ ...prev, [fieldName]: value, dateOfReturn: null }));
+    } else {
+      setFormData((prev) => ({ ...prev, [fieldName]: value }));
+    }
+    return;
+  }
+
     if(typeof fieldName === 'string')
       setFormData(prev => ({...prev, [fieldName]: value}))
     else{
@@ -123,6 +132,7 @@ const senderName = useSelector(state => state.auth.userName)
             <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("type", val)}/>
           </Form.Item>
         </div>
+        
         {
           formData.type === "PO" && renderFormFields(ogpFieldsPo, handleChange, formData, "", null, setFormData, handleSearch)
         }
