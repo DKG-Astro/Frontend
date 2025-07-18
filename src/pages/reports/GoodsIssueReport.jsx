@@ -4,17 +4,17 @@ import { Table } from 'antd';
 
 const GoodsIssueReport = () => {
   const columns = [
-    { title: 'Issue Note No', dataIndex: 'issueNoteId', key: 'issueNoteId', render: (_, record) => "INV" + "/" + record.issueNoteId, searchable: true },
-    { title: 'Issue Note Type', dataIndex: 'issueNoteType', key: 'issueNoteType', filterable: true },
-    { title: 'Issue Date', dataIndex: 'issueDate', key: 'issueDate' },
-    { title: 'Consignee Detail', dataIndex: 'consigneeDetail', key: 'consigneeDetail', searchable: true },
-    { title: 'Indentor Name', dataIndex: 'indentorName', key: 'indentorName', searchable: true },
-    { title: 'Field Station', dataIndex: 'fieldStation', key: 'fieldStation', filterable: true },
-    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId', filterable: true },
+    { title: 'Issue Note No', dataIndex: 'issueNoteId', key: 'issueNoteId_GI', render: (_, record) => "INV" + "/" + record.issueNoteId, searchable: true },
+    { title: 'Issue Note Type', dataIndex: 'issueNoteType', key: 'issueNoteType_GI', filterable: true },
+    { title: 'Issue Date', dataIndex: 'issueDate', key: 'issueDate_GI' },
+    { title: 'Consignee Detail', dataIndex: 'consigneeDetail', key: 'consigneeDetail_GI', searchable: true },
+    { title: 'Indentor Name', dataIndex: 'indentorName', key: 'indentorName_GI', searchable: true },
+    { title: 'Field Station', dataIndex: 'fieldStation', key: 'fieldStation_GI', filterable: true },
+    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId_GI', filterable: true },
     {
       title: 'Issue Details',
       dataIndex: 'details',
-      key: 'details',
+      key: 'details_GI',
       render: (details) => (
         <Table
           dataSource={details}
@@ -37,7 +37,7 @@ const GoodsIssueReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Goods Issue Report" filterType="date" />
+      <CustomReport columns={columns} api={api} title="Goods Issue Report" filterType="date" storageKey="GI_REPORT_COLUMNS"/>
     </div>
   );
 };

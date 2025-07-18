@@ -4,15 +4,15 @@ import { Table } from 'antd';
 
 const IgpReport = () => {
   const columns = [
-    { title: 'IGP Process No', dataIndex: 'igpProcessId', key: 'igpProcessId', render: (_, record) => record.igpProcessId + "/" + record.igpSubProcessId, searchable: true },
-    { title: 'OGP Sub Process ID', dataIndex: 'ogpSubProcessId', key: 'ogpSubProcessId', searchable: true },
-    { title: 'IGP Date', dataIndex: 'igpDate', key: 'igpDate' },
-    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId', filterable: true },
-    { title: 'Created By', dataIndex: 'createdBy', key: 'createdBy' },
+    { title: 'IGP Process No', dataIndex: 'igpProcessId', key: 'igpProcessId_IGP', render: (_, record) => record.igpProcessId + "/" + record.igpSubProcessId, searchable: true },
+    { title: 'OGP Sub Process ID', dataIndex: 'ogpSubProcessId', key: 'ogpSubProcessId_IGP', searchable: true },
+    { title: 'IGP Date', dataIndex: 'igpDate', key: 'igpDate_IGP' },
+    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId_IGP', filterable: true },
+    { title: 'Created By', dataIndex: 'createdBy', key: 'createdBy_IGP' },
     {
       title: 'IGP Details',
       dataIndex: 'igpDetails',
-      key: 'igpDetails',
+      key: 'igpDetails_IGP',
       render: (igpDetails) => (
         <Table
           dataSource={igpDetails}
@@ -36,7 +36,7 @@ const IgpReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="IGP Report" filterType="date" />
+      <CustomReport columns={columns} api={api} title="IGP Report" filterType="date" storageKey="IGP_REPORT_COLUMNS"/>
     </div>
   );
 };

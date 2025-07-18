@@ -75,6 +75,21 @@ const GatePass = () => {
       key: 'status', 
       // searchable: true 
     },
+     {
+    title: 'Sender Name',
+    dataIndex: 'senderName',
+    key: 'senderName',
+  },
+  {
+    title: 'Receiver Name',
+    dataIndex: 'receiverName',
+    key: 'receiverName',
+  },
+  {
+    title: 'OGP Type',
+    dataIndex: 'ogpType',
+    key: 'ogpType',
+  },
     {
       title: 'Material Details',
       dataIndex: 'details',
@@ -171,7 +186,7 @@ const GatePass = () => {
 
   return (
     <div>
-      <TableComponent dataSource={dataSource} columns={columns} />
+      <TableComponent dataSource={dataSource} columns={columns} storageKey="GatePassQueue_REPORT_COLUMNS"/>
     </div>
   );
 };

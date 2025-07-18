@@ -35,7 +35,7 @@ const TechnoMom = () => {
       filterable: true
     },
   ];
-  return <CustomReport api={api} columns={columns} title="Techno Mom Report" filterType="date"/>
+  return <CustomReport api={api} columns={columns} title="Techno Mom Report" filterType="date" storageKey="TECHNO_REPORT_COLUMNS"/>
 }
 
 export default TechnoMom

@@ -4,16 +4,16 @@ import { Table } from 'antd';
 
 const OgpReport = () => {
   const columns = [
-    { title: 'OGP Process No', dataIndex: 'ogpProcessId', key: 'ogpProcessId', render: (_, record) => record.ogpProcessId + "/" + record.ogpSubProcessId , searchable: true },
+    { title: 'OGP Process No', dataIndex: 'ogpProcessId', key: 'ogpProcessId_ogp', render: (_, record) => record.ogpProcessId + "/" + record.ogpSubProcessId , searchable: true },
     // { title: 'OGP Sub Process ID', dataIndex: 'ogpSubProcessId', key: 'ogpSubProcessId', searchable: true },
-    { title: 'Issue Note ID', dataIndex: 'issueNoteId', key: 'issueNoteId', searchable: true },
-    { title: 'OGP Date', dataIndex: 'ogpDate', key: 'ogpDate' },
-    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId', filterable: true },
-    { title: 'Created By', dataIndex: 'createdBy', key: 'createdBy' },
+    { title: 'Issue Note ID', dataIndex: 'issueNoteId', key: 'issueNoteId_ogp', searchable: true },
+    { title: 'OGP Date', dataIndex: 'ogpDate', key: 'ogpDate_ogp' },
+    { title: 'Location ID', dataIndex: 'locationId', key: 'locationId_ogp', filterable: true },
+    { title: 'Created By', dataIndex: 'createdBy', key: 'createdBy_ogp' },
     {
       title: 'OGP Details',
       dataIndex: 'ogpDetails',
-      key: 'ogpDetails',
+      key: 'ogpDetails_ogp',
       render: (ogpDetails) => (
         <Table
           dataSource={ogpDetails}
@@ -37,7 +37,7 @@ const OgpReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="OGP Report" filterType="date" />
+      <CustomReport columns={columns} api={api} title="OGP Report" filterType="date" storageKey="OGP_REPORT_COLUMNS"/>
     </div>
   );
 };

@@ -7,79 +7,79 @@ const IndentList = () => {
     {
       title: 'Indent ID',
       dataIndex: 'indentId',
-      key: 'indentId',
+      key: 'indentId_INDENT',
       filterable: true,
     },
     {
       title: 'Indentor Name',
       dataIndex: 'indentorName',
-      key: 'indentorName',
+      key: 'indentorName_INDENT',
       filterable: true,
     },
     {
       title: 'Indentor Mobile No',
       dataIndex: 'indentorMobileNo',
-      key: 'indentorMobileNo',
+      key: 'indentorMobileNo_INDENT',
       filterable: true,
     },
     {
       title: 'Indentor Email',
       dataIndex: 'indentorEmailAddress',
-      key: 'indentorEmailAddress',
+      key: 'indentorEmailAddress_INDENT',
       filterable: true,
     },
     {
       title: 'Consignes Location',
       dataIndex: 'consignesLocation',
-      key: 'consignesLocation',
+      key: 'consignesLocation_INDENT',
       filterable: true,
     },
     {
       title: 'Project Name',
       dataIndex: 'projectName',
-      key: 'projectName',
+      key: 'projectName_INDENT',
       filterable: true,
     },
     {
       title: 'Submitted Date',
       dataIndex: 'submittedDate',
-      key: 'submittedDate',
+      key: 'submittedDate_INDENT',
       filterable: true,
     },
     {
       title: 'Pending With',
       dataIndex: 'pendingWith',
-      key: 'pendingWith',
+      key: 'pendingWith_INDENT',
       filterable: true,
     },
     {
       title: 'Pending From',
       dataIndex: 'pendingFrom',
-      key: 'pendingFrom',
+      key: 'pendingFrom_INDENT',
       filterable: true,
     },
     {
       title: 'Status',
       dataIndex: 'status',
-      key: 'status',
+      key: 'status_INDENT',
       filterable: true,
     },
     {
       title: 'As On Date',
       dataIndex: 'asOnDate',
-      key: 'asOnDate',
+      key: 'asOnDate_INDENT',
       filterable: true,
     },
     {
       title: 'Created By',
       dataIndex: 'createdBy',
-      key: 'createdBy',
+      key: 'createdBy_INDENT',
       filterable: true,
     },
     {
       title: 'Material Details',
       dataIndex: 'materialDetails',
-      key: 'materialDetails',
+      key: 'materialDetails_INDENT',
       render: (materialDetails) => (
         <Table
           dataSource={materialDetails}
@@ -156,7 +156,7 @@ const IndentList = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Indent List" filterType="date" />
+      <CustomReport columns={columns} api={api} title="Indent List" filterType="date" storageKey="INDENTLIST_REPORT_COLUMNS"/>
     </div>
   );
 };

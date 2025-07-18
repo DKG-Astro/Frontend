@@ -9,7 +9,23 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { ogpFields, ogpFieldsPo } from "./InputFields";
+import { Modal } from "antd";  
+
 import { set } from "lodash";
+const confirmReturnable = () => {
+  return new Promise((resolve, reject) => {
+    Modal.confirm({
+      title: "Confirm Return Date",
+      content: "Please confirm the Return Date. Do you want to proceed?",
+      onOk() {
+        resolve(true);
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
+  });
+};
 
 const Ogp = () => {
   const printRef = useRef();
@@ -67,6 +83,7 @@ const senderName = useSelector(state => state.auth.userName)
             ogpType: prev.ogpType,
             issueNoteId: data.responseData?.poId,
             ogpDate: prev.ogpDate,
+            senderName: prev.senderName,
             materialDtlList: data?.responseData?.purchaseOrderAttributes || []
           }));
 
@@ -79,6 +96,7 @@ const senderName = useSelector(state => state.auth.userName)
         issueNoteId: data.responseData?.issueNoteNo,
         type: "Goods Issue",
         ogpType: prev.ogpType,
+        senderName: prev.senderName,
         ogpDate: prev.ogpDate,
         materialDtlList: data?.responseData?.materialDtlList?.map(item => ({...item, locatorDesc: locatorMasterObj[parseInt(item.locatorId)]}))
       }));
@@ -90,6 +108,14 @@ const senderName = useSelector(state => state.auth.userName)
   const {userId, locationId} = useSelector(state => state.auth);
 
   const onFinish = async () => {
+    if (formData.ogpType === "Returnable") {
+    if (!formData.dateOfReturn) {
+      message.error("Please enter the Return Date before submitting.");
+      return;
+    }
+    const confirmed = await confirmReturnable();
+    if (!confirmed) return;
+  }
     const payload = {...formData, locationId, createdBy: userId};
 
     try {
@@ -120,6 +146,37 @@ const senderName = useSelector(state => state.auth.userName)
     }
   }, []);
 
+  const getFilteredOgpFields = () => {
+  if (formData.ogpType === "Non Returnable") {
+    return ogpFields.map(section => {
+      if (!section.fieldList) return section;
+      return {
+        ...section,
+        fieldList: section.fieldList.filter(f => f.name !== "dateOfReturn")
+      }
+    });
+  }
+  return ogpFields;
+};
+
+
+
+const getFilteredOgpFieldsPo = () => {
+  if (formData.ogpType === "Non Returnable") {
+    return ogpFieldsPo.map(section => {
+      if (!section.fieldList) return section;
+      return {
+        ...section,
+        fieldList: section.fieldList.filter(f => f.name !== "dateOfReturn")
+      }
+    });
+  }
+  return ogpFieldsPo;
+};
+console.log(getFilteredOgpFields());
+console.log(getFilteredOgpFieldsPo());
+
+
   
 
   return (
@@ -134,10 +191,10 @@ const senderName = useSelector(state => state.auth.userName)
         </div>
         
         {
-          formData.type === "PO" && renderFormFields(ogpFieldsPo, handleChange, formData, "", null, setFormData, handleSearch)
+          formData.type === "PO" && renderFormFields(getFilteredOgpFieldsPo(), handleChange, formData, "", null, setFormData, handleSearch)
         }
         {
-          formData.type === "Goods Issue" && renderFormFields(ogpFields, handleChange, formData, "", null, setFormData, handleSearch)
+          formData.type === "Goods Issue" && renderFormFields(getFilteredOgpFields(), handleChange, formData, "", null, setFormData, handleSearch)
         }
         <ButtonContainer
           onFinish={onFinish}

@@ -7,49 +7,49 @@ const ShortClosedCancelledOrderReport = () => {
     {
       title: 'PO ID',
       dataIndex: 'poId',
-      key: 'poId',
+      key: 'poId_S',
       filterable: true,
     },
     {
       title: 'Tender ID',
       dataIndex: 'tenderId',
-      key: 'tenderId',
+      key: 'tenderId_S',
       filterable: true,
     },
     {
       title: 'Indent IDs',
       dataIndex: 'indentIds',
-      key: 'indentIds',
+      key: 'indentIds_S',
       filterable: true,
     },
     {
       title: 'Value',
       dataIndex: 'value',
-      key: 'value',
+      key: 'value_S',
       filterable: true,
     },
     {
       title: 'Vendor Name',
       dataIndex: 'vendorName',
-      key: 'vendorName',
+      key: 'vendorName_S',
       filterable: true,
     },
     {
       title: 'Submitted Date',
       dataIndex: 'submittedDate',
-      key: 'submittedDate',
+      key: 'submittedDate_S',
       filterable: true,
     },
     {
       title: 'Reason',
       dataIndex: 'reason',
-      key: 'reason',
+      key: 'reason_S',
       filterable: true,
     },
     {
       title: 'Materials',
       dataIndex: 'materials',
-      key: 'materials',
+      key: 'materials_S',
       render: (materials) => (
         <Table
           dataSource={materials}
@@ -76,7 +76,7 @@ const ShortClosedCancelledOrderReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Short Closed Cancelled Order Report" filterType="date" />
+      <CustomReport columns={columns} api={api} title="Short Closed Cancelled Order Report" filterType="date" storageKey="SHORTCLOSED_REPORT_COLUMNS"/>
     </div>
   );
 };

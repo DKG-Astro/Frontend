@@ -8,73 +8,73 @@ const CpReport = () => {
     {
       title: 'Contingency ID',
       dataIndex: 'contigencyId',
-      key: 'contigencyId',
+      key: 'contigencyId_cp',
       filterable: true,
     },
     {
       title: 'Vendor Name',
       dataIndex: 'vendorName',
-      key: 'vendorName',
+      key: 'vendorName_cp',
       filterable: true,
     },
     {
       title: 'Project Name',
       dataIndex: 'projectName',
-      key: 'projectName',
+      key: 'projectName_cp',
       filterable: true,
     },
     {
       title: 'Payment to Vendor',
       dataIndex: 'paymentToVendor',
-      key: 'paymentToVendor',
+      key: 'paymentToVendor_cp',
       filterable: true,
     },
     {
       title: 'Payment to Employee',
       dataIndex: 'paymentToEmployee',
-      key: 'paymentToEmployee',
+      key: 'paymentToEmployee_cp',
       filterable: true,
     },
     {
       title: 'Purpose',
       dataIndex: 'purpose',
-      key: 'purpose',
+      key: 'purpose_cp',
       filterable: true,
     },
     {
       title: 'Created By',
       dataIndex: 'createdBy',
-      key: 'createdBy',
+      key: 'createdBy_cp',
       filterable: true,
     },
     {
       title: 'Pending With',
       dataIndex: 'pendingWith',
-      key: 'pendingWith',
+      key: 'pendingWith_cp',
       filterable: true,
     },
     {
       title: 'Pending From',
       dataIndex: 'pendingFrom',
-      key: 'pendingFrom',
+      key: 'pendingFrom_cp',
       filterable: true,
     },
     {
       title: 'Status',
       dataIndex: 'status',
-      key: 'status',
+      key: 'status_cp',
       filterable: true,
     },
     {
       title: 'Action',
       dataIndex: 'action',
-      key: 'action',
+      key: 'action_cp',
       filterable: true,
     },
     {
       title: 'Materials',
       dataIndex: 'cpMaterials',
-      key: 'cpMaterials',
+      key: 'cpMaterials_cp',
       render: (materials) => (
         <Table
           dataSource={materials}
@@ -148,7 +148,7 @@ const CpReport = () => {
     }
   ];
   
-  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" filterType="date"/>
+  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" filterType="date" storageKey="CP_REPORT_COLUMNS"/>
 }
 
 export default CpReport

@@ -168,7 +168,7 @@ const PendingGi = () => {
 
   return (
     <div>
-      <TableComponent dataSource={ds} columns={columns} />
+      <TableComponent dataSource={ds} columns={columns} storageKey="GIPENDING_REPORT_COLUMNS"/>
     </div>
   );
 };

@@ -7,43 +7,43 @@ const QuarterlyVigilanceSoReport = () => {
     {
       title: 'Order No',
       dataIndex: 'orderNo',
-      key: 'orderNo',
+      key: 'orderNo_Q',
       filterable: true,
     },
     {
       title: 'Order Date',
       dataIndex: 'orderDate',
-      key: 'orderDate',
+      key: 'orderDate_Q',
       filterable: true,
     },
     {
       title: 'Value',
       dataIndex: 'value',
-      key: 'value',
+      key: 'value_Q',
       filterable: true,
     },
     {
       title: 'Vendor Name',
       dataIndex: 'vendorName',
-      key: 'vendorName',
+      key: 'vendorName_Q',
       filterable: true,
     },
     {
       title: 'Location',
       dataIndex: 'location',
-      key: 'location',
+      key: 'location_Q',
       filterable: true,
     },
     {
       title: 'Delivery Date',
       dataIndex: 'deliveryDate',
-      key: 'deliveryDate',
+      key: 'deliveryDate_Q',
       filterable: true,
     },
     {
       title: 'Descriptions',
       dataIndex: 'descriptions',
-      key: 'descriptions',
+      key: 'descriptions_Q',
       render: (descriptions) => (
         <Table
           dataSource={descriptions}
@@ -69,7 +69,7 @@ const QuarterlyVigilanceSoReport = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Quarterly Vigilance Report" filterType="none"/>
+      <CustomReport columns={columns} api={api} title="Quarterly Vigilance Report" filterType="none" storageKey="QUARTELY_REPORT_COLUMNS"/>
     </div>
   );
 };

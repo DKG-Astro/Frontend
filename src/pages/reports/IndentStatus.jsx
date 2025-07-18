@@ -78,7 +78,7 @@ const columns = [
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Indent Status" filterType="text"/>
+      <CustomReport columns={columns} api={api} title="Indent Status" filterType="text" storageKey="INDENTSTATUS_REPORT_COLUMNS"/>
     </div>
   );
 };

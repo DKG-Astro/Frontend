@@ -7,69 +7,69 @@ const SoStatus = () => {
    {
     title: 'SO ID',
     dataIndex: 'soId',
-    key: 'soId',
+    key: 'soId_SOS',
     filterable: true,
   },
   {
     title: 'Tender ID',
     dataIndex: 'tenderId',
-    key: 'tenderId',
+    key: 'tenderId_SOS',
     filterable: true,
   },
   {
     title: 'Indent IDs',
     dataIndex: 'indentIds',
-    key: 'indentIds',
+    key: 'indentIds_SOS',
     filterable: true,
   },
   {
     title: 'Vendor Name',
     dataIndex: 'vendorName',
-    key: 'vendorName',
+    key: 'vendorName_SOS',
     filterable: true,
   },
   {
     title: 'Value',
     dataIndex: 'value',
-    key: 'value',
+    key: 'value_SOS',
     filterable: true,
   },
   
   {
     title: 'Submitted Date',
     dataIndex: 'submittedDate',
-    key: 'submittedDate',
+    key: 'submittedDate_SOS',
     filterable: true,
   },
   {
     title: 'Pending With',
     dataIndex: 'pendingWith',
-    key: 'pendingWith',
+    key: 'pendingWith_SOS',
     filterable: true,
   },
   
   {
     title: 'Pending From',
     dataIndex: 'pendingFrom',
-    key: 'pendingFrom',
+    key: 'pendingFrom_SOS',
     filterable: true,
   },
     {
     title: 'status',
     dataIndex: 'status',
-    key: 'status',
+    key: 'status_SOS',
     filterable: true,
   },
   {
     title: 'On Date',
     dataIndex: 'asOnDate',
-    key: 'asOnDate',
+    key: 'asOnDate_SOS',
     filterable: true,
   },
     {
       title: 'Service Order Materials',
       dataIndex: 'materials',
-      key: 'materials',
+      key: 'materials_SOS',
       render: (materials) => (
         <Table
           dataSource={materials}
@@ -130,7 +130,7 @@ const SoStatus = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="So Status" filterType="date"/>
+      <CustomReport columns={columns} api={api} title="So Status" filterType="date" storageKey="SOSTATUS_REPORT_COLUMNS"/>
     </div>
   );
 };

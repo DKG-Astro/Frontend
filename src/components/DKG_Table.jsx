@@ -9,6 +9,7 @@ const TableComponent = ({
   dataSource,
   hideExport,
   hideManageColumns,
+  storageKey,
 }) => {
   const [hiddenColumns, setHiddenColumns] = useState([]);
   const [searchText, setSearchText] = useState({});
@@ -16,6 +17,17 @@ const TableComponent = ({
   const [columnDropdownVisible, setColumnDropdownVisible] = useState(false);
 
   const [globalSearchText, setGlobalSearchText] = useState("");
+
+  useEffect(() => {
+  const savedHiddenColumns = localStorage.getItem(storageKey);
+  if (savedHiddenColumns) {
+    setHiddenColumns(JSON.parse(savedHiddenColumns));
+  }
+}, [storageKey]);
+
+useEffect(() => {
+  localStorage.setItem(storageKey, JSON.stringify(hiddenColumns));
+}, [hiddenColumns, storageKey]);
 
 
   // Handle hiding columns

@@ -7,61 +7,61 @@ const PoList = () => {
     {
     title: 'Approved Date',
     dataIndex: 'approvedDate',
-    key: 'approvedDate',
+    key: 'approvedDate_po',
     filterable: true,
   },
   {
     title: 'PO ID',
     dataIndex: 'poId',
-    key: 'poId',
+    key: 'poId_po',
     filterable: true,
   },
   {
     title: 'Vendor Name',
     dataIndex: 'vendorName',
-    key: 'vendorName',
+    key: 'vendorName_po',
     filterable: true,
   },
   {
     title: 'Value',
     dataIndex: 'value',
-    key: 'value',
+    key: 'value_po',
     filterable: true,
   },
   {
     title: 'Tender ID',
     dataIndex: 'tenderId',
-    key: 'tenderId',
+    key: 'tenderId_po',
     filterable: true,
   },
   {
     title: 'Project',
     dataIndex: 'project',
-    key: 'project',
+    key: 'project_po',
     filterable: true,
   },
   {
     title: 'Vendor ID',
     dataIndex: 'vendorId',
-    key: 'vendorId',
+    key: 'vendorId_po',
     filterable: true,
   },
   {
     title: 'Indent IDs',
     dataIndex: 'indentIds',
-    key: 'indentIds',
+    key: 'indentIds_po',
     filterable: true,
   },
   {
     title: 'Mode of Procurement',
     dataIndex: 'modeOfProcurement',
-    key: 'modeOfProcurement',
+    key: 'modeOfProcurement_po',
     filterable: true,
   },
     {
       title: 'purchase Order Materials',
       dataIndex: 'purchaseOrderAttributes',
-      key: 'purchaseOrderAttributes',
+      key: 'purchaseOrderAttributes_po',
       render: (purchaseOrderAttributes) => (
         <Table
           dataSource={purchaseOrderAttributes}
@@ -127,7 +127,7 @@ const PoList = () => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Po List" filterType="date"/>
+      <CustomReport columns={columns} api={api} title="Po List" filterType="date" storageKey="POLIST_REPORT_COLUMNS"/>
     </div>
   );
 };
