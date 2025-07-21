@@ -329,10 +329,15 @@ const handleSearch = async (value) => {
       `/api/contigency-purchase/${value || formData.cpId}`
     );
 
-    setFormData({
+   /* setFormData({
       ...data?.responseData,
       materialDetails: data?.responseData?.cpMaterials || [],
-    });
+    });*/
+       setFormData((prev) => ({
+      ...prev,
+      ...data?.responseData,
+      materialDetails: data?.responseData?.cpMaterials || [],
+    }));
   } catch (error) {
     ;
     message.error(

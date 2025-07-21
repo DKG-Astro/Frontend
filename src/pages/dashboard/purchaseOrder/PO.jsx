@@ -381,6 +381,7 @@ const PO = () => {
         : [],
 
       });
+      setSearchDone(true);
     } catch (error) {
       ;
       message.error(
@@ -417,6 +418,21 @@ const PO = () => {
         }
 
         return child;
+      }),
+    };
+  }
+   
+  if (section.fieldList) {
+    return {
+      ...section,
+      fieldList: section.fieldList.map((field) => {
+        if (field.name === "processStage" || field.name === "status") {
+          return {
+            ...field,
+            shouldShow: () => searchDone,
+          };
+        }
+        return field;
       }),
     };
   }

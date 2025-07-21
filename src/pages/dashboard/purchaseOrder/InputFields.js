@@ -19,6 +19,24 @@ export const PoDetails = [
         },
     ]
     },
+     {
+        heading: "Status",
+        colCnt:2,
+        fieldList:[
+    {
+        name: "processStage",
+        label: "Process Stage",
+        type: "text",
+        disabled: true
+    },
+    {
+        name: "status",
+        label: "Status",
+        type: "text",
+        disabled: true
+    }
+        ]
+    },
     {
       heading: "PO Search",
       colCnt: 4,

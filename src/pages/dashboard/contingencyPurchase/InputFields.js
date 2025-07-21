@@ -33,6 +33,26 @@ export const CpDetails =(formData = {}) => [
         },  
       ]
     },
+     {
+        heading: "Status",
+        colCnt:2,
+        fieldList:[
+            ...(formData.cpId ? [
+    {
+        name: "processStage",
+        label: "Process Stage",
+        type: "text",
+        disabled: true
+    },
+    {
+        name: "status",
+        label: "Status",
+        type: "text",
+        disabled: true
+    }
+] : [])
+        ]
+    },
 {
   colCnt: 4,
   fieldList: [

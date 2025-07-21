@@ -115,7 +115,8 @@ const FileUpload = ({ documentName, fileType, onChange, value, fileName }) => {
                 handleUpload({ file: info.file.originFileObj || info.file });
               }
             }}
-            accept={fileType === 'pdf' ? '.pdf' : fileType === 'image' ? 'image/*' : undefined}
+           // accept={fileType === 'pdf' ? '.pdf' : fileType === 'image' ? 'image/*' : undefined}
+           accept="*"
           >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>

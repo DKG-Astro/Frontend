@@ -33,6 +33,7 @@ const Tender = () => {
   const [materialDescOptions, setMaterialDescOptions] = useState([]);
   const [selectedProjectName, setSelectedProjectName] = useState(null);
   const [tenderIdOptions,setTenderIdOptions] = useState([]);
+  const [searchDone, setSearchDone] = useState(false);
 
 
   const { userName, email, mobileNumber, token, userId } = useSelector(
@@ -261,6 +262,7 @@ const Tender = () => {
     const { data } = await axios.get(
       `/api/tender-requests/base64Files/${value || formData.tenderId}`
     );
+    setSearchDone(true); 
 
     const responseData = data?.responseData || {};
 
@@ -471,6 +473,26 @@ const Tender = () => {
         options: tenderIdOptions || [],
         span: 1
       }]
+    },
+     {
+        heading: "Status",
+        colCnt:2,
+        fieldList:[
+            ...(searchDone ? [
+    {
+        name: "processStage",
+        label: "Process Stage",
+        type: "text",
+        disabled: true
+    },
+    {
+        name: "status",
+        label: "Status",
+        type: "text",
+        disabled: true
+    }
+] : [])
+        ]
     },
     {
       heading: "Tender Basic Details",
