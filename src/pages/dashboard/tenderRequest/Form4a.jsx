@@ -29,15 +29,24 @@ const Form4a = () => {
   const tenderId = location.state?.tenderId || null;
   const bidType = location.state?.bidType || null;
   const requestId =  location.state?.requestId ||null;
-
+  const parsedRoleId = parseInt(roleId);
     // tender evaluator
-    if(parseInt(roleId) === 17){
+   /* if(parseInt(roleId) === 17 ){
       return <TenderEvaluator bidType={bidType} tenderId={tenderId} />
     }
 
+
     if(parseInt(roleId) === 1){
       return <IndentorUpload requestId={requestId} />
+    }*/
+    if (parsedRoleId === 1 && requestId ) {
+      return <IndentorUpload requestId={requestId} />
     }
+
+    if (parsedRoleId === 17 || (parsedRoleId === 1 && tenderId && bidType)) {
+      return <TenderEvaluator bidType={bidType} tenderId={tenderId} />
+    }
+
 
   return (
     <FormContainer>

@@ -404,7 +404,7 @@ const handleGISearch = async () => {
                 type: "image",
                 span: 3,
                // required: true,
-                accept: "image/*"
+               // accept: "image/*"
             },
             // {
             //     name: "unitPrice",

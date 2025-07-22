@@ -51,12 +51,12 @@ const QueueAction = () => {
   if(parseInt(roleId) === 17){ // tender evaluator, show approved tender id
     return <ApprovedTenders />
   }
-
+/*
   if(parseInt(roleId) === 1){
     return <SubworkflowTransition />
   }
-  /*
- if (parsedRoleId === 1 || parsedRoleId === 17) {
+  */
+ if (parsedRoleId === 1) {
     return (
       <Tabs defaultActiveKey="tenders">
         <Tabs.TabPane tab="Tender IDs" key="tenders">
@@ -70,6 +70,6 @@ const QueueAction = () => {
   }
 
   return null;
-};*/
-}
+};
+//}
 export default QueueAction;

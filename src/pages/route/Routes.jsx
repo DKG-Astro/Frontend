@@ -67,8 +67,8 @@ const RoutesComponent = () => {
               </Route>
               <Route path="tender">
                 <Route path="request" element={<Tender />} />
-                <Route path="evaluation" element={<Form4a />} />
-                {/* <Route path="evaluation" element={<TenderEvaluator />} />*/}
+               <Route path="evaluation" element={<Form4a />} />
+              {/* <Route path="evaluation" element={<TenderEvaluator />} />/*/}
                 <Route path="/procurement/tender/Quotations" element={<Quotations />} />
               </Route>
               <Route path="purchaseOrder" element={<PO />} />

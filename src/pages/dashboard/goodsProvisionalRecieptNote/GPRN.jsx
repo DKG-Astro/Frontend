@@ -141,7 +141,7 @@ const GPRN = () => {
         project: data?.responseData?.projectName || "N/A",
         indentorName: indentData?.responseData?.indentorName,
         consigneeDetail: data?.responseData?.consignesAddress,
-        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
+        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: data?.responseData?.deliveryDate || "", 
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
@@ -377,6 +377,11 @@ const GPRN = () => {
           
         },
         {
+          name: "totalQuantity",
+          label: "Total Quantity",
+          type: "text",
+        },
+        {
           name: "orderedQuantity",
           label: "Ordered Quantity",
           type: "text",
@@ -464,11 +469,6 @@ const GPRN = () => {
       heading: "Consignee & Warranty Information",
       colCnt: 3,
       fieldList: [
-        {
-          name: "totalQuantity",
-          label: "Total Quantity",
-          type: "text",
-        },
         {
           name: "consigneeDetail",
           label: "Consignee Details",

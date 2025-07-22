@@ -60,7 +60,15 @@ const ApprovedTenders = () => {
       //const {data} = await apiCall("GET", `/getApprovedTender?roleName=${auth.role}`);
       const res = data?.responseData || [];
 
-      setDataSource(res);
+      let filteredData = res;
+        if (auth.roleId === 1) {
+            filteredData = res.filter(item => item.totalValue <= 1000000);
+        } else if (auth.roleId === 17) {
+            filteredData = res.filter(item => item.totalValue > 1000000);
+        }
+
+        setDataSource(filteredData);
+     // setDataSource(res);
     }
     catch(error){}
   }, [])
