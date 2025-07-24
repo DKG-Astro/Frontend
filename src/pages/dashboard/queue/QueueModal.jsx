@@ -779,7 +779,8 @@ const QueueModal = ({
             </div>
           )}
 
-          {parseInt(selectedRecord?.workflowId, 10) === 4 && (
+        { /* {parseInt(selectedRecord?.workflowId, 10) === 4 && (*/}
+         {[4, 7].includes(parseInt(selectedRecord?.workflowId, 10)) && (
             <div>
               <div className="detail-section">
                 <Typography.Title level={5} className="section-title">

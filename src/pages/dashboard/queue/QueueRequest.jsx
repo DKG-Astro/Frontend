@@ -774,6 +774,9 @@ const QueueRequest = ({ workflowId, requestType }) => {
       case 6:
         endpoint = `/api/vendor-master-util/${record.requestId}`;
         break;
+      case 7:
+        endpoint = `/api/tender-requests/${record.requestId}`;
+        break;
       default:
         message.error("Invalid workflow ID.");
         setLoading(false);
@@ -878,7 +881,8 @@ const QueueRequest = ({ workflowId, requestType }) => {
             procurementType: item.procurementType,
             consignee: item.consignee,
           }),
-          ...(item.workflowId === 4 && {
+       //   ...(item.workflowId === 4 && {
+         ...( (item.workflowId === 4 || item.workflowId === 7) && {
             // Tender
             createdBy: item.createdBy,
             projectName: item.projectName,
@@ -1007,6 +1011,17 @@ const {userId} = useSelector(state => state.auth)
           indentTitle: "Service Order",
           procurementMode: apiData.procurementType,
           consignee: apiData.consignee,
+        }[field];
+       case 7:
+        return {
+          indentor: apiData.createdBy,
+          //   amount: apiData.totalValueOfPo,
+          project: apiData.projectName,
+          budgetName: apiData.budgetCode,
+          indentTitle: "Tender",
+          modeOfProcurement: apiData.modeOfProcurement,
+          consignee: apiData.consignee,
+          amount: apiData.amount,
         }[field];
       case 9:
           return {
