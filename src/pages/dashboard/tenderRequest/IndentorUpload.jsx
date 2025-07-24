@@ -228,7 +228,7 @@ const IndentorUpload = ({ requestId }) => {
       message.error('Failed to upload files. Please try again.');
     }
   };
-
+/*
   const renderDocumentPreview = (fileKey, fileData) => {
     // Check if there's a new uploaded file for this key
     const uploadedFile = uploadedFiles[fileKey];
@@ -322,6 +322,54 @@ const IndentorUpload = ({ requestId }) => {
       </div>
     );
   }
+*/
+const renderDocumentPreview = (fileKey, fileData) => {
+  const uploadedFile = uploadedFiles[fileKey];
+
+  const isImage = (name) => {
+    const ext = name.split('.').pop().toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif'].includes(ext);
+  };
+
+  // Show preview only for images
+  if (uploadedFile && isImage(uploadedFile.name)) {
+    const fileUrl = fileData?.url;
+    return (
+      <img
+        src={fileUrl}
+        alt={fileDisplayNames[fileKey]}
+        style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }}
+      />
+    );
+  }
+
+  if (!fileData?.url || fileData?.error) {
+    return (
+      <Upload
+        beforeUpload={(file) => {
+          handleFileChange(fileKey, file);
+          return false;
+        }}
+        showUploadList={false}
+      >
+        <Button icon={<UploadOutlined />}>Upload</Button>
+      </Upload>
+    );
+  }
+
+  // If file is already uploaded and is image, show preview
+  if (fileData?.fileName && isImage(fileData.fileName)) {
+    return (
+      <img
+        src={fileData.url}
+        alt={fileDisplayNames[fileKey]}
+        style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain' }}
+      />
+    );
+  }
+
+  
+};
 
   const documentKeys = Object.keys(fileDisplayNames);
 

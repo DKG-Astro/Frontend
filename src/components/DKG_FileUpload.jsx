@@ -7,6 +7,7 @@ const FileUpload = ({ documentName, fileType, onChange, value, fileName }) => {
   const [previewTitle, setPreviewTitle] = useState('');
   const [previewContent, setPreviewContent] = useState('');
 
+
   // Function to get base64 representation of file for preview
   const getBase64 = (file) => {
     return new Promise((resolve, reject) => {
@@ -139,7 +140,8 @@ const FileUpload = ({ documentName, fileType, onChange, value, fileName }) => {
         width={800}
       >
         {previewContent && (
-          value?.file?.type?.includes('pdf') || fileType === 'pdf' ? 
+         // value?.file?.type?.includes('pdf') || fileType === 'pdf' ? 
+         fileType !== 'image' ?
             <iframe src={previewContent} width="100%" height="500px" title={previewTitle} /> :
             <img alt={previewTitle} style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }} src={previewContent} />
         )}

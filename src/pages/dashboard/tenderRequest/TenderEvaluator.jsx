@@ -207,7 +207,8 @@ console.log("Tender ID:", tenderId);
         {bidType === "Single" && (
           <FileUpload
             documentName={bidTypeDocMapping[bidType].displayName}
-            fileType="image"
+           // fileType="image"
+            fileType={ bidTypeDocMapping[bidType].fileName?.match(/\.(jpg|jpeg|png|gif)$/i) ? "image" : "document"}
             value={getDocData(bidTypeDocMapping[bidType].docName)}
             onChange={(fileData) => handleDocChange(bidTypeDocMapping[bidType].docName, fileData)}
             fileName={bidTypeDocMapping[bidType].fileName}
@@ -218,7 +219,7 @@ console.log("Tender ID:", tenderId);
         {bidType === "Double" && (!formData || !formData.responseForTechnicallyQualifiedVendorsFileName) && (
           <FileUpload
             documentName={bidTypeDocMapping[bidType].displayName}
-            fileType="image"
+            fileType={ bidTypeDocMapping[bidType].fileName?.match(/\.(jpg|jpeg|png|gif)$/i) ? "image" : "document"}
             value={getDocData(bidTypeDocMapping[bidType].docName)}
             onChange={(fileData) => handleDocChange(bidTypeDocMapping[bidType].docName, fileData)}
             fileName={bidTypeDocMapping[bidType].fileName}
@@ -229,7 +230,10 @@ console.log("Tender ID:", tenderId);
         {bidType === "Double" && formData && formData.responseForTechnicallyQualifiedVendorsFileName && (
           <FileUpload
             documentName="Upload Commercially Qualified Vendors"
-            fileType="image"
+            fileType={
+              bidTypeDocMapping[bidType].fileName?.match(/\.(jpg|jpeg|png|gif)$/i)
+              ? "image": "document"
+            }
             value={getDocData("vendorUploadThree")}
             onChange={(fileData) => handleDocChange("vendorUploadThree", fileData)}
             fileName="uploadCommeriallyQualifiedVendorsFileName"

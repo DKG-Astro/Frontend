@@ -95,7 +95,12 @@ const SubworkflowTransition = () => {
     const populateData = useCallback(async () => {
         try{
             const {data} = await apiCall("GET", `getSubWorkflowTransitionQueue?modifiedBy=${userId}`)
-            setQueueData(data.responseData || [])
+           // setQueueData(data.responseData || [])
+             // Filter only pending action records
+        const allData = data.responseData || [];
+        const pendingData = allData.filter(item => item.status?.toLowerCase() === 'pending');
+
+        setQueueData(pendingData);
         }
         catch(error){
             console.error("Error fetching queue data:", error)
