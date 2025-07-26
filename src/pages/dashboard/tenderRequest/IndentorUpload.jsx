@@ -323,6 +323,7 @@ const IndentorUpload = ({ requestId }) => {
     );
   }
 */
+
 const renderDocumentPreview = (fileKey, fileData) => {
   const uploadedFile = uploadedFiles[fileKey];
 

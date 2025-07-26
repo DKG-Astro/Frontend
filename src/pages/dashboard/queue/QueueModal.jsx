@@ -1126,7 +1126,8 @@ const QueueModal = ({
                                   {
                                     title: "Description",
                                     dataIndex: "materialDescription",
-                                    ellipsis: true,
+                                   // ellipsis: true,
+                                    width: 120,
                                   },
                                   {
                                     title: "Quantity",
@@ -1159,6 +1160,17 @@ const QueueModal = ({
                                     dataIndex: "budgetCode",
                                     width: 120,
                                   },
+                                  {
+                      title: "Mode Of Procurement",
+                      dataIndex: "modeOfProcurement",
+                      width: 120,
+                    },
+                    {
+                      title: "Vendor Names",
+                      dataIndex: "vendorNames",
+                      width: 120,
+                      render: (text) => (text ? text.join(", ") : "N/A"),
+                    }
                                 ]}
                               />
                             ) : (
