@@ -18,6 +18,8 @@ const PO = () => {
   const [generatedPOId, setGeneratedPOId] = useState("");
   const [poIdDropdown, setPoIdDropdown] = useState([]);
   const [searchDone, setSearchDone] = useState(false);
+  const [completedVendors, setCompletedVendors] = useState([]);
+
 
   // Redux selectors
   const auth = useSelector((state) => state.auth);
@@ -138,6 +140,19 @@ const PO = () => {
 
       // 3. Update state and form
       setMaterials(allMaterials);
+      let completedVendorOptions = [];
+    try {
+      const completedResp = await axios.get(`/api/vendor-quotation/completed-vendors/${tenderId}`);
+      const completedVendorIds = completedResp.data?.responseData || [];
+      completedVendorOptions = completedVendorIds.map((vid) => ({
+        label: vid,
+        value: vid,
+      }));
+      setCompletedVendors(completedVendorOptions);
+    } catch (e) {
+      console.warn("Failed to fetch completed vendors:", e);
+      setCompletedVendors([]); // fallback
+    }
 
     // Auto-fill vendor details from vendorId
     const selectedVendor = vendors.find((v) => v.id === tenderDto.vendorId);
@@ -180,14 +195,23 @@ const PO = () => {
                 showSearch: true,
               },
             };
-            if (field.name === "vendorId")
+           /* if (field.name === "vendorId")
                 return {
                   ...field,
                   options: vendors.map((v) => ({
                     label: v.id,
                     value: v.id,
                   })),
+                };*/
+                if (field.name === "vendorId") {
+                  return {
+                    ...field,
+                    options: completedVendors.length
+                    ? completedVendors
+                    : vendors.map((v) => ({ label: v.id, value: v.id })), // fallback if none
                 };
+                }
+
                 /* if (field.name === "poId") {
                     return {
                         ...field,

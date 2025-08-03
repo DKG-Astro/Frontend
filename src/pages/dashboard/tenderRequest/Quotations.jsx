@@ -116,6 +116,21 @@ const handleSubmit = async () => {
     setIsSubmitting(false);
   }
 };
+const handleAccept = async (record) => {
+  try {
+    await axios.put(`/api/vendor-quotation/`, null, {
+      params: {
+        tenderId,
+        vendorId: record.vendorId
+      }
+    });
+    message.success(`Vendor ${record.vendorId} accepted`);
+    fetchQuotations(); 
+  } catch (err) {
+    message.error("Failed to accept vendor quotation");
+  }
+};
+
 
   const columns = [
    {
@@ -172,6 +187,23 @@ const handleSubmit = async () => {
       )
     ),
   },
+  {
+  title: 'Accept',
+  key: 'accept',
+  render: (_, record) => (
+    record.acceptanceStatus !== 'ACCEPTED' ? (
+      <Button
+        type="primary"
+        onClick={() => handleAccept(record)}
+        size="small"
+      >
+        Accept
+      </Button>
+    ) : (
+      <Tag color="green">Accepted</Tag>
+    )
+  )
+},
   {
     title: 'Reject',
     key: 'reject',
