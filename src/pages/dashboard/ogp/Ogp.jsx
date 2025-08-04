@@ -8,7 +8,7 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
-import { ogpFields, ogpFieldsPo } from "./InputFields";
+import { ogpFields, ogpFieldsGiRejected, ogpFieldsPo } from "./InputFields";
 import { Modal } from "antd";  
 
 import { set } from "lodash";
@@ -89,6 +89,19 @@ const senderName = useSelector(state => state.auth.userName)
 
           return;
     }
+    if(formData.type === "Rejected Items GI"){
+      const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.issueNoteId}&processStage=GI`);
+      setFormData(prev => ({
+        ...data?.responseData?.giDtls,
+        issueNoteId: data?.responseData?.giDtls?.inspectionNo,
+        type: "Rejected Items GI",
+        ogpType: prev.ogpType,
+        locationId: data?.responseData?.gprnDtls?.locationId,
+        senderName: prev.senderName,
+        ogpDate: prev.ogpDate,
+      }))
+      return
+    }
     try {
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.issueNoteId}&processStage=ISN`);
       setFormData(prev => ({
@@ -105,7 +118,9 @@ const senderName = useSelector(state => state.auth.userName)
     }
   }
 
-  const {userId, locationId} = useSelector(state => state.auth);
+  const {userId} = useSelector(state => state.auth);
+
+  console.log("Formdata: ", formData);
 
   const onFinish = async () => {
     if (formData.ogpType === "Returnable") {
@@ -116,12 +131,12 @@ const senderName = useSelector(state => state.auth.userName)
     const confirmed = await confirmReturnable();
     if (!confirmed) return;
   }
-    const payload = {...formData, locationId, createdBy: userId};
+    const payload = {...formData, giId: formData.issueNoteId, createdBy: userId};
 
     try {
       setSubmitBtnLoading(true);
       
-      const endpoint = formData.type === "PO" ? "/api/process-controller/savePoOgp" : "/api/process-controller/saveOgp";
+      const endpoint = formData.type === "PO" ? "/api/process-controller/savePoOgp" : formData.type === "Rejected Items GI" ? "/api/process-controller/saveOgpRejectedGi" : "/api/process-controller/saveOgp";
       const {data} = await axios.post(endpoint, payload);
 
       setFormData(prev => ({
@@ -186,7 +201,7 @@ console.log(getFilteredOgpFieldsPo());
         <h1 className="font-semibold">Order Details</h1>
         <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
           <Form.Item name="type" label="Type">
-            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("type", val)}/>
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Rejected Items GI", value: "Rejected Items GI"}]} onChange={(val) => handleChange("type", val)}/>
           </Form.Item>
         </div>
         
@@ -195,6 +210,9 @@ console.log(getFilteredOgpFieldsPo());
         }
         {
           formData.type === "Goods Issue" && renderFormFields(getFilteredOgpFields(), handleChange, formData, "", null, setFormData, handleSearch)
+        }
+        {
+          formData.type === "Rejected Items GI" && renderFormFields(ogpFieldsGiRejected, handleChange, formData, "", null, setFormData, handleSearch)
         }
         <ButtonContainer
           onFinish={onFinish}

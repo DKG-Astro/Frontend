@@ -9,6 +9,19 @@ const GatePass = () => {
   const {role} = useSelector(state => state?.auth);
 
   const handleApprove = async (record) => {
+    if(record?.formType === "GI"){
+      try{
+
+        await axios.post("/api/process-controller/approveGiOgp", {ogpId: record.ogpId})
+        message.success("Gate Pass Approved Successfully")
+        fetchGatePassData();
+      }
+      catch(error){
+        message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve Gate Pass');
+        console.error(error)
+      }
+      return
+    }
     try {
       await axios.post(`/api/process-controller/approveOgp?processNo=${"INV/" + record.ogpSubProcessId}`, {
         processNo: "INV/" + record.ogpSubProcessId,
@@ -28,6 +41,19 @@ const GatePass = () => {
   };
 
   const handleReject = async (record) => {
+    if(record?.formType === "GI"){
+      try{
+
+        await axios.post("/api/process-controller/rejectGiOgp", {ogpId: record.ogpId})
+        message.success("Gate Pass Rejected Successfully")
+        fetchGatePassData();
+      }
+      catch(error){
+        message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve Gate Pass');
+        console.error(error)
+      }
+      return;
+    }
     try {
       await axios.post(`/api/process-controller/rejectOgp`, {
         processNo: "INV/"+record.ogpSubProcessId,
@@ -50,11 +76,18 @@ const GatePass = () => {
       render: (text) => text ? "INV/"+text : ""
     },
     { 
+      title: 'Goods Inspection ID', 
+      dataIndex: 'giId', 
+      key: 'giId', 
+      searchable: true,
+      fixed: 'left',
+    },
+    { 
       title: 'OGP Sub Process ID', 
       dataIndex: 'ogpSubProcessId', 
       key: 'ogpSubProcessId', 
       searchable: true,
-      render: (text) => text ? "INV/"+text : ""
+      render: (text, record) => record?.formType === "GI" ? record.ogpId : "INV/" + text
     },
     { 
       title: 'IGP Sub Process ID', 
@@ -105,9 +138,9 @@ const GatePass = () => {
             { title: 'Asset ID', dataIndex: 'assetId', key: 'assetId' },
             { title: 'Asset Description', dataIndex: 'assetDesc', key: 'assetDesc' },
             { title: 'Locator ID', dataIndex: 'locatorId', key: 'locatorId' },
-            { title: 'UOM', dataIndex: 'uomId', key: 'uomId' },
+            // { title: 'UOM', dataIndex: 'uomId', key: 'uomId' },
             { title: 'Quantity', dataIndex: 'quantity', key: 'quantity' },
-            { title: 'Type', dataIndex: 'type', key: 'type' }
+            // { title: 'Type', dataIndex: 'type', key: 'type' }
           ]}
         />
       )
@@ -173,7 +206,10 @@ const GatePass = () => {
   const fetchGatePassData = async () => {
     try {
       const { data } = await axios.get('/api/process-controller/getGatePassReport');
-      setDataSource(data?.responseData || []);
+      const { data: data1 } = await axios.get('/api/process-controller/getAwaitingRejectedGi');
+      const dataCopy = data1.responseData?.map(item => ({...item, formType: "GI", status: "AWAITING APPROVAL", details: item.materialDtlList.map(subitem => ({...subitem, quantity: subitem.rejectedQuantity}))}))
+      setDataSource([...data?.responseData, ...dataCopy] || []);
+      // setDataSource([...dataCopy] || []);
     } catch (error) {
       message.error('Error fetching gate pass details.');
       console.error(error);

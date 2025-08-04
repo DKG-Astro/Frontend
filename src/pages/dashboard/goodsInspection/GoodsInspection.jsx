@@ -145,10 +145,10 @@ const handleGISearch = async () => {
 }, []);
 
 
-  const {userId, locationId} = useSelector(state => state.auth);
+  const {userId} = useSelector(state => state.auth);
 
   const onFinish = async () => {
-    const payload = {...formData, locationId, createdBy: userId};
+    const payload = {...formData, createdBy: userId};
     // const {data} = await axios.post("/api/process-controller/saveGi", payload);
     try {
       setSubmitBtnLoading(true);
@@ -393,16 +393,32 @@ const handleGISearch = async () => {
                 required: true
             },
             {
+                name: "rejectionType",
+                label: "Rejection Type",
+                type: "select",
+                span: 2,
+                options: [
+                    {
+                        label: "Permanent",
+                        value: "permanent"
+                    },
+                    {
+                        label: "Replacement",
+                        value: "replacement"
+                    }
+                ],
+            },
+            {
               name: "rejectReason",
               label: "Reason for Rejection",
               type: "text",
-              span: 4,
+              span: 2,
             },
             {
                 name: "installationRepostBase64",
                 label: "Installation Report",
                 type: "image",
-                span: 3,
+                span: 2,
                // required: true,
                // accept: "image/*"
             },
@@ -559,6 +575,8 @@ const handleGISearch = async () => {
     //     ]
     // }
 ]
+
+
 
   useEffect(() => {
     const draft = localStorage.getItem("goodsInspectionDraft");

@@ -93,9 +93,10 @@ const GPRN = () => {
     }
   }
 
-  const { userId, locationId } = useSelector(state => state.auth)
+  const { userId } = useSelector(state => state.auth)
 
   const onFinish = async () => {
+    const locationId = formData.fieldStation;
     const payload = { ...formData, locationId, createdBy: userId }
 
     if(processNo) {
@@ -140,6 +141,7 @@ const GPRN = () => {
         vendorContactNo: vendorData?.responseData?.contactNo,
         project: data?.responseData?.projectName || "N/A",
         indentorName: indentData?.responseData?.indentorName,
+        indentId: indentData?.responseData?.indentId,
         consigneeDetail: data?.responseData?.consignesAddress,
         materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
