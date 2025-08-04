@@ -104,7 +104,20 @@ const handleSearchTender = async () => {
         ...prev,
         comparationStatementFileName: [uploadQualifiedVendorsFileName],
       }));
-      return; // done
+      const approvedRes = await axios.get('/getApprovedTenderId', {
+        params: { tenderId: tenderId.trim() }
+      });
+      const approved = approvedRes.data?.responseData || approvedRes.data;
+      if (approved) {
+        setFormData(prev => ({
+          ...prev,
+          tenderId: approved.tenderId || prev.tenderId,
+          bidType: approved.bidType || prev.bidType,
+          totalValue: approved.totalValue || prev.totalValue,
+          indentNumber: approved.indentNumber || prev.indentNumber,
+        }));
+      }
+      return; 
     }
 
     // 3. Non-SPO path: Purchase Personal / Indentor
@@ -161,7 +174,7 @@ const handleSearchTender = async () => {
       setHistoryLoading(false);
     }
   };
-
+/*
  const handleChange = (key, value) => {
   if (key === "comparationStatementFileName" && Array.isArray(value) && value.length > 0) {
     const fileName = value[0]?.name || ""; // Only extract file name
@@ -172,7 +185,11 @@ const handleSearchTender = async () => {
   } else {
     setFormData(prev => ({ ...prev, [key]: value }));
   }
+};*/
+const handleChange = (key, value) => {
+  setFormData(prev => ({ ...prev, [key]: value }));
 };
+
 
   const handleSubmit = async () => {
   if (!formData.comparationStatementFileName || formData.comparationStatementFileName.length === 0) {
@@ -276,6 +293,26 @@ const handleSearchTender = async () => {
     message.error("Failed to perform SPO review action");
   }
 };
+const isDouble = (formData.bidType || '').toLowerCase() === 'double';
+
+const priceBidColumn = {
+  title: 'Price Bid',
+  dataIndex: 'priceBidFileName',
+  key: 'priceBidFileName',
+  render: (fileName, record) => {
+    if (record.status !== 'Completed') return null; 
+    if (!fileName) return 'No File';
+    return (
+      <a
+        href={`${baseURL}/file/view/Tender/${fileName}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View
+      </a>
+    );
+  },
+};
 
 
 const baseColumns = [
@@ -316,6 +353,8 @@ const baseColumns = [
       ) : 'No File'
     )
   },
+  ...(isDouble ? [priceBidColumn] : []),
+
  
 
 
@@ -327,12 +366,12 @@ if (role === 'Store Purchase Officer') {
   columns = [
     ...baseColumns,
    {
-          title: 'Status',
+          title: `${role} Status`,
           key: 'status',
           dataIndex: 'status',
           render: (status) => status || 'N/A',
         },
-         ...(formData.bidType === 'Double'
+      /*   ...(formData.bidType === 'Double'
     ? [
         {
           title: 'Price Bid',
@@ -353,9 +392,9 @@ if (role === 'Store Purchase Officer') {
           },
         },
       ]
-    : []),
+    : [])*/,
          {
-          title: '${role}Status',
+          title: `Indentor Status`,
           key: 'indentorStatus',
           dataIndex: 'indentorStatus',
           render: (indentorStatus) => indentorStatus || 'N/A',
@@ -366,18 +405,18 @@ if (role === 'Store Purchase Officer') {
           dataIndex: 'remarks',
           render: (remarks) => remarks || 'N/A',
         },*/
-    {
-      title: 'SPO Status',
+    /*{
+      title: `${role} Status`,
       key: 'spoStatus',
       dataIndex: 'spoStatus',
-      render: (s) => s || 'N/A',
-    },
-    {
+      render: (spoStatus) => spoStatus || 'N/A',
+    },*/
+  /*  {
       title: 'SPO Remarks',
       key: 'spoRemarks',
       dataIndex: 'spoRemarks',
       render: (r) => r || '-',
-    },
+    }*/,
    {
   title: 'SPO Actions',
   key: 'spoActions',
@@ -446,13 +485,13 @@ if (role === 'Store Purchase Officer') {
       render: (status) => status || 'N/A',
     },
      {
-      title: '${role}Status',
+      title: `${role} Status`,
       key: 'indentorStatus',
       dataIndex: 'indentorStatus',
       render: (indentorStatus) => indentorStatus || 'N/A',
     },
      {
-      title: '${role} Status',
+      title: `Store Purchase Officer Status`,
       key: 'sopStatus',
       dataIndex: 'sopStatus',
       render: (sopStatus) => sopStatus || 'N/A',
@@ -654,6 +693,7 @@ if (role === 'Store Purchase Officer') {
                       name: "comparationStatementFileName",
                       label: "Comparison Statement",
                       type: "multiImage",
+                      required: true,
                       span: 1
                     }
                   ]

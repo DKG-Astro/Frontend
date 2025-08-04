@@ -218,6 +218,19 @@ export const apiCall = async (method, url, token, payload = null) => {
             accept="image/*"
           />
         );
+      case "files":
+  return (
+    <ImageUploadBase64
+      label={field?.label}
+      name={field?.name}
+      required={field?.required}
+      disabled={field?.disabled}
+      onChange={handleChange}
+      value={formData[field.name]}
+      accept="image/*"
+    />
+  );
+
 
       case "image":
         return (
