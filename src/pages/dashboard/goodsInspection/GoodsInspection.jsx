@@ -190,7 +190,7 @@ const handleGISearch = async () => {
             type:"search",
             //disabled: true,
             required: true,
-            onSearch: () => handleSearch(formData.giNo, true),
+            onSearch: () => handleSearch(formData.gprnNo, true),
             span: 2,
             // render: () => (
             // <Input
