@@ -51,7 +51,10 @@ const TenderEvaluator = () => {
 const canSpoAct = role === 'Store Purchase Officer' && hasComparisonSheet;
 
 // show evaluation section only if indentor/Purchase Personal can act OR SPO with comparison sheet
-const showEvaluationSection = (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L && !hasMultipleIndents)) || canSpoAct;
+//const showEvaluationSection = (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L && !hasMultipleIndents)) || canSpoAct;
+const showEvaluationSection = true; 
+const canPerformActions = (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L && !hasMultipleIndents));
+
 
   const fetchQuotationsAndPending = async (tid) => {
   setLoadingQuotations(true);
@@ -89,13 +92,13 @@ const handleSearchTender = async () => {
       const compResp = await axios.get(`/api/vendor-quotation/getAllVendorQuotations/${tenderId}`);
       const { vendor = [], uploadQualifiedVendorsFileName } = compResp.data?.responseData || {};
 
-      if (!uploadQualifiedVendorsFileName) {
+     /* if (!uploadQualifiedVendorsFileName) {
         // Block SPO until comparison statement exists
         setHasComparisonSheet(false);
         setQuotationData([]); // hide stale
         message.warning("Comparison Statement not submitted yet by Indentor / Purchase personnel.");
         return;
-      }
+      }*/
 
       // Comparison sheet exists: enable SPO actions
       setHasComparisonSheet(true);
@@ -144,7 +147,9 @@ const handleSearchTender = async () => {
 
     const isAuthorized =
       role === 'Purchase personnel' ||
-      (role === 'Indent Creator' && isBelow10LLocal && !hasMultipleIndentsLocal);
+      (role === 'Indent Creator' && !hasMultipleIndentsLocal);
+     // (role === 'Indent Creator' && isBelow10LLocal && !hasMultipleIndentsLocal);
+
 
     if (!isAuthorized) {
       setQuotationData([]);
@@ -156,7 +161,7 @@ const handleSearchTender = async () => {
     // finally fetch the normal quotation + pending vendors list
     await fetchQuotationsAndPending(updatedFormData.tenderId);
   } catch (err) {
-    message.error('Failed to fetch approved tender');
+   // message.error('Failed to fetch approved tender');
   } finally {
     setLoadingTender(false);
   }
@@ -192,13 +197,13 @@ const handleChange = (key, value) => {
 
 
   const handleSubmit = async () => {
-  if (!formData.comparationStatementFileName || formData.comparationStatementFileName.length === 0) {
+  /*if (!formData.comparationStatementFileName || formData.comparationStatementFileName.length === 0) {
     return message.warning("Please upload the Comparison Statement file.");
-  }
+  }*/
 
   const payload = {
     tenderId: tenderId,
-    uploadQualifiedVendorsFileName: formData.comparationStatementFileName[0], 
+    uploadQualifiedVendorsFileName: formData.comparationStatementFileName?.[0] || null,
     createdBy: userId, 
     fileType: "Tender",
   };
@@ -314,6 +319,8 @@ const priceBidColumn = {
   },
 };
 
+const showVendorResponse = quotationData.some(item => item.vendorResponse);
+const showClarificationFile = quotationData.some(item => item.clarificationFileName);
 
 const baseColumns = [
   {
@@ -333,13 +340,18 @@ const baseColumns = [
 )
 
   },
-  {
+    {
+      title: 'Vendor Name',
+      dataIndex: 'vendorName',
+      key: 'vendorName',
+    },
+ /* {
     title: 'Quotation File Name',
     dataIndex: 'quotationFileName',
     key: 'quotationFileName',
-  },
+  },*/
   {
-    title: 'View File',
+    title: 'Technical Bid documents',
     key: 'view',
     render: (_, record) => (
       record.quotationFileName ? (
@@ -353,6 +365,36 @@ const baseColumns = [
       ) : 'No File'
     )
   },
+   ...(showVendorResponse
+    ? [
+        {
+          title: 'Vendor Response',
+          dataIndex: 'vendorResponse',
+          key: 'vendorResponse',
+        },
+      ]
+    : []),
+  ...(showClarificationFile
+    ? [
+        {
+          title: 'Clarification File',
+          dataIndex: 'clarificationFileName',
+          key: 'clarificationFileName',
+          render: (file) =>
+            file ? (
+              <a
+        href={`${baseURL}/file/view/Tender/${file}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View
+      </a>
+            ) : (
+              'N/A'
+            ),
+        },
+      ]
+    : []),
   ...(isDouble ? [priceBidColumn] : []),
 
  
@@ -365,12 +407,27 @@ let columns = [];
 if (role === 'Store Purchase Officer') {
   columns = [
     ...baseColumns,
-   {
+  /* {
           title: `${role} Status`,
           key: 'status',
           dataIndex: 'status',
           render: (status) => status || 'N/A',
+        },*/
+        {
+          title: `${role} Status`,
+          key: 'status',
+          dataIndex: 'status',
+          render: (status) =>
+            status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
+          },
+        {
+          title: 'Indentor Status',
+          key: 'indentorStatus',
+          dataIndex: 'indentorStatus',
+          render: (indentorStatus) =>
+          indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
         },
+
       /*   ...(formData.bidType === 'Double'
     ? [
         {
@@ -393,12 +450,12 @@ if (role === 'Store Purchase Officer') {
         },
       ]
     : [])*/,
-         {
+       /*  {
           title: `Indentor Status`,
           key: 'indentorStatus',
           dataIndex: 'indentorStatus',
           render: (indentorStatus) => indentorStatus || 'N/A',
-        },
+        },*/
      /*   {
           title: 'Remarks',
           key: 'remarks',
@@ -462,11 +519,11 @@ if (role === 'Store Purchase Officer') {
               </Button>
             </div>
           }
-          title="Change Request to Indentor"
+          title="Seek Revision"
           trigger="click"
         >
           <Button size="small" style={{ color: '#fa8c16' }}>
-            {pendingToIndentor ? 'Change Requested' : 'Request Change'}
+            {pendingToIndentor ? 'Change Requested' : 'Seek Revision'}
           </Button>
         </Popover>
       </div>
@@ -478,7 +535,7 @@ if (role === 'Store Purchase Officer') {
 } else {
   columns = [
     ...baseColumns,
-    {
+    /*{
       title: 'Status',
       key: 'status',
       dataIndex: 'status',
@@ -495,7 +552,29 @@ if (role === 'Store Purchase Officer') {
       key: 'sopStatus',
       dataIndex: 'sopStatus',
       render: (sopStatus) => sopStatus || 'N/A',
+    },*/
+    {
+      title: 'Status',
+      key: 'status',
+      dataIndex: 'status',
+      render: (status) =>
+        status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
     },
+    {
+      title: `${role} Status`,
+      key: 'indentorStatus',
+      dataIndex: 'indentorStatus',
+      render: (indentorStatus) =>
+        indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+    },
+    {
+      title: 'Store Purchase Officer Status',
+      key: 'sopStatus',
+      dataIndex: 'sopStatus',
+      render: (sopStatus) =>
+        sopStatus === 'CHANGE_REQUESTED_TO_INTENTOR' ? 'Pending Clarification' : (sopStatus || 'N/A'),
+    },
+
    /* {
       title: 'Remarks',
       key: 'remarks',
@@ -514,7 +593,8 @@ if (role === 'Store Purchase Officer') {
       <Button
         onClick={() => handleAccept(record)}
         size="small"
-        disabled={!indentorCanAct}
+       // disabled={!indentorCanAct}
+         disabled={!record.canIndentorAct || !canPerformActions}
       >
         Accept
       </Button>
@@ -545,7 +625,8 @@ if (role === 'Store Purchase Officer') {
               type="primary"
               onClick={() => handleReject(record)}
               style={{ marginTop: 8 }}
-              disabled={!indentorCanAct}
+           //   disabled={!indentorCanAct}
+            disabled={!record.canIndentorAct || !canPerformActions}
             >
               Submit
             </Button>
@@ -554,7 +635,10 @@ if (role === 'Store Purchase Officer') {
         title="Reject Vendor"
         trigger="click"
       >
-        <Button danger type="link" disabled={!indentorCanAct}>
+        <Button danger type="link" 
+       // disabled={!indentorCanAct}
+        disabled={!record.canIndentorAct || !canPerformActions}
+        >
           Reject
         </Button>
       </Popover>
@@ -562,7 +646,7 @@ if (role === 'Store Purchase Officer') {
   }
 },
 {
-  title: 'Seek Clarification',
+  title: 'Clarifications',
   key: 'changeRequest',
   render: (_, record) => {
     const indentorCanAct = record.canIndentorAct;
@@ -583,7 +667,8 @@ if (role === 'Store Purchase Officer') {
               type="primary"
               onClick={() => handleChangeRequest(record)}
               style={{ marginTop: 8 }}
-              disabled={!indentorCanAct}
+            //  disabled={!indentorCanAct}
+             disabled={!record.canIndentorAct || !canPerformActions}
             >
               Submit
             </Button>
@@ -592,8 +677,11 @@ if (role === 'Store Purchase Officer') {
         title="Send Change Request"
         trigger="click"
       >
-        <Button type="link" style={{ color: '#fa8c16' }} disabled={!indentorCanAct}>
-          Change Request
+        <Button type="link" style={{ color: '#fa8c16' }}
+      //   disabled={!indentorCanAct}
+       disabled={!record.canIndentorAct || !canPerformActions}
+         >
+          Seek Clarification
         </Button>
       </Popover>
     ) : (
@@ -681,7 +769,7 @@ if (role === 'Store Purchase Officer') {
           />
 
           {/* Comparison Statement Upload Field */}
-          {role !== 'Store Purchase Officer' && (
+          {role !== 'Store Purchase Officer' && (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L)) &&(
             <div style={{ marginTop: 16 }}>
               {renderFormFields(
                 [
@@ -693,7 +781,7 @@ if (role === 'Store Purchase Officer') {
                       name: "comparationStatementFileName",
                       label: "Comparison Statement",
                       type: "multiImage",
-                      required: true,
+                    //  required: true,
                       span: 1
                     }
                   ]
@@ -710,10 +798,10 @@ if (role === 'Store Purchase Officer') {
         </div>)}
 
 
-         {role !== 'Store Purchase Officer' && (  
+         {role !== 'Store Purchase Officer' && (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L)) &&(  
           <div className="custom-btn" style={{ display: 'flex', gap: '10px', marginTop: 12 }}>
             <Btn onClick={handleSubmit} loading={isSubmitting} disabled={!canTakeAction}>
-              Submit Quotation
+              Confirm Evaluation Status
             </Btn>
           </div>)}
         </FormBody>
