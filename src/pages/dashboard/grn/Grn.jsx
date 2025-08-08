@@ -17,7 +17,6 @@ const Grn = () => {
   });
 
   const locatorMaster = useSelector(state => state.masters.locatorMaster)
-  console.log("Locator master: ", locatorMaster);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
@@ -53,7 +52,6 @@ const Grn = () => {
 
           let yearsPassed = 0;
 
-          console.log("purchaseDateStr" + purchaseDateStr);
           if (purchaseDateStr) {
             const [day, month, year] = purchaseDateStr.split("/");
             const purchaseDate = new Date(`${year}-${month}-${day}`);
@@ -70,15 +68,12 @@ const Grn = () => {
             if (yearsPassed < 0) yearsPassed = 0;
           }
 
-          console.log("depreciationRate" + depriciationRate);
           const purchaseValue = unitPrice * acceptedQuantity;
-          console.log("yearsPassed" + yearsPassed);
           const bookValue =
             yearsPassed > 0
               ? purchaseValue *
                 Math.pow(1 - depriciationRate / 100, yearsPassed)
               : purchaseValue;
-          console.log("book value " + bookValue);
 
           prevMaterialDtlList[fieldName[1]].bookValue = bookValue.toFixed(2);
         }
@@ -88,7 +83,21 @@ const Grn = () => {
     }
   };
 
+  console.log("Foprmdata: ", formData);
+
   const handleSearch = async () => {
+    if(formData.grnType === "materialIn") {
+      try{
+
+        const {data} = await axios.get(`/api/process-controller/getIgpMaterialDtls?igpId=${formData.giNo}`)
+        setFormData({...formData, ...data.responseData, indentorName: data.responseData.indentId, materialDtlList: data.responseData.materialDtlList.map(item => ({...item, materialDesc: item.description, uomId: item.uom, unitPrice: item.estimatedPriceWithCcy}))})
+        console.log("DATA: ", data.responseData);
+      }
+      catch(error){
+        console.log("ERROR", error);
+      }
+      return;
+    }
     try {
       let processStage = "GRN";
       let processNo = formData.grnNo;
@@ -266,12 +275,24 @@ const Grn = () => {
     }
   };
 
-  console.log("Formdata: ", formData);
 
   const { userId } = useSelector((state) => state.auth);
 
   const onFinish = async () => {
     const payload = { ...formData, createdBy: userId };
+
+    if(formData.grnType === "materialIn"){
+      try{
+        const {data} = await axios.post("/api/process-controller/saveMaterialGrn", payload)
+        message.success("Material GRN saved successfully.");
+        setFormData(prev => ({...prev, grnNo: data.responseData.processNo}))
+      }
+      catch(error){
+        console.error("Error: ", error)
+        message.error(error?.response?.data?.responseStatus?.message || "Error saving Material GRN")
+      }
+      return;
+    }
 
     try {
       setSubmitBtnLoading(true);
@@ -377,9 +398,13 @@ const grvFields =(formData)=> [
                         value: "GI",
                         label: "GI"
                     },
+                    // {
+                    //     value: "IGP",
+                    //     label: "IGP"
+                    // },
                     {
-                        value: "IGP",
-                        label: "IGP"
+                        value: "materialIn",
+                        label: "Material Inward"
                     }
                 ],
             },
@@ -654,6 +679,169 @@ const igpGrnFields = [
     }
 ]
 
+const materialInFields = [
+    {
+        heading: "Order Details",
+        colCnt: 5,
+        fieldList: [
+            {
+                name: "grnType",
+                label: "GRN Type",
+                type: "select",
+                required: true,
+                options: [
+                    {
+                        value: "GI",
+                        label: "GI"
+                    },
+                    {
+                        value: "IGP",
+                        label: "IGP"
+                    },
+                    {
+                        value: "materialIn",
+                        label: "Material Inward"
+                    }
+                ],
+            },
+            {
+                name: "giNo",
+                label: "Enter Process No",
+                type: "search",
+                required: true,
+                span: 2
+            },
+            {
+                name: "grnNo",
+                label: "GRN No",
+                type: "search",
+             //   disabled: true,
+                span: 2
+            },
+            {
+                name: "grnDate",
+                label: "GRN Date",
+                type: "date",
+                required: true
+            },
+            // {
+            //     name: "installationDate",
+            //     label: "Installation Date",
+            //     type: "date",
+            //     required: true
+            // },
+            // {
+            //     name: "commissioningDate",
+            //     label: "Commission Date",
+            //     type: "date",
+            //     required: true
+            // }
+        ]
+    },
+    {
+        heading: "Material Details",
+        name: "materialDtlList",
+        colCnt: 8,
+        children: [
+            {
+                name: "assetId",
+                label: "Asset ID",
+                type: "text",
+                span: 1,
+                disabled: true
+                // required: true
+            },
+            {
+                name: "materialDesc",
+                label: "Asset Description",
+                type: "text",
+                span: 2,
+                disabled: true
+                // required: true
+            },
+            {
+                name: "materialCode",
+                label: "Material Code",
+                type: "text",
+                span: 2,
+                disabled: true
+                // required: true
+            },
+            {
+                name: "materialDesc",
+                label: "Material Description",
+                type: "text",
+                span: 2,
+                disabled: true,
+                // required: true
+            },
+            {
+                name: "uomId",
+                label: "UOM",
+                type: "text",
+                span: 1,
+                required: true
+            },
+            {
+                name: "locatorId",
+                label: "Locator",
+                type: "select",
+                options: ldd,
+                span: 2,
+                required: true
+            },
+            {
+              name: "unitPrice",
+              label: "Unit Price",
+              type: "text",
+              required: true,
+            },
+            {
+                name: "bookValue",
+                label: "Book Value",
+                type: "text",
+                required: true,
+            
+            },
+            // {
+            //     name: "bookValue",
+            //     label: "Book Value",
+            //     type: "text",
+            //     required: true
+            // },
+            // {
+            //     name: "receivedQuantity",
+            //     label: "Received Quantity",
+            //     type: "text",
+            //     required: true
+            // },
+            {
+                name: "quantity",
+                label: "Quantity",
+                type: "text",
+                required: true
+            },
+            {
+                name: "depriciationRate",
+                label: "Depreciation Rate",
+                type: "text",
+                required: true
+            }
+        ]
+    },
+    {
+        heading: "Custodian Details",
+        fieldList: [
+            {
+                label: "Custodian Name",
+                name: "indentorName",
+                type: "text",
+                disabled: true
+            }
+        ]
+    }
+]
+
 
 
 
@@ -680,6 +868,13 @@ const igpGrnFields = [
             null,
             setFormData,
             handleSearch
+          )}
+
+          {formData.grnType === "materialIn" && (
+            <>
+            {/* <MaterialSearch itemsArray={materialMaster} setFormData={setFormData} /> */}
+            {renderFormFields(materialInFields, handleChange, formData, "", null, setFormData, handleSearch)}
+            </>
           )}
 
         {/* {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)} */}

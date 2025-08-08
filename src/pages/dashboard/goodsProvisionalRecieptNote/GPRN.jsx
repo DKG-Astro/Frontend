@@ -141,7 +141,7 @@ const GPRN = () => {
         vendorContactNo: vendorData?.responseData?.contactNo,
         project: data?.responseData?.projectName || "N/A",
         indentorName: indentData?.responseData?.indentorName,
-        indentId: indentData?.responseData?.indentId,
+        indentId: indentData?.responseData?.createdBy,
         consigneeDetail: data?.responseData?.consignesAddress,
         materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
@@ -206,7 +206,7 @@ const GPRN = () => {
 
   const searchByProcessNo = async (processNo) => {
     try {
-      const { data } = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${processNo}`)
+      const { data } = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${processNo ? processNo : formData.gprnNo}`)
       const { data: vendorData } = await axios.get(`/api/vendor-master/${data?.responseData?.vendorId}`)
       setFormData({
         ...data?.responseData,

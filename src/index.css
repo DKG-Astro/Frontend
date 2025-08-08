@@ -423,3 +423,7 @@ input{
 .ant-checkbox-checked:hover .ant-checkbox-inner {
   @apply bg-darkBlueHover /* Change hover color */
 }
+
+.ant-popover-inner{
+  width: 40rem;
+}

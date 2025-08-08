@@ -190,16 +190,19 @@ const handleGISearch = async () => {
             type:"search",
             //disabled: true,
             required: true,
+            onSearch: () => handleSearch(formData.giNo, true),
             span: 2,
-            render: () => (
-            <Input
-            placeholder="Enter GPRN No"
-            value={formData.gprnNo}  
-            onChange={(e) => handleChange("gprnNo", e.target.value)}
-            onBlur={(e) => handleSearch(e.target.value, false)}
-            onPressEnter={(e) => handleSearch(e.target.value, false)}
-            />
-            )},{
+            // render: () => (
+            // <Input
+            // placeholder="Enter GPRN No"
+            // value={formData.gprnNo}  
+            // onChange={(e) => handleChange("gprnNo", e.target.value)}
+            // onBlur={(e) => handleSearch(e.target.value, true)}
+            // onPressEnter={(e) => handleSearch(e.target.value, true)}
+            // />
+            // )
+          },
+            {
               name: "poId",
               label: "PO Id.",
               type: "text",
@@ -213,15 +216,17 @@ const handleGISearch = async () => {
                // disabled: true,
                 span: 2,
                 type: "search",
-                 render: () => (
-                <Input
-                placeholder="Enter GI No"
-                value={formData.giNo}
-                onChange={(e) => handleChange("giNo", e.target.value)}
-                onBlur={(e) => handleSearch(e.target.value, true)}
-                onPressEnter={(e) => handleSearch(e.target.value, true)}
-                />
-                )
+                onSearch: () => handleSearch(formData.giNo, false)
+                //  render: () => (
+                // <Input
+                // placeholder="Enter GI No"
+                // value={formData.giNo}
+                // onChange={(e) => handleChange("giNo", e.target.value)}
+                // onBlur={(e) => handleSearch(e.target.value, false)}
+
+                // onPressEnter={(e) => handleSearch(e.target.value, false)}
+                // />
+                // )
             },
             {
                 name: "date",

@@ -10,6 +10,8 @@ import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { igpFields, igpPoFields } from "./InputFields";
 import { useLocation } from "react-router-dom";
+import MaterialSearch from "../../../components/MaterialSearch";
+
 
 const Igp = () => {
   const printRef = useRef();
@@ -26,7 +28,8 @@ const Igp = () => {
   const [formData, setFormData] = useState({
     ogpId: "",
     igpDate: null,
-    materialDtlList: []
+    materialDtlList: [],
+    igpType: "materialIn"
   });
 
   const handleChange = (fieldName, value) => {
@@ -41,7 +44,119 @@ const Igp = () => {
     }
   }
 
-  const {locatorMaster} = useSelector(state => state?.masters);
+  const {locatorMaster, userMaster} = useSelector(state => state?.masters);
+
+  const indentList = userMaster?.filter(item => item.roleName === "Indent Creator").map(item => ({label: item.userName, value: item.userId}));
+
+
+  const {locationMaster} = useSelector(state => state.masters);
+
+  const locationMasterOption = locationMaster?.map(item => ({label: item.locationName, value: item.locationCode}))
+
+  const materialInFields = [
+    {
+        heading: "IGP Details",
+        colCnt: 5,
+        fieldList: [
+            {
+                name: "igpId",
+                label: "IGP No",
+                type: "text",
+                disabled: true,
+                span: 2,
+                // required: true
+            },
+            {
+                name: "igpDate",
+                label: "IGP Date",
+                type: "date",
+                required: true
+            }
+        ]
+    },
+    {
+        heading: "Material Details",
+        name: "materialDtlList",
+        // colCnt: 6,
+        children: [
+            {
+                name: "materialCode",
+                label: "Material Code",
+                type: "text",
+                // span: 1,
+                disabled: true,
+                required: true
+            },
+            {
+                name: "description",
+                label: "Material Description",
+                type: "text",
+                // span: 2,
+                disabled: true,
+                required: true
+            },
+            {
+                name: "quantity",
+                label: "Quantity",
+                type: "text",
+                // span: 1,
+                required: true
+            },
+            {
+                name: "uom",
+                label: "UOM",
+                type: "text",
+                // span: 2,
+                disabled: true,
+                required: true
+            },
+            {
+                name: "category",
+                label: "Category",
+                type: "text",
+                // span: 2,
+                disabled: true,
+                required: true
+            },
+            {
+                name: "subCategory",
+                label: "Sub Category",
+                type: "text",
+                // span: 2,
+                disabled: true,
+                required: true
+            }
+        ]
+    },
+    {
+         heading: "IGP Details",
+         fieldList: [
+            {
+                name: "indentId",
+                label: "Custodian / Indentor Name",
+                type: "select",
+                options: indentList,
+                required: true
+            },
+            {
+                name: "locationId",
+                label: "Field Station",
+                type: "select",
+                options: locationMasterOption,
+                required: true
+            }
+         ]
+    }
+];
+
+console.log("Inentlist: ", indentList);
+
+
+
+
+
+
+
 
   const locatorMasterObj = locatorMaster?.reduce((acc, obj) => {
     const { value, label } = obj;
@@ -73,10 +188,25 @@ const Igp = () => {
   }
 
 
-  const {userId, locationId} = useSelector(state => state.auth);
+  const {userId} = useSelector(state => state.auth);
 
   const onFinish = async () => {
-    const payload = {...formData, locationId, createdBy: userId};
+    const payload = {...formData, createdBy: userId};
+
+    if(formData.igpType === "materialIn") {
+      try{
+        const {data} = await axios.post("/api/process-controller/saveMaterialIgp", payload)
+        setFormData(prev => ({
+          ...prev,
+          igpId: data?.responseData?.processNo
+        }))
+        setModalOpen(true);
+        message.success("Material IGP saved successfully.");
+      } catch(error) {
+        message.error(error?.response?.data?.responseStatus?.message || "Error saving Material IGP.");
+      }
+      return
+    }
 
     try {
       setSubmitBtnLoading(true);
@@ -95,6 +225,8 @@ const Igp = () => {
       setSubmitBtnLoading(false);
     }
   };
+
+  const {materialMaster} = useSelector(state => state.masters) || []
 
   useEffect(() => {
     const draft = localStorage.getItem("igpDraft");
@@ -122,6 +254,8 @@ const Igp = () => {
     }
   }, [formData.igpType, formData.ogpId]);
 
+  console.log("MMST: ", materialMaster);
+
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Inward Gate Pass" />
@@ -133,6 +267,13 @@ const Igp = () => {
             <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("igpType", val)}/>
           </Form.Item>
         </div>
+        {formData.igpType === "materialIn" && (
+          <>
+          <MaterialSearch itemsArray={materialMaster} setFormData={setFormData} />
+          {renderFormFields(materialInFields, handleChange, formData, "", null, setFormData, handleSearch)}
+          </>
+        )
+        }
 
         {
           formData.igpType === "PO" && renderFormFields(igpPoFields, handleChange, formData, "", null, setFormData, handleSearch)

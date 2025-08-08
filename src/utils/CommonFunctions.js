@@ -258,6 +258,7 @@ export const apiCall = async (method, url, token, payload = null) => {
         );
 
         case "select":
+          console.log("SELECT: ", field);
           return (
             <Form.Item 
               name={field?.name}
