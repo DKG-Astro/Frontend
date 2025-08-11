@@ -279,13 +279,20 @@ const handleChange = (key, value) => {
   if (actionType === 'CHANGE_REQUEST_TO_INTENTOR' && !rejectComment.trim()) {
     return message.warning("Please enter a change request comment.");
   }
+  if (actionType === 'REJECT' && !rejectComment.trim()) {
+  return message.warning("Please enter a rejection comment.");
+  }
+
 
   try {
     const spoDto = {
       tenderId: tenderId,
       vendorId: record.vendorId,
       action: actionType,
-      remarks: actionType === 'CHANGE_REQUEST_TO_INTENTOR' ? rejectComment : '',
+     // remarks: actionType === 'CHANGE_REQUEST_TO_INTENTOR' ? rejectComment : '',
+     remarks: ['CHANGE_REQUEST_TO_INTENTOR', 'REJECT'].includes(actionType)
+        ? rejectComment
+        : '',
       userId:userId
     };
 
@@ -351,7 +358,7 @@ const baseColumns = [
     key: 'quotationFileName',
   },*/
   {
-    title: 'Technical Bid documents',
+    title: 'Bid documents',
     key: 'view',
     render: (_, record) => (
       record.quotationFileName ? (
@@ -421,7 +428,7 @@ if (role === 'Store Purchase Officer') {
             status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
           },
         {
-          title: 'Indentor Status',
+          title: 'Status',
           key: 'indentorStatus',
           dataIndex: 'indentorStatus',
           render: (indentorStatus) =>
@@ -490,13 +497,47 @@ if (role === 'Store Purchase Officer') {
         >
           {record.spoStatus === 'ACCEPTED' ? 'Accepted' : 'SPO Accept'}
         </Button>
-        <Button
+       {/* <Button
           size="small"
           disabled={!spoCanAct}
           onClick={() => handleSpoReview(record, 'REJECT')}
         >
           {record.spoStatus === 'REJECTED' ? 'Rejected' : 'SPO Reject'}
-        </Button>
+        </Button>*/}
+<Popover
+  content={
+    <div style={{ padding: 12 }}>
+      <Input.TextArea
+        placeholder="Enter reject reason"
+        rows={3}
+        value={rejectedVendorId === record.vendorId ? rejectComment : ''}
+        onChange={(e) => {
+          setRejectedVendorId(record.vendorId);
+          setRejectComment(e.target.value);
+        }}
+      />
+      <Button
+        type="primary"
+        disabled={!spoCanAct}
+        onClick={() => handleSpoReview(record, 'REJECT')}
+        style={{ marginTop: 8 }}
+      >
+        Submit
+      </Button>
+    </div>
+  }
+  title="SPO Reject Reason"
+  trigger="click"
+>
+  <Button
+    size="small"
+    style={{ color: 'red' }}
+    disabled={!spoCanAct}
+  >
+    {record.spoStatus === 'REJECTED' ? 'Rejected' : 'SPO Reject'}
+  </Button>
+</Popover>
+
         <Popover
           content={
             <div style={{ padding: 12 }}>
