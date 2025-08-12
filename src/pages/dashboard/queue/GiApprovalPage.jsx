@@ -272,7 +272,7 @@ const handleReset = () => {
     </Popover>
 
 
-        <Popover
+        <Popover className='popoover1'
           content={
             <div style={{ width: 250 }}>
               <TextArea

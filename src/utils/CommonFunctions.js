@@ -122,6 +122,7 @@ export const apiCall = async (method, url, token, payload = null) => {
   }
 
   export const updateFormData = (newItem, setFormData) => {
+    console.log("Called UPDATE");
     setFormData((prevValues) => {
       const updatedItems = [
         ...(prevValues.materialDtlList || []),
@@ -133,6 +134,7 @@ export const apiCall = async (method, url, token, payload = null) => {
       ];
       return { ...prevValues, materialDtlList: updatedItems };
     });
+    console.log("DONE UPDATE");
   };
 
   
@@ -258,7 +260,6 @@ export const apiCall = async (method, url, token, payload = null) => {
         );
 
         case "select":
-          console.log("SELECT: ", field);
           return (
             <Form.Item 
               name={field?.name}

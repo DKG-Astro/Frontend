@@ -120,7 +120,6 @@ const senderName = useSelector(state => state.auth.userName)
 
   const {userId} = useSelector(state => state.auth);
 
-  console.log("Formdata: ", formData);
 
   const onFinish = async () => {
     if (formData.ogpType === "Returnable") {

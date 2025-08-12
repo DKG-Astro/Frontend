@@ -24,6 +24,7 @@ const ItemSearch = ({itemArray, setFormData}) => {
 
     const handleSelectItem = (record, subRecord) => {
         setTableOpen(false);
+        console.log("Handle select item called");
     
         const recordCopy = record; // delete qtyList array from record
     
@@ -41,7 +42,7 @@ const ItemSearch = ({itemArray, setFormData}) => {
               assetDesc: record.assetDesc,
               itemDesc: record.itemMasterDesc,
               uomId: record.uomId,
-              quantity: 1,
+              quantity: subRecord.quantity,
               poId: record.poId,
               // noOfDays: 1,
               // conditionOfGoods: "",

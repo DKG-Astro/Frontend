@@ -5,6 +5,7 @@ import GatePass from './GatePass'
 import GiApprovalPage from './GiApprovalPage'
 import GrnApproval from './GrnApproval'
 import { useSelector } from "react-redux";
+import GoodsTransferQueue from './GoodsTransferQueue'
 
 const Queue3 = () => {
 const auth = useSelector((state) => state.auth);
@@ -24,6 +25,9 @@ const roleName=auth.role;
     </Tabs.TabPane> )}
      <Tabs.TabPane tab="Gate Pass" key="gatepass">
             <GatePass />
+    </Tabs.TabPane> 
+     <Tabs.TabPane tab="Goods Transfer" key="gt">
+            <GoodsTransferQueue />
     </Tabs.TabPane> 
     </Tabs>
   )

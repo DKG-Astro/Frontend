@@ -5,7 +5,7 @@ import { convertToCurrency, handleSearch, updateFormData } from '../utils/Common
 
 const { Search } = Input;
 
-const MaterialSearch = ({ itemsArray, setFormData }) => {
+const MaterialSearch = ({ customCols, itemsArray, setFormData }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [filteredData, setFilteredData] = useState(itemsArray || []);
   const [tableOpen, setTableOpen] = useState(false);
@@ -31,10 +31,17 @@ const MaterialSearch = ({ itemsArray, setFormData }) => {
         category: record.category,
         subCategory: record.subCategory,
         description: record.description,
+        materialDesc: record.materialDesc,
         uom: record.uom,
         estimatedPriceWithCcy: record.estimatedPriceWithCcy,
         indigenousOrImported: record.indigenousOrImported,
+        quantity: record?.quantity || 0,
+        locatorId: record?.locatorId,
+        senderLocatorId: record?.locatorId,
+        unitPrice: record?.unitPrice || 0,
+        depriciationRate: record?.depriciationRate || 0,
       };
+      console.log("NEW ITEM: ", newItem);
 
       updateFormData(newItem, setFormData);
     } else {
@@ -104,11 +111,31 @@ const MaterialSearch = ({ itemsArray, setFormData }) => {
     },
   ];
 
+  const actionCol =   {
+      title: "Action",
+      key: "action",
+      fixed: "right",
+      render: (_, record) => (
+        <Button
+          onClick={() => handleSelectItem(record)}
+          type={
+            selectedItems?.some(item => item.materialCode === record.materialCode)
+              ? "default"
+              : "primary"
+          }
+        >
+          {selectedItems?.some(item => item.materialCode === record.materialCode)
+            ? "Deselect"
+            : "Select"}
+        </Button>
+      ),
+    }
+
   const content = (
     <Table
       pagination={{ pageSize: 5 }}
       dataSource={filteredData}
-      columns={tableColumns}
+      columns={customCols ? [...customCols, actionCol] : tableColumns}
       scroll={{ x: "max-content" }}
     //   style={{
     //     display: tableOpen ? "block" : "none",
