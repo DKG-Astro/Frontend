@@ -307,6 +307,7 @@ const handleChange = (key, value) => {
 };
 const isDouble = (formData.bidType || '').toLowerCase() === 'double';
 
+
 const priceBidColumn = {
   title: 'Price Bid',
   dataIndex: 'priceBidFileName',
