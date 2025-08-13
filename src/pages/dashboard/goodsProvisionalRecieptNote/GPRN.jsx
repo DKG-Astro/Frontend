@@ -143,7 +143,7 @@ const GPRN = () => {
         indentorName: indentData?.responseData?.indentorName,
         indentId: indentData?.responseData?.createdBy,
         consigneeDetail: data?.responseData?.consignesAddress,
-        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.quantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
+        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom, orderedQuantity: mat.totalQuantity - mat.receivedQuantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: data?.responseData?.deliveryDate || "", 
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
