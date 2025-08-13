@@ -14,7 +14,7 @@ const StockReport = () => {
   }, {});
 
   const columns = [
-    { title: 'Custodian Name', dataIndex: 'custodianId', key: 'custodianId_S' ,
+    { title: 'Custodian Name', dataIndex: 'custodianId', key: 'custodianId_S',
       render: (custodianId) => {
     if (typeof custodianId === "string" && /^\d+$/.test(custodianId.trim())) {
         const id = parseInt(custodianId, 10);

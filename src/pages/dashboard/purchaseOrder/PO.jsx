@@ -19,6 +19,8 @@ const PO = () => {
   const [poIdDropdown, setPoIdDropdown] = useState([]);
   const [searchDone, setSearchDone] = useState(false);
   const [completedVendors, setCompletedVendors] = useState([]);
+  const [completedVendorIds, setCompletedVendorIds] = useState([]);
+  const [completedVendorNames, setCompletedVendorNames] = useState([]);
 
 
   // Redux selectors
@@ -140,18 +142,29 @@ const PO = () => {
 
       // 3. Update state and form
       setMaterials(allMaterials);
-      let completedVendorOptions = [];
+      let vendorIdOptions= [];
+      let vendorNameOptions=[];
     try {
-      const completedResp = await axios.get(`/api/vendor-quotation/completed-vendors/${tenderId}`);
-      const completedVendorIds = completedResp.data?.responseData || [];
-      completedVendorOptions = completedVendorIds.map((vid) => ({
-        label: vid,
-        value: vid,
-      }));
-      setCompletedVendors(completedVendorOptions);
+      const completedResp = await axios.get(`/api/vendor-quotation/completed-vendorNames/${tenderId}`);
+      const completedVendorsData = completedResp.data?.responseData || [];
+    vendorIdOptions = completedVendorsData.map((vendor) => ({
+  label: vendor.vendorId,
+  value: vendor.vendorId,
+}));
+vendorNameOptions = completedVendorsData.map((vendor) => ({
+  label: vendor.vendorName,
+  value: vendor.vendorName,
+}));
+
+
+  setCompletedVendorIds(vendorIdOptions);
+  setCompletedVendorNames(vendorNameOptions);
+      
     } catch (e) {
       console.warn("Failed to fetch completed vendors:", e);
-      setCompletedVendors([]); // fallback
+     // setCompletedVendors([]); // fallback
+      setCompletedVendorIds([]);
+      setCompletedVendorNames([]);
     }
 
     // Auto-fill vendor details from vendorId
@@ -182,8 +195,8 @@ const PO = () => {
       return {
         ...section,
         fieldList: section.fieldList.map((field) => {
-          if (field.name === "vendorName")
-            return { ...field, options: vendors };
+          //if (field.name === "vendorName")
+           // return { ...field, options: vendors };
           if (field.name === "tenderId")
             return {
               ...field,
@@ -203,14 +216,24 @@ const PO = () => {
                     value: v.id,
                   })),
                 };*/
-                if (field.name === "vendorId") {
-                  return {
-                    ...field,
-                    options: completedVendors.length
-                    ? completedVendors
-                    : vendors.map((v) => ({ label: v.id, value: v.id })), // fallback if none
+               if (field.name === "vendorId") {
+                return {
+                  ...field,
+                  options: completedVendorIds.length
+                  ? completedVendorIds
+                  : vendors.map((v) => ({ label: v.id, value: v.id })), 
                 };
-                }
+              }
+
+              if (field.name === "vendorName") {
+                return {
+                  ...field,
+                  options: completedVendorNames.length
+                  ? completedVendorNames
+                  : vendors.map((v) => ({ label: v.name, value: v.name })), // fallback
+                };
+              }
+
 
                 /* if (field.name === "poId") {
                     return {

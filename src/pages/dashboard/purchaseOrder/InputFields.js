@@ -228,7 +228,7 @@ export const PoDetails = [
           label: "Vendor Name",
           type: "select",
           required: true,
-          options: [],
+         // options: [],
         }, 
         {
           name: "vendorId",
