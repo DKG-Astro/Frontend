@@ -348,6 +348,33 @@ export const apiCall = async (method, url, token, payload = null) => {
       onSearch={field?.onSearch}
     />
   );
+  case "selectTenderId":
+  return (
+    <Form.Item
+      name={field?.name}
+      label={field?.label}
+      rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+    >
+      <Select
+        showSearch
+        options={field?.options}
+        disabled={field?.disabled}
+        onChange={(val) => {
+          handleChange(field?.name, val); // update form
+          if (typeof field?.onChange === "function") {
+            field.onChange(val); // always pass the latest val
+          }
+        }}
+        filterOption={(input, option) =>
+          option?.label?.toLowerCase().includes(input.toLowerCase())
+        }
+      />
+    </Form.Item>
+  );
+
+
+
+
 
         case "checkboxWithLabelText":
         return (

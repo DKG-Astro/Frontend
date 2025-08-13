@@ -38,6 +38,7 @@ const TenderEvaluator = () => {
   const [loadingTender, setLoadingTender] = useState(false);
   const [loadingQuotations, setLoadingQuotations] = useState(false);
   const [hasComparisonSheet, setHasComparisonSheet] = useState(false);
+  const [approvedTenderIdsWithTitle, setApprovedTenderIdsWithTitle] = useState([]);
 
 
   const tenderId = formData.tenderId;
@@ -55,6 +56,18 @@ const canSpoAct = role === 'Store Purchase Officer' && hasComparisonSheet;
 const showEvaluationSection = true; 
 const canPerformActions = (role === 'Purchase personnel' || (role === 'Indent Creator' && isBelow10L && !hasMultipleIndents));
 
+  useEffect(() => {
+    const fetchApprovedTenders = async () => {
+      try {
+        const response = await axios.get("/api/tender-requests/approvedTender/TenderEvaluation");
+        setApprovedTenderIdsWithTitle(response.data.responseData); 
+      } catch (error) {
+        console.error("Error fetching approved tenders:", error);
+      }
+    };
+
+    fetchApprovedTenders();
+  }, []);
 
   const fetchQuotationsAndPending = async (tid) => {
   setLoadingQuotations(true);
@@ -306,6 +319,7 @@ const handleChange = (key, value) => {
   }
 };
 const isDouble = (formData.bidType || '').toLowerCase() === 'double';
+const isSingle = (formData.bidType || '').toLowerCase() === 'single';
 
 
 const priceBidColumn = {
@@ -314,6 +328,24 @@ const priceBidColumn = {
   key: 'priceBidFileName',
   render: (fileName, record) => {
     if (record.status !== 'Completed') return null; 
+    if (!fileName) return 'No File';
+    return (
+      <a
+        href={`${baseURL}/file/view/Tender/${fileName}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View
+      </a>
+    );
+  },
+};
+
+const priceBidColumnForSingleBid = {
+  title: 'Price Bid',
+  dataIndex: 'priceBidFileName',
+  key: 'priceBidFileName',
+  render: (fileName, record) => {
     if (!fileName) return 'No File';
     return (
       <a
@@ -404,6 +436,7 @@ const baseColumns = [
       ]
     : []),
   ...(isDouble ? [priceBidColumn] : []),
+  ...(isSingle ? [priceBidColumnForSingleBid] : []),
 
  
 
@@ -735,7 +768,11 @@ if (role === 'Store Purchase Officer') {
 
   ];
 }
-
+useEffect(() => {
+  if (tenderId && tenderId.trim()) {
+    handleSearchTender();
+  }
+}, [tenderId]);
 
   const TenderDetails = [
     {
@@ -745,9 +782,20 @@ if (role === 'Store Purchase Officer') {
         {
           name: "tenderId",
           label: "Tender Id",
-          type: "search",
-          span: 1,
-          onSearch: () => handleSearchTender(), 
+         // type: "search",
+          span: 1, 
+          type: "selectTenderId",
+                   // required: true,
+                    options: approvedTenderIdsWithTitle.map((item) => {
+                        return {
+                            label: item.tenderId + " - " + item.title,
+                            value: item.tenderId
+                        }
+                    }),
+                  //  onSearch: () => handleSearchTender(),
+        onChange: (selectedValue) => {
+          handleChange("tenderId", selectedValue); 
+        },
         }
       ]
     },
