@@ -21,6 +21,16 @@ const Form17 = () => {
       message.error("Please enter the Goods Transfer Date.");
       return;
     }
+    if(!formData.materialDtlList?.length) {
+      message.error("Please add at least one material.");
+      return;
+    }
+    formData.materialDtlList.forEach(item => {
+      if(!item.quantity || item.quantity <= 0) {
+        message.error(`Please enter the quantity for material ${item.materialDesc}.`);
+        return;
+      }
+    })
     try{
       const {data} = await axios.post("/api/process-controller/createGt", {...formData, createdBy: userId})
       setFormData({...formData, gtId: data?.responseData?.processNo});
@@ -249,6 +259,8 @@ const Form17 = () => {
     }
   };
 
+  console.log("Assetlist: ", assetList.filter(item => !item.custodianId && !item.locatorId));
+
   const handleSearch = async () => {};
 
     const populateItemQtyDtls = useCallback(async () => {
@@ -275,7 +287,7 @@ const Form17 = () => {
     }
   }, [formData.receiverLocationId]);
 
-  console.log("LDD: ", ldd);
+  console.log("LDD: ", formData.senderCustodianId);
 
   useEffect(() => {
     populateData();

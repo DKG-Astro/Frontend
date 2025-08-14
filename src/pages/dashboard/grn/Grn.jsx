@@ -790,19 +790,19 @@ const materialInFields = [
                 span: 2,
                 required: true
             },
-            {
-              name: "unitPrice",
-              label: "Unit Price",
-              type: "text",
-              required: true,
-            },
-            {
-                name: "bookValue",
-                label: "Book Value",
-                type: "text",
-                required: true,
+            // {
+            //   name: "unitPrice",
+            //   label: "Unit Price",
+            //   type: "text",
+            //   required: true,
+            // },
+            // {
+            //     name: "bookValue",
+            //     label: "Book Value",
+            //     type: "text",
+            //     required: true,
             
-            },
+            // },
             // {
             //     name: "bookValue",
             //     label: "Book Value",
@@ -821,12 +821,12 @@ const materialInFields = [
                 type: "text",
                 required: true
             },
-            {
-                name: "depriciationRate",
-                label: "Depreciation Rate",
-                type: "text",
-                required: true
-            }
+            // {
+            //     name: "depriciationRate",
+            //     label: "Depreciation Rate",
+            //     type: "text",
+            //     required: true
+            // }
         ]
     },
     {

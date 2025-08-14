@@ -425,11 +425,5 @@ input{
 }
 
 .ant-popover-inner{
-  width: 20rem;
+  width: 40rem;
 }
-
-/* 
-.popoover1 > .ant-popover-inner{
-  width: 2rem !important;
-} 
-*/

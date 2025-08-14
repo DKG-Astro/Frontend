@@ -264,7 +264,7 @@ console.log("Inentlist: ", indentList);
         <h1 className="font-semibold">Order Details</h1>
         <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
           <Form.Item name="igpType" label="Type">
-            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}]} onChange={(val) => handleChange("igpType", val)}/>
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Material Inward", value: "materialIn"}]} onChange={(val) => handleChange("igpType", val)}/>
           </Form.Item>
         </div>
         {formData.igpType === "materialIn" && (
