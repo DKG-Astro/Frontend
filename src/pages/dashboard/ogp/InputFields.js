@@ -373,3 +373,163 @@ export const ogpFieldsPo = [
         ]
     }
 ];
+
+
+export const gtOgpFields = [
+    {
+      fieldList: [
+        {
+          name: "gtId",
+          label: "Goods Transfer ID",
+          type: "search",
+          // required: true,
+        //   span: 2,
+        },
+        {
+          name: "ogpId",
+          label: "OGP ID",
+          type: "text",
+          // required: true,
+        //   span: 1,
+        },
+      ]
+    },
+    {
+      heading: "Transfer Information",
+      colCnt: 4,
+      fieldList: [
+        {
+          name: "senderLocationIdDesc",
+          label: "Sender Field Station",
+          type: "text",
+        //   options: formattedLocations,
+          required: true,
+          span: 2,
+        },
+        {
+          name: "senderCustodianIdDesc",
+          label: "Sender Custodian",
+          type: "text",
+        //   options: indentList,
+          required: true,
+          span: 2,
+        },
+        {
+          name: "receiverLocationIdDesc",
+          label: "Receiver Field Station",
+          type: "text",
+        //   options: formattedLocations,
+          required: true,
+          span: 2,
+        },
+        {
+          name: "receiverCustodianIdDesc",
+          label: "Receiver Custodian",
+          type: "text",
+        //   options: indentList,
+          required: true,
+          span: 2,
+        },
+        {
+          name: "gtDate",
+          label: "Goods Transfer Date",
+          type: "date",
+          required: true,
+          span: 1,
+        },
+        {
+          name: "ogpDate",
+          label: "OGP Date",
+          type: "date",
+          required: true,
+          span: 1,
+        },
+      ],
+    },
+    {
+      heading: "Material Details",
+      name: "materialDtlList",
+      colCnt: 8,
+      children: [
+        {
+          name: "materialCode",
+          label: "Material Code",
+          type: "text",
+          span: 2,
+          // required: true,
+        },
+        {
+          name: "materialDesc",
+          label: "Material Description",
+          type: "text",
+          span: 3,
+          // required: true,
+        },
+        {
+          name: "assetId",
+          label: "Asset Code",
+          type: "text",
+          span: 2,
+          // required: true,
+        },
+        {
+          name: "assetDesc",
+          label: "Asset Description",
+          type: "text",
+          span: 3,
+          // required: true,
+        },
+        // {
+        //   name: "uomId",
+        //   label: "UOM",
+        //   type: "text",
+        //   span: 1,
+        //   required: true,
+        // },
+        {
+          name: "receiverLocatorIdDesc",
+          label: "Receiver Locator",
+          type: "text",
+        //   options: ldd || [],
+          span: 2,
+          required: true,
+        },
+        {
+          name: "senderLocatorIdDesc",
+          label: "Sender Locator",
+          type: "text",
+          span: 2,
+          required: true,
+        },
+        {
+          name: "quantity",
+          label: "Quantity",
+          type: "text",
+          span: 2,
+          required: true,
+        },
+                {
+          name: "unitPrice",
+          label: "Unit Price",
+          type: "text",
+          span: 2,
+          required: true
+        },
+        {
+          name: "depriciationRate",
+          label: "Depriciation Rate",
+          type: "text",
+          span: 2,
+          required: true
+        },
+          {
+          name: "bookValue",
+          label: "Book Value",
+          type: "text",
+          span: 2,
+          required: true
+        }
+
+      ],
+    },
+  ];

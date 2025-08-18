@@ -8,7 +8,7 @@ import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
-import { ogpFields, ogpFieldsGiRejected, ogpFieldsPo } from "./InputFields";
+import { gtOgpFields, ogpFields, ogpFieldsGiRejected, ogpFieldsPo } from "./InputFields";
 import { Modal } from "antd";  
 
 import { set } from "lodash";
@@ -28,6 +28,18 @@ const confirmReturnable = () => {
 };
 
 const Ogp = () => {
+    const { materialMaster, locationMaster, userMaster } =
+    useSelector((state) => state.masters) || [];
+
+    const locationMasterObj = locationMaster?.reduce((acc, obj) => {
+      acc[obj?.locationCode] = obj.locationName;
+      return acc;
+    }, {});
+
+    const umObj = userMaster?.reduce((obj, item) => {
+    obj[item.userId] = item.userName;
+    return obj;
+  }, {});
   const printRef = useRef();
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -75,6 +87,32 @@ const senderName = useSelector(state => state.auth.userName)
 
 
   const handleSearch = async () => {
+
+    if(formData.type === "Goods Transfer"){
+      try{
+        const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.gtId}&processStage=GT`);
+        const gtData = data?.responseData;
+        console.log("Data.res: ", gtData);
+        setFormData(prev => {
+          return {
+            ...prev, 
+            ...gtData,
+            gtId: formData.gtId,
+            senderLocationIdDesc: locationMasterObj[gtData?.senderLocationId],
+            receiverLocationIdDesc: locationMasterObj[gtData?.receiverLocationId],
+            senderCustodianIdDesc: umObj[gtData?.senderCustodianId],
+            receiverCustodianIdDesc: umObj[gtData?.receiverCustodianId],
+            gtDate: gtData?.gtDate,
+            materialDtlList: gtData?.materialDtlList?.map(item => ({...item, receiverLocatorIdDesc: locatorMasterObj[item.receiverLocatorId], senderLocatorIdDesc: locatorMasterObj[item.senderLocatorId]}))
+          }
+        })
+        }
+      catch(error){
+        message.error(error?.response?.data?.responseStatus?.message || "Error fetching GT data.");
+      }
+        return
+    }
+
     if(formData.type === "PO"){
       const {data} = await axios.get(`api/purchase-orders/${formData.issueNoteId}`)
           setFormData(prev => ({
@@ -120,6 +158,8 @@ const senderName = useSelector(state => state.auth.userName)
 
   const {userId} = useSelector(state => state.auth);
 
+  console.log("Fprmdata:" , formData);
+
 
   const onFinish = async () => {
     if (formData.ogpType === "Returnable") {
@@ -130,6 +170,26 @@ const senderName = useSelector(state => state.auth.userName)
     const confirmed = await confirmReturnable();
     if (!confirmed) return;
   }
+  if(formData.type === "Goods Transfer"){
+    const pd = {...formData, createdBy: userId};
+    try{
+      setSubmitBtnLoading(true);
+      const {data} = await axios.post("/api/process-controller/saveGtOgp", pd);
+       setFormData(prev => ({
+        ...prev,
+        ogpId: data?.responseData?.processNo
+      }));
+      localStorage.removeItem("ogpDraft");
+      setModalOpen(true);
+    }
+    catch(error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to save OGP.");
+    } finally {
+      setSubmitBtnLoading(false);
+    }
+    return
+  }
+
     const payload = {...formData, giId: formData.issueNoteId, createdBy: userId};
 
     try {
@@ -187,8 +247,6 @@ const getFilteredOgpFieldsPo = () => {
   }
   return ogpFieldsPo;
 };
-console.log(getFilteredOgpFields());
-console.log(getFilteredOgpFieldsPo());
 
 
   
@@ -200,7 +258,7 @@ console.log(getFilteredOgpFieldsPo());
         <h1 className="font-semibold">Order Details</h1>
         <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
           <Form.Item name="type" label="Type">
-            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Rejected Items GI", value: "Rejected Items GI"}]} onChange={(val) => handleChange("type", val)}/>
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Rejected Items GI", value: "Rejected Items GI"}, {label: "Goods Transfer", value: "Goods Transfer"}]} onChange={(val) => handleChange("type", val)}/>
           </Form.Item>
         </div>
         
@@ -212,6 +270,9 @@ console.log(getFilteredOgpFieldsPo());
         }
         {
           formData.type === "Rejected Items GI" && renderFormFields(ogpFieldsGiRejected, handleChange, formData, "", null, setFormData, handleSearch)
+        }
+        {
+          formData.type === "Goods Transfer" && renderFormFields(gtOgpFields, handleChange, formData, "", null, setFormData, handleSearch)
         }
         <ButtonContainer
           onFinish={onFinish}

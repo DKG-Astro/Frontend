@@ -9,6 +9,20 @@ const GatePass = () => {
   const { role } = useSelector((state) => state?.auth);
 
   const handleApprove = async (record) => {
+    if(record.formType === "GT"){
+      try{
+        await axios.post("/api/process-controller/approveGtOgp", {ogpId: record.ogpId})
+        message.success("Gate Pass Approved Successfully");
+        fetchGatePassData();
+      }
+      catch(error){
+        message.error(
+          error?.response?.data?.responseStatus?.message ||
+            "Failed to approve Gate Pass"
+        );
+      }
+      return
+    }
     if (record.formType === "IGP") {
       try {
         await axios.post("/api/process-controller/approveMaterialIgp", {
@@ -73,6 +87,20 @@ const GatePass = () => {
   };
 
   const handleReject = async (record) => {
+    if(record.formType === "GT"){
+      try{
+        await axios.post("/api/process-controller/rejectGtOgp", {ogpId: record.ogpId})
+        message.success("Gate Pass Rejected Successfully");
+        fetchGatePassData();
+      }
+      catch(error){
+        message.error(
+          error?.response?.data?.responseStatus?.message ||
+            "Failed to reject Gate Pass"
+        );
+      }
+      return
+    }
     if (record.formType === "IGP") {
       try {
         await axios.post("/api/process-controller/rejectMaterialIgp", {
@@ -120,6 +148,20 @@ const GatePass = () => {
     }
   };
 
+  const { materialMaster, locationMaster, userMaster, locatorMaster } =
+    useSelector((state) => state.masters) || [];
+
+      const locatorMasterObj = locatorMaster?.reduce((acc, obj) => {
+    const { value, label } = obj;
+    acc[value] = label;
+    return acc;
+  }, {});
+
+    const locationMasterObj = locationMaster?.reduce((acc, obj) => {
+      acc[obj?.locationCode] = obj.locationName;
+      return acc;
+    }, {});
+
   const columns = [
     // {
     //   title: 'Issue Note ID',
@@ -129,6 +171,23 @@ const GatePass = () => {
     //   fixed: 'left',
     //   render: (text) => text ? "INV/"+text : ""
     // },
+    {
+      title: "Goods Transfer ID",
+      dataIndex: "gtId",
+      key: "gtId",
+      searchable: true,
+      fixed: "left",
+    }, 
+    {
+      title: "Sender Field Station",
+      dataIndex: "senderLocationId",
+      render: (text) => locationMasterObj[text]
+    },
+    {
+      title: "Receiver Field Station",
+      dataIndex: "receiverLocationId",
+      render: (text) => locationMasterObj[text]
+    },
     {
       title: "Goods Inspection ID",
       dataIndex: "giId",
@@ -142,7 +201,7 @@ const GatePass = () => {
       key: "ogpSubProcessId",
       searchable: true,
       render: (text, record) =>
-        record?.formType === "GI"
+        (record?.formType === "GI" || record?.formType === "GT")
           ? record.ogpId
           : record?.ogpId
           ? "INV/" + text
@@ -228,6 +287,8 @@ const GatePass = () => {
               dataIndex: "assetDesc",
               key: "assetDesc",
             },
+            {title: "Sender Locator", dataIndex: 'senderLocatorId', render: (text) => locatorMasterObj[text]},
+            {title: "Receiver Locator", dataIndex: 'receiverLocatorId', render: (text) => locatorMasterObj[text]},
             { title: "Locator ID", dataIndex: "locatorId", key: "locatorId" },
             // { title: 'UOM', dataIndex: 'uomId', key: 'uomId' },
             { title: "Quantity", dataIndex: "quantity", key: "quantity" },
@@ -315,7 +376,11 @@ const GatePass = () => {
       const { data: data2 } = await axios.get(
         "/api/process-controller/getPendingIgp"
       );
-      console.log("Data2: ", data2.responseData);
+
+      const {data: data3} = await axios.get(
+        "/api/process-controller/getPendingGtOgp"
+      );
+      console.log("Data3.responseData: ", data3.responseData);
       const dataCopy = data1.responseData?.map((item) => ({
         ...item,
         formType: "GI",
@@ -334,7 +399,15 @@ const GatePass = () => {
           detailId: subitem.id,
         })),
       }));
-      setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2] || []);
+
+      const data3Copy = data3.responseData?.map((item) => ({
+        ...item,
+        ogpId: item.id,
+        formType: "GT",
+        details: item.materialDtlList
+      }));
+      // setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2] || []);
+      setDataSource(data3Copy)
       // setDataSource(dataCopy2 || []);
       // setDataSource([...dataCopy] || []);
     } catch (error) {
