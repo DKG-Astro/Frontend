@@ -5,6 +5,8 @@ import StockReport from './StockReport';
 import GoodsIssueReport from './GoodsIssueReport';
 import IgpReport from './IgpReport';
 import OgpReport from './OgpReport';
+import RejectedGiReport from './RejectedGiReport';
+import IgpMaterialInReport from './IgpMaterialInReport';
 
 const InvReportsMain = () => {
     const tiles = [
@@ -38,6 +40,18 @@ const InvReportsMain = () => {
             icon: <InboxOutlined />,
             path: "/reports/ogp"
         },
+        {
+            id: 6,
+            title: "OGP Rejected Gi Report",
+            icon: <InboxOutlined />,
+            path: "/reports/RejectedGiReport"
+        },
+        {
+            id: 7,
+            title: "IGP Material In Report",
+            icon: <InboxOutlined />,
+            path: "/reports/IgpMaterialInReport"
+        },
     ]
     const [activeTab, setActiveTab] = useState(1)
 
@@ -53,6 +67,10 @@ const InvReportsMain = () => {
                 return <IgpReport />
             case 5:
                 return <OgpReport />
+            case 6:
+                return <RejectedGiReport />
+            case 7:
+                return <IgpMaterialInReport />
             default:
                 return <h1>Asset Report</h1>
         }

@@ -25,12 +25,18 @@ const Form17 = () => {
       message.error("Please add at least one material.");
       return;
     }
-    formData.materialDtlList.forEach(item => {
+   /* formData.materialDtlList.forEach(item => {
       if(!item.quantity || item.quantity <= 0) {
         message.error(`Please enter the quantity for material ${item.materialDesc}.`);
         return;
       }
-    })
+    })*/
+    for (const item of formData.materialDtlList) {
+    if (!item.quantity || item.quantity <= 0) {
+      message.error(`Please enter the quantity for material ${item.materialDesc}.`);
+      return; 
+    }
+  }
     try{
       const {data} = await axios.post("/api/process-controller/createGt", {...formData, createdBy: userId})
       setFormData({...formData, gtId: data?.responseData?.processNo});
@@ -55,6 +61,32 @@ const Form17 = () => {
     label: item.locationName,
     value: item.locationCode,
   }));
+    const handleGtSearch = async (gtId) => {
+    if (!gtId) {
+      message.error("Please enter a Goods Transfer ID.");
+      return;
+    }
+
+    try {
+      const { data } = await axios.get(`/api/process-controller/SearchById`, {
+        params: { gtId },
+      });
+
+      if (data?.responseData) {
+        setFormData(data.responseData);
+        form.setFieldsValue(data.responseData); 
+        message.success(`Goods Transfer ${gtId} loaded successfully.`);
+      } else {
+        message.warning(`No Goods Transfer found for ID: ${gtId}`);
+      }
+    } catch (error) {
+      message.error(
+        error?.response?.data?.responseStatus?.message ||
+          "Error fetching Goods Transfer details."
+      );
+    }
+  };
+
 
   const [ldd, setLdd] = useState([]);
   const [fsDd, setFsDd] = useState([]);
@@ -64,8 +96,9 @@ const Form17 = () => {
         {
           name: "gtId",
           label: "Goods Transfer ID",
-          type: "text",
+          type: "search",
           // required: true,
+          onSearch: (value) => handleGtSearch(value),
           span: 2,
         },
       ]
