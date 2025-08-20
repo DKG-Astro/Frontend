@@ -227,7 +227,7 @@ export const PoDetails = [
           name: "vendorName",
           label: "Vendor Name",
           type: "select",
-          required: true,
+         // required: true,
          // options: [],
         }, 
         {
@@ -241,28 +241,28 @@ export const PoDetails = [
           label: "Vendor Address",
           type: "text",
           required: true,
-          disabled: true,
+         // disabled: true,
         },
         {
           name: "vendorAccountNumber",
           label: "Vendor A/C No.",
           type: "text",
           required: true,
-          disabled: true,
+        //  disabled: true,
         },
         {
             name: "vendorsIfscCode",
             label: "Vendor IFSC Code",
             type: "text",
             required: true,
-            disabled: true,
+           // disabled: true,
         },
         {
             name: "vendorAccountName",
             label: "Vendor A/C Name",
             type: "text",
             required: true,
-            disabled: true,
+          //  disabled: true,
         }
       ]
     }

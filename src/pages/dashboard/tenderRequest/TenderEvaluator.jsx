@@ -454,20 +454,28 @@ if (role === 'Store Purchase Officer') {
           dataIndex: 'status',
           render: (status) => status || 'N/A',
         },*/
+         {
+          title: 'Indentor Status',
+          key: 'indentorStatus',
+          dataIndex: 'indentorStatus',
+          render: (indentorStatus) =>
+          indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+        },
         {
           title: `${role} Status`,
           key: 'status',
           dataIndex: 'status',
           render: (status) =>
             status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
-          },
+        },
         {
           title: 'Status',
-          key: 'indentorStatus',
-          dataIndex: 'indentorStatus',
-          render: (indentorStatus) =>
-          indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+          key: 'status',
+          dataIndex: 'status',
+          render: (status) =>
+            status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
         },
+          
 
       /*   ...(formData.bidType === 'Double'
     ? [

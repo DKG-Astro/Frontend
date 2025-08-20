@@ -364,7 +364,7 @@ const GatePass = () => {
   ];
 
   const [dataSource, setDataSource] = useState([]);
-
+/*
   const fetchGatePassData = async () => {
     try {
       const { data } = await axios.get(
@@ -408,6 +408,56 @@ const GatePass = () => {
       }));
       // setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2] || []);
       setDataSource(data3Copy)
+      // setDataSource(dataCopy2 || []);
+      // setDataSource([...dataCopy] || []);
+    } catch (error) {
+      message.error("Error fetching gate pass details.");
+      console.error(error);
+    }
+  };*/
+  const fetchGatePassData = async () => {
+    try {
+      const { data } = await axios.get(
+        "/api/process-controller/getGatePassReport"
+      );
+      const { data: data1 } = await axios.get(
+        "/api/process-controller/getAwaitingRejectedGi"
+      );
+      const { data: data2 } = await axios.get(
+        "/api/process-controller/getPendingIgp"
+      );
+
+      const {data: data3} = await axios.get(
+        "/api/process-controller/getPendingGtOgp"
+      );
+      console.log("Data3.responseData: ", data3.responseData);
+      const dataCopy = data1.responseData?.map((item) => ({
+        ...item,
+        formType: "GI",
+        status: "AWAITING APPROVAL",
+        details: item.materialDtlList.map((subitem) => ({
+          ...subitem,
+          quantity: subitem.rejectedQuantity,
+        })),
+      }));
+      const dataCopy2 = data2.responseData?.map((item) => ({
+        ...item,
+        formType: "IGP",
+        details: item.materialDtlList.map((subitem) => ({
+          ...subitem,
+          materialDesc: subitem.description,
+          detailId: subitem.id,
+        })),
+      }));
+
+      const data3Copy = data3.responseData?.map((item) => ({
+        ...item,
+        ogpId: item.id,
+        formType: "GT",
+        details: item.materialDtlList
+      }));
+      setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2, ...data3Copy] || []);
+      // setDataSource(data3Copy)
       // setDataSource(dataCopy2 || []);
       // setDataSource([...dataCopy] || []);
     } catch (error) {

@@ -76,6 +76,12 @@ const items = [
                     label: "Tender Evaluation",
                     path: "/procurement/tender/evaluation",
                 },
+                 {
+                    key: "3.2.3",
+                    icon: <FileTextOutlined />,
+                    label: "Gem Tender Evaluation",
+                    path: "/procurement/tender/gem",
+                },
             ]
         },
         {
