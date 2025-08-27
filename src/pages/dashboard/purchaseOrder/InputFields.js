@@ -6,6 +6,18 @@ const countryOptions = countryList().getData().map(c => ({
 }));
 
 
+const typeOfSecurityOptions = [
+    { label: "Bank Guarantee", value: "Bank Guarantee" },
+    { label: "Fixed Deposit Receipt", value: "Fixed Deposit Receipt" },
+    { label: "Account Payee Demand Draft", value: "Account Payee Demand Draft" },
+    { label: "Account Payee Cheque", value: "Account Payee Cheque" },
+    { label: "Insurance Surety Bonds", value: "Insurance Surety Bonds" },
+    { label: "Indemnity Bond", value: "Indemnity Bond" },
+    { label: "Online Payment", value: "Online Payment" },
+    { label: "Others", value: "Others" }
+];
+
+
 export const PoDetails = [
    {
             heading: "Search PO",
@@ -216,8 +228,46 @@ export const PoDetails = [
                     type: "multiImage",
                     span:2,
                     //required: true,
+        },
+         {
+                    name: "gemContractFileName",
+                    label: "Gem Contract Upload",
+                    type: "multiImage",
+                    span:2,
+                    //required: true,
         }
       ]
+    },
+     {
+      heading: "Performance And Warranty Security",
+      colCnt: 3,
+      fieldList: [
+        {
+          name: "typeOfSecurity",
+          label: "Type Of Security",
+          type: "select",
+          options :typeOfSecurityOptions,
+         // required: true,
+         // options: [],
+        }, 
+        {
+          name: "securityNumber",
+          label: "Security Number",
+          type: "text",
+         // required: true,
+         // options: [],
+        }, 
+        {
+          name: "securityDate",
+          label: "Security Date",
+          type: "date",
+        },
+        {
+          name: "expiryDate",
+          label: "Expiry Date",
+          type: "date",
+        },
+     ]
     },
     {
       heading: "Vendor Details",

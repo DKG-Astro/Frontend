@@ -15,6 +15,7 @@ import QuarterlyVigilanceSoReport from './QuarterlyVigilanceSoReport';
 import ShortClosedCancelledOrderReport from './ShortClosedCancelledOrderReport';
 import MonthlyProcurementReport from './MonthlyProcurementReport';
 import IndentStatus from './IndentStatus';
+import PerformanceAndWarrantySecurity from './PerformanceAndWarrantySecurity';
 
 const ReportsMain = () => {
     const tiles = [
@@ -102,6 +103,13 @@ const ReportsMain = () => {
             icon: <SolutionOutlined />,
             path: "/reports/IndentStatus"
         },
+        {
+            id:15,
+            title:"Performance & Warranty Security",
+            icon: <SolutionOutlined />,
+            path: "/reports/PerformanceAndWarrantySecurity"
+        },
+      
     ]
     const [activeTab, setActiveTab] = useState(1)
     const renderReports = () => {
@@ -134,6 +142,8 @@ const ReportsMain = () => {
                 return <MonthlyProcurementReport />
             case 14:
                 return <IndentStatus/>
+            case 15:
+                return <PerformanceAndWarrantySecurity />
             default:
                 return <h1>Contingency Purchase Report</h1>
         }

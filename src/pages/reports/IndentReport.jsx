@@ -1,5 +1,6 @@
 import React from 'react'
 import CustomReport from '../../components/DKG_Report';
+import dayjs from "dayjs";
 
 const IndentReport = () => {
   const api = "/api/reports/indent"
@@ -14,7 +15,8 @@ const IndentReport = () => {
       title: "Approved Date",
       dataIndex: "approvedDate",
       key: "approvedDate_INDENTR",
-      filterable: true
+      filterable: true,
+      render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : "",
     },
     {
       title: "Assigned To",
@@ -50,7 +52,8 @@ const IndentReport = () => {
       title: "Submitted Date",
       dataIndex: "submittedDate",
       key: "submittedDate_INDENTR",
-      filterable: true
+      filterable: true,
+      render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : "",
     },
     {
       title: "Pending Approval With",

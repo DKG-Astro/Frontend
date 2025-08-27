@@ -271,10 +271,43 @@ const QueueRequest = ({ workflowId, requestType }) => {
   const [workflowCounts, setWorkflowCounts] = useState({});
   const [materialHistoryVisible, setMaterialHistoryVisible] = useState(false);
   const [selectedMaterialCode, setSelectedMaterialCode] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+const [employees, setEmployees] = useState([]);
+const [selectedEmployee, setSelectedEmployee] = useState(null);
+const [loadingEmployees, setLoadingEmployees] = useState(false);
+const { Option } = Select;
+const handleAssign = (indentId) => {
+  if (!selectedEmployee) {
+    message.warning("Please select an employee");
+    return;
+  }
+
+  // Find the selected employee object by ID to get the name
+  const emp = employees.find(e => e.employeeId === selectedEmployee);
+
+  axios.post("/api/indents/assign-employee", {
+    indentId,
+    employeeId: selectedEmployee,
+    employeeName: emp ? emp.employeeName : ""   // pass employee name to backend
+  })
+  .then(() => {
+    message.success("Indent assigned successfully");
+    setSelectedEmployee(null);
+  })
+  .catch(() => {
+    message.error("Failed to assign indent");
+  });
+};
 
 
-
-
+const fetchEmployees = () => {
+  if (employees.length === 0) {
+    setLoadingEmployees(true);
+    axios.get("/api/employee-department-master/employeeName")
+      .then(res => setEmployees(res.data.responseData))
+      .finally(() => setLoadingEmployees(false));
+  }
+};
   // --- 2. Fetch the current user details from the UserMaster API ---
   //   useEffect(() => {
   //     const fetchCurrentUser = async () => {
@@ -1136,7 +1169,7 @@ const {userId} = useSelector(state => state.auth)
     //   ),
     // },
     ...(auth.role === "Purchase Head"
-    ? [
+    ?/* [
       {
         title: "Actions",
         key: "actions",
@@ -1154,6 +1187,52 @@ const {userId} = useSelector(state => state.auth)
           </Button>
         ),
       },
+    ]*/
+   [
+     {
+  title: "Actions",
+  key: "actions",
+  fixed: "right",
+  render: (_, record) => (
+    <Popover
+      content={
+        <div style={{ padding: 12, width: 300 }}>
+         <Select
+  placeholder={loadingEmployees ? "Loading employees..." : "Select an employee"}
+  value={selectedEmployee}                    // this holds employeeId
+  onChange={(value) => setSelectedEmployee(value)} // value will be employeeId
+  style={{ width: "100%", marginBottom: 8 }}
+  loading={loadingEmployees}
+  onFocus={fetchEmployees}
+>
+  {employees.map(emp => (
+    <Option key={emp.employeeId} value={emp.employeeId}>
+      {emp.employeeName}  {/* show employee name in dropdown */}
+    </Option>
+  ))}
+
+          </Select>
+          <Button
+            type="primary"
+            onClick={() => handleAssign(record.requestId)}
+            style={{ marginTop: 8 }}
+            disabled={!selectedEmployee}
+          >
+            Assign
+          </Button>
+        </div>
+      }
+      title="Assign Indent"
+      trigger="click"
+      onVisibleChange={(visible) => {
+        if (!visible) setSelectedEmployee(null); // reset when popover closes
+      }}
+    >
+      <Button type="link">Assign Indent</Button>
+    </Popover>
+  ),
+}
+
     ]
     : [
       {

@@ -479,6 +479,28 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
             shouldShow: () => searchDone,
           };
         }
+       
+
+
+        if (field.name === "gemContractFileName") {
+          return {
+            ...field,
+              shouldShow: () =>
+              formData.status === "Completed" &&
+              formData.tenderDetails?.modeOfProcurement === "GEM",
+          };
+      }
+        if (
+          field.name === "typeOfSecurity" ||
+          field.name === "securityNumber" ||
+          field.name === "securityDate" ||
+          field.name === "expiryDate"
+        ) {
+          return {
+            ...field,
+            shouldShow: () => formData.status === "Completed",
+          };
+        }
         return field;
       }),
     };
