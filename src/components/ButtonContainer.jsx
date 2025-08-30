@@ -1,10 +1,12 @@
-import { Button, message, Tooltip } from "antd";
-import React from "react";
+import { Button, message, Tooltip,   Input, Popover, } from "antd";
+
+import React, { useState } from "react";
 import {
   UndoOutlined,
   SaveOutlined,
   CloudDownloadOutlined,
   PrinterOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -17,8 +19,11 @@ const ButtonContainer = ({
   draftDataName,
   draftBtnEnabled,
   formData,
-  disabled
+  disabled,
+  showCancel,       // <-- New prop
+  onCancel
 }) => {
+  const [cancelRemarks, setCancelRemarks] = useState("");
   const navigate = useNavigate();
   const location = useLocation()
   const saveDraft = () => {
@@ -37,6 +42,14 @@ const ButtonContainer = ({
 
     message.success("The form has been reset, and any saved drafts have been cleared.")
   }
+   const handleCancelSubmit = () => {
+    if (!cancelRemarks.trim()) {
+      message.warning("Please enter remarks to cancel the indent.");
+      return;
+    }
+    onCancel(cancelRemarks);
+    setCancelRemarks(""); // Reset textarea after submit
+  };
 
   return (
     <div className="grid md:grid-cols-4 gap-2">
@@ -99,6 +112,35 @@ const ButtonContainer = ({
           Print
         </Button>
       </Tooltip>
+     
+      {showCancel && onCancel && (
+        <Popover
+          content={
+            <div style={{ padding: 12 }}>
+              <Input.TextArea
+                placeholder="Enter remarks for cancellation"
+                rows={3}
+                value={cancelRemarks}
+                onChange={(e) => setCancelRemarks(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={handleCancelSubmit}
+                style={{ marginTop: 8 }}
+              >
+                Submit
+              </Button>
+            </div>
+          }
+          title="Cancel Indent"
+          trigger="click"
+        >
+          <Button danger type="default" icon={<CloseOutlined />}>
+            Cancel
+          </Button>
+        </Popover>
+      )}
+  
     </div>
   );
 };

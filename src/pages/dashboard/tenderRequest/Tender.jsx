@@ -811,7 +811,33 @@ const Tender = () => {
       ]
     }
   ];
-  
+  const handleCancel = async (remarks) => {
+  try {
+    const payload = {
+      tenderId: formData.tenderId,
+      cancelStatus: true,
+      cancelRemarks: remarks,
+      actionBy: userId,
+    };
+
+    const response = await axios.put("/api/tender-requests/tender/cancel", payload);
+
+    // Use responseData field from backend
+    message.success(response.data.responseData);
+
+    // Reset form
+    setFormData({});
+    setSearchDone(false);
+    
+  } catch (error) {
+    console.error(error);
+    message.error(
+      error.response?.data?.responseData || "Failed to cancel the Tender. Please try again."
+    );
+  }
+};
+
+
  
 
 
@@ -845,6 +871,8 @@ const Tender = () => {
           printBtnEnabled
           draftBtnEnabled
           handlePrint={handlePrint}
+          showCancel={searchDone}        // <-- show only if search is done
+          onCancel={handleCancel} 
         />
       </CustomForm>
 

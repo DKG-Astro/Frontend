@@ -862,12 +862,24 @@ const fetchEmployees = () => {
         )}`
       );*/
        const isPurchaseHead = roleName === "Purchase Head";
-    
+   /* 
     const response = await axios.get(
       isPurchaseHead
         ? `/completedIndentWorkflowTransition?roleName=${encodeURIComponent(roleName)}`
         : `/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(roleName)}`
+    );*/
+    let responseData = [];
+if (isPurchaseHead && requestType === "C") {
+    const cancelResponse = await axios.get("/allCancledIndents");
+    responseData = cancelResponse.data.responseData;
+} else {
+    const response = await axios.get(
+        isPurchaseHead
+            ? `/completedIndentWorkflowTransition?roleName=${encodeURIComponent(roleName)}`
+            : `/pendingWorkflowTransitionQueue?roleName=${encodeURIComponent(roleName)}`
     );
+    responseData = response.data.responseData;
+}
 
 
       //   const apiData = response.data.responseData;
@@ -880,7 +892,8 @@ const fetchEmployees = () => {
       //     status: item.nextAction,
       //     remarks: item.remarks || "No remarks",
       //   }));
-      const formattedData = response.data.responseData
+    //  const formattedData = response.data.responseData
+    const formattedData =responseData
         .map((item) => ({
           key: item.requestId,
           requestId: item.requestId,
@@ -888,6 +901,8 @@ const fetchEmployees = () => {
           workflowName: item.workflowName,
           createdDate: new Date(item.createdDate),
           remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
+          status: item.status,
+          action: item.action,
           // Correct field mappings based on workflowId
           ...(item.workflowId === 1 && {
             // Indent
@@ -897,6 +912,8 @@ const fetchEmployees = () => {
             budgetName: item.budgetName,
             modeOfProcurement: item.modeOfProcurement,
             consignee: item.consignee,
+            status: item.status,
+            action:item.action,
           }),
           ...(item.workflowId === 2 && {
             // Contingency Purchase
@@ -953,7 +970,14 @@ const fetchEmployees = () => {
        filteredData = formattedData.filter(
       item => item.workflowId === 4 || item.workflowId === 7
       )
+     }  else if(requestType === "C"){
+       filteredData = formattedData.filter(
+      item => item.action === "Indentor Cancelled" 
+      )
      }
+  
+
+
 
      setData(filteredData);
     const workflowCounts = {};
@@ -1148,8 +1172,15 @@ const {userId} = useSelector(state => state.auth)
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
-        const finalStatus = auth.role === "Purchase Head" ? "Completed" : status;
+      render: (status, record,action) => {
+        //const finalStatus = auth.role === "Purchase Head" ? "Completed" : status;
+      let finalStatus = status;
+
+         if (auth.role === "Purchase Head") {
+      // If Purchase Head and indentor cancelled, show that
+       finalStatus = record.action === "Indentor Cancelled" ? "Indentor Cancelled" : "Completed";
+   }
+
         return (
           <Tag color={finalStatus === "Approved" || finalStatus === "Completed" ? "green" : "volcano"}>
             {finalStatus}
@@ -1189,11 +1220,12 @@ const {userId} = useSelector(state => state.auth)
       },
     ]*/
    [
-     {
+   /*  {
   title: "Actions",
   key: "actions",
   fixed: "right",
   render: (_, record) => (
+    
     <Popover
       content={
         <div style={{ padding: 12, width: 300 }}>
@@ -1207,7 +1239,7 @@ const {userId} = useSelector(state => state.auth)
 >
   {employees.map(emp => (
     <Option key={emp.employeeId} value={emp.employeeId}>
-      {emp.employeeName}  {/* show employee name in dropdown */}
+      {emp.employeeName}  
     </Option>
   ))}
 
@@ -1231,7 +1263,84 @@ const {userId} = useSelector(state => state.auth)
       <Button type="link">Assign Indent</Button>
     </Popover>
   ),
+}*/
+{
+  title: "Actions",
+  key: "actions",
+  fixed: "right",
+  render: (_, record) => {
+    // If the status is Indentor Cancelled, show Reject button
+    if (record.action === "Indentor Cancelled") {
+      return (
+       <Popover
+                content={
+                  <div style={{ padding: 12 }}>
+                    <Input.TextArea
+                      placeholder="Reject Comments"
+                      rows={3}
+                      value={rejectComment}
+                      onChange={(e) => setRejectComment(e.target.value)}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => handleReject(record)}
+                      style={{ marginTop: 8 }}
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                }
+                title="Reject"
+                trigger="click"
+              >
+                <Button danger type="link">
+                  Reject
+                </Button>
+              </Popover>
+      );
+    }
+
+    // Otherwise show the normal Assign Indent popover
+    return (
+      <Popover
+        content={
+          <div style={{ padding: 12, width: 300 }}>
+            <Select
+              placeholder={loadingEmployees ? "Loading employees..." : "Select an employee"}
+              value={selectedEmployee}
+              onChange={(value) => setSelectedEmployee(value)}
+              style={{ width: "100%", marginBottom: 8 }}
+              loading={loadingEmployees}
+              onFocus={fetchEmployees}
+            >
+              {employees.map(emp => (
+                <Option key={emp.employeeId} value={emp.employeeId}>
+                  {emp.employeeName}
+                </Option>
+              ))}
+            </Select>
+            <Button
+              type="primary"
+              onClick={() => handleAssign(record.requestId)}
+              style={{ marginTop: 8 }}
+              disabled={!selectedEmployee}
+            >
+              Assign
+            </Button>
+          </div>
+        }
+        title="Assign Indent"
+        trigger="click"
+        onVisibleChange={(visible) => {
+          if (!visible) setSelectedEmployee(null); // reset when popover closes
+        }}
+      >
+        <Button type="link">Assign Indent</Button>
+      </Popover>
+    );
+  },
 }
+
 
     ]
     : [

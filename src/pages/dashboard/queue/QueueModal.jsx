@@ -201,6 +201,20 @@ const QueueModal = ({
                     </Col>
                   </Row>
                 </div>
+              )} {detailsData.cancelStatus && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <CalendarOutlined /> Cancel Indent
+                  </Typography.Title>
+                  <Row gutter={24}>
+                   
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Cancel Remarks:</strong> {detailsData.cancelRemarks}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
               )}
 
               <div className="detail-section">

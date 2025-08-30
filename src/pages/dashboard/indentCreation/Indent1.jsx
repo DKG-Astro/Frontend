@@ -77,6 +77,35 @@ const Indent1 = () => {
    /* const handlePrint = useReactToPrint({
         content: () => printRef.current,
     });*/
+    const handleCancel = async (remarks) => {
+  try {
+    const payload = {
+      indentId: formData.indentId,
+      cancelStatus: true,  
+      cancelRemarks: remarks
+    };
+
+    await axios.put("/api/indents/indent/cancel", payload);
+
+    message.success("Indent cancelled successfully.");
+
+    // Reset form
+    setFormData({
+      indentorName: userName,
+      indentorMobileNo: mobileNumber,
+      indentorEmailAddress: email,
+      projectName: "",
+      consignesLocation: "",
+      materialDetails: [{}]
+    });
+    setSearchDone(false);
+    setIndentIdDropdown([]);
+  } catch (error) {
+    console.error(error);
+    message.error("Failed to cancel the indent. Please try again.");
+  }
+};
+
     
     const [formData, setFormData] = useState({
         indentorName: userName,
@@ -889,7 +918,10 @@ const Indent1 = () => {
                     printBtnEnabled
                     draftBtnEnabled
                     handlePrint={handlePrint}
+                    showCancel={searchDone}        // <-- show only if search is done
+                    onCancel={handleCancel} 
                 />
+               
                
             </CustomForm>
             <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Indent" processNo={formData?.indentId} />
