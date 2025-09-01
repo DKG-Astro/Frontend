@@ -497,6 +497,11 @@ const Indent1 = () => {
                     label: "Date Of Purchase",
                     type: "date",
                     required: true,
+                },{
+                    name: "buyBackAmount",
+                    label: "Buy Back Amount",
+                    type: "text",
+                    required: true,
                 }
             ] : []),
                 {

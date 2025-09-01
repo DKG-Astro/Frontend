@@ -10,6 +10,7 @@ import ButtonContainer from "../../../components/ButtonContainer";
 import CustomModal from "../../../components/CustomModal";
 import { PoDetails } from "./InputFields";
 import { useLocation } from "react-router-dom";
+import PoFormat from "../../../utils/Po-Format";
 
 const PO = () => {
   const printRef = useRef();
@@ -527,9 +528,14 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
   }, [formData]);
 
   // --- Printing Function ---
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-  });
+
+
+   const printComponentRef = useRef(); 
+
+    const handlePrint = useReactToPrint({
+        content: () => printComponentRef.current,
+        documentTitle: `Po - ${formData?.poId || "Draft"}`
+    });
 
   return (
     <Card className="a4-container" ref={printRef}>
@@ -563,6 +569,9 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
         title="Purchase Order"
         processNo={generatedPOId}
       />
+       <div style={{ display: "none" }}>
+                <PoFormat ref={printComponentRef} po={formData} />
+      </div>
     </Card>
   );
 };

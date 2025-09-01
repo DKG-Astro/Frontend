@@ -669,8 +669,20 @@ const fetchEmployees = () => {
       setWorkflowCounts(updatedCounts);
 
     } catch (error) {
-      message.error("Failed to reject");
-      console.error("Rejection error:", error);
+     // message.error("Failed to reject");
+     // console.error("Rejection error:", error);
+    let backendMessage = "Failed to reject";
+
+  if (error.response?.data?.responseStatus?.message) {
+    backendMessage = error.response.data.responseStatus.message;
+  } else if (error.response?.data?.message) {
+    backendMessage = error.response.data.message;
+  } else if (error.message) {
+    backendMessage = error.message;
+  }
+
+  message.error(backendMessage);
+  console.error("Rejection error:", error);
     }
   };
 

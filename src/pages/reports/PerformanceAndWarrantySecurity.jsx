@@ -17,6 +17,8 @@ const PerformanceAndWarrantySecurity = () => {
     { title: 'Security Number', dataIndex: 'securityNumber', key: 'securityNumber_po', filterable: true },
     { title: 'Security Date', dataIndex: 'securityDate', key: 'securityDate_po', filterable: true,render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : "", },
     { title: 'Expiry Date', dataIndex: 'expiryDate', key: 'expiryDate_po', filterable: true,render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : "", },
+    { title: 'Security Amount', dataIndex: 'securityAmount', key: 'securityAmount_po', filterable: true },
+    
   ];
 
 

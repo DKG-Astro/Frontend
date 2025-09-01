@@ -1,9 +1,12 @@
 import countryList from "react-select-country-list";
 
-const countryOptions = countryList().getData().map(c => ({
-  label: c.label,
-  value: c.label
-}));
+const countryOptions = [
+  { label: "Austria", value: "Austria" },
+  { label: "Australia", value: "Australia" },
+  { label: "ARGENTINA", value: "ARGENTINA" },
+  { label: "BELGIUM", value: "BELGIUM" }
+];
+
 
 
 const typeOfSecurityOptions = [
@@ -83,12 +86,19 @@ export const PoDetails = [
           required: true,
           span: 2
         },
-      /*  {
-            name: "deliveryPeriod",
-            label: "Delivery Period",
-            type: "text",
-            required: true
-        }*/{
+       {
+        name: "deliveryPeriod",
+        label: "Delivery Period",
+        type: "select",
+        span: 2,
+        options: [
+          ...Array.from({ length: 20 }, (_, i) => ({
+          label: `${i + 1} ${i + 1 === 1 ? "Week" : "Weeks"}`, // pluralize
+          value: String(i + 1),
+        })),
+      ],
+      },
+        {
           name:"deliveryDate",
           label:"Delivery Date",
           type:"date",
@@ -214,6 +224,28 @@ export const PoDetails = [
           { label: "NA", value: "NA" },
           ],
         },
+         {
+          name: "quotationNumber",
+          label: "Quotation Number",
+          type: "text",
+          required: true,
+         // options: [],
+        }, 
+         {
+          name: "quotationDate",
+          label: "Quotation Date",
+          type: "date",
+          required: true,
+         // options: [],
+        }, 
+         {
+          name: "additionalTermsAndConditions",
+          label: "Additional Terms And Conditions(ATC)",
+          type: "text",
+         // required: true,
+         // options: [],
+        }, 
+
         {
             name: "transporterAndFreightForWarderDetails",
             label: "Freight Forwarder",

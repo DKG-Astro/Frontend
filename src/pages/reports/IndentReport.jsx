@@ -1,6 +1,7 @@
 import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 import dayjs from "dayjs";
+import { baseURL } from '../../App';
 
 const IndentReport = () => {
   const api = "/api/reports/indent"
@@ -157,6 +158,31 @@ const IndentReport = () => {
       key: "reasonForShortClosure_INDENTR",
       filterable: true
     },
+    {
+  title: "GEM Contract",
+  dataIndex: "gemContractFileName",
+  key: "gemContractFileName_INDENTR",
+  filterable: true,
+  render: (text) =>
+    text
+      ? text
+          .split(",")
+          .map((fileName, index) => (
+            <div key={index}>
+              <a
+                href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View
+              </a>
+              {index <
+                text.split(",").length - 1 && ", "}
+            </div>
+          ))
+      : "N/A"
+}
+
   ];
   
   
