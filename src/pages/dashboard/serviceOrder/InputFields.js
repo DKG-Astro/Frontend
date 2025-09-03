@@ -37,6 +37,18 @@ export const SoDetails = [
             label: "Job Completion Period",
             type: "text",
             required: true
+        },
+         {
+          name:"startDateAmc",
+          label:"Start Date Of AMC",
+          type:"date",
+          required:true
+        },
+         {
+          name:"endDateAmc",
+          label:"End Date Of AMC",
+          type:"date",
+          required:true
         }
       ]
     },

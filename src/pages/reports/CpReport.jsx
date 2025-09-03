@@ -1,9 +1,26 @@
 import React from 'react'
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useState,useEffect } from 'react';
+//const CpReport = () => {
+const CpReport = ({ onChartData }) => {
+     const [data, setData] = useState([]);
+     const api = "/api/reports/cp/report"
+const handleFetch = (startDate, endDate, reportData) => {
+  const finalData = reportData || [];
+  setData(finalData);
 
-const CpReport = () => {
-  const api = "/api/reports/cp/report"
+  // Generate chart data
+  const chartData = finalData.map(cp => ({
+    name: cp.vendorName || "Unknown",
+    value: cp.cpMaterials.reduce((sum, m) => sum + (m.totalPrice || 0), 0)
+  }));
+
+  // Send chart data to dashboard
+  if (onChartData) onChartData(chartData);
+};
+
+  
     const columns = [
     {
       title: 'Contingency ID',
@@ -148,7 +165,7 @@ const CpReport = () => {
     }
   ];
   
-  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" filterType="date" storageKey="CP_REPORT_COLUMNS"/>
+  return <CustomReport showFilter api={api} columns={columns} title="Contingency Purchase Report" filterType="date" storageKey="CP_REPORT_COLUMNS" onFetch={handleFetch}/>
 }
 
 export default CpReport

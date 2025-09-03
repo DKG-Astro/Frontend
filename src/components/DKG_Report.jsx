@@ -92,7 +92,7 @@ const CustomReport = ({api, columns, title, showFilter}) => {
 
 export default CustomReport*/
 
-const CustomReport = ({ api, columns, title, filterType = "date" }) => {
+const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
   const { token } = useSelector((state) => state.auth);
   const [form] = Form.useForm();
 
@@ -130,7 +130,16 @@ const CustomReport = ({ api, columns, title, filterType = "date" }) => {
       }
 
       const { data } = await apiCall('GET', newApi, token);
+       const fetchedData = data?.responseData || [];
       setDataSource(data?.responseData);
+
+       if (onFetch) {
+        if (filterType === "date") {
+          onFetch(filter.startDate, filter.endDate, fetchedData);
+        } else {
+          onFetch(fetchedData);
+        }
+      }
     } catch (error) {
       message.error("Error fetching data.");
     }

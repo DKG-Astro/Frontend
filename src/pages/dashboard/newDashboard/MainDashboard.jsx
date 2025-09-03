@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+/*import React, { useState, useEffect, useMemo } from "react";
 import TableComponent from "../../../components/DKG_Table";
 import { FileTextOutlined, FileDoneOutlined, FileSearchOutlined } from '@ant-design/icons';
 
@@ -292,8 +292,8 @@ const MainDashboard = () => {
       >
         <span className="dashboard-tab-icon text-white">{item.icon}</span>
         <div className="flex flex-col items-center justify-center gap-1 col-span-2">
-          {/* You can replace this hard-coded number with a dynamic value if needed */}
-          <h3 className="font-semibold !text-2xl text-white text-left w-full">
+          {/* You can replace this hard-coded number with a dynamic value if needed */
+         /* <h3 className="font-semibold !text-2xl text-white text-left w-full">
             54
           </h3>
           <div className="w-full text-white text-left">{item.title}</div>
@@ -308,11 +308,88 @@ const MainDashboard = () => {
         {renderTiles()}
       </section>
       <section>
-        {/* Pass the filteredColumns to your TableComponent */}
-        <TableComponent dataSource={tableData} columns={filteredColumns} />
+        {/* Pass the filteredColumns to your TableComponent */
+      /*  <TableComponent dataSource={tableData} columns={filteredColumns} />
       </section>
     </div>
   );
 };
 
+export default MainDashboard;*/
+import React, { useState } from "react";
+import { FileTextOutlined, BarChartOutlined, SolutionOutlined } from '@ant-design/icons';
+import CpReport from '../../reports/CpReport';
+import IndentReport from '../../reports/IndentReport';
+import PoList from '../../reports/PoList';
+import SoList from '../../reports/SoList';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+
+const MainDashboard = () => {
+  const [activeTab, setActiveTab] = useState(1);
+  const [chartDataMap, setChartDataMap] = useState({}); // Store chart data per report
+
+  // Callback to update chart data dynamically
+  const handleChartData = (id, data) => {
+    setChartDataMap(prev => ({ ...prev, [id]: data }));
+  };
+
+  // Only store component class/functions, not JSX
+  const tiles = [
+    { id: 1, title: "Contingency Purchase Report", icon: <FileTextOutlined />, component: CpReport },
+    { id: 2, title: "Indent Report", icon: <BarChartOutlined />, component: IndentReport },
+    { id: 6, title: "PO List", icon: <SolutionOutlined />, component: PoList },
+    { id: 8, title: "SO List", icon: <SolutionOutlined />, component: SoList },
+    // Add other reports similarly
+  ];
+
+  const activeTile = tiles.find(tile => tile.id === activeTab);
+  const activeChartData = chartDataMap[activeTab] || []; // Get chart data for active tab
+
+  return (
+    <div className="px-4 flex flex-col gap-6">
+      <h1 className="font-semibold !text-3xl text-center">Dashboard</h1>
+
+      {/* Tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {tiles.map(tile => (
+          <div
+            key={tile.id}
+            className={`flex gap-2 bg-gray-200 border-darkBlue rounded-md h-24 items-center p-4 cursor-pointer ${
+              activeTab === tile.id ? "border-b-2 border-pink scale-105" : ""
+            }`}
+            onClick={() => setActiveTab(tile.id)}
+          >
+            <div className="dashboard-tab-icon">{tile.icon}</div>
+            <div className="flex-1 text-right !text-md font-semibold">{tile.title}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bar Chart */}
+      {activeTile && activeChartData.length > 0 && (
+        <div className="mt-6" style={{ height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={activeChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Report Table Component */}
+      <div className="mt-6">
+        {activeTile && React.createElement(activeTile.component, {
+          onChartData: (data) => handleChartData(activeTile.id, data)
+        })}
+      </div>
+    </div>
+  );
+};
+
 export default MainDashboard;
+
+

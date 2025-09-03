@@ -1306,7 +1306,7 @@ const {userId} = useSelector(state => state.auth)
                 trigger="click"
               >
                 <Button danger type="link">
-                  Reject
+                 Cancel
                 </Button>
               </Popover>
       );
