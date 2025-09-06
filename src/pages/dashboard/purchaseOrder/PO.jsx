@@ -491,6 +491,13 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
               formData.tenderDetails?.modeOfProcurement === "GEM",
           };
       }
+     if (field.name === "buyBackAmount") {
+  return {
+    ...field,
+    shouldShow: () => formData?.indentResponseDTO?.buyBack === "true"
+  };
+}
+
         if (
           field.name === "typeOfSecurity" ||
           field.name === "securityNumber" ||

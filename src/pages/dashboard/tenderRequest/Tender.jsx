@@ -15,6 +15,22 @@ import { useLocation } from "react-router-dom";
 import TenderPrintFormat from "../../../utils/TenderPrintFormat";
 
 const { Option } = Select;
+const incoOptions = [
+  { label: "DAP", value: "DAP" },
+  { label: "EXWORKS", value: "EXWORKS" },
+  { label: "DDP", value: "DDP" },
+  { label: "FCA", value: "FCA" },
+  { label: "FOB", value: "FOB" },
+  { label: "CIF", value: "CIF" },
+  { label: "CIP", value: "CIP" },
+  { label: "DPU", value: "DPU" },
+  { label: "FAS", value: "FAS" },
+  { label: "CFR", value: "CFR" },
+  { label: "FOR", value: "FOR" },
+  { label: "CPT", value: "CPT" },
+  { label: "NA", value: "NA" }
+];
+
 
 const Tender = () => {
   const printRef = useRef();
@@ -712,7 +728,9 @@ const Tender = () => {
         {
           name: "incoTerms",
           label: "INCO Terms",
-          type: "text",
+         // type: "text",
+         type:"select",
+         options:incoOptions,
           required: true,
           span: 1
         },

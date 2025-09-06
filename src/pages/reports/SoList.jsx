@@ -1,8 +1,9 @@
-import React from 'react';
+import React ,{useState,useEffect } from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 
-const SoList = () => {
+const SoList =  ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const [reportData, setReportData] = useState([]);
   const columns = [
     {
     title: 'Approved Date',
@@ -120,9 +121,40 @@ const SoList = () => {
 
   const api = "/api/reports/soList-report";
 
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
+
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="So List" filterType="date" storageKey="SOLIST_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="So List" filterType="date" storageKey="SOLIST_REPORT_COLUMNS" onFetch={handleFetch}/>
     </div>
   );
 };

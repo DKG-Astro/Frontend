@@ -1,8 +1,10 @@
 import React from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useEffect,useState } from 'react';
 
-const PoList = () => {
+const PoList = ({ onChartData, selectedBarKey, selectedPieKey}) => {
+const [reportData, setReportData] = useState([]);
   const columns = [
     {
     title: 'Approved Date',
@@ -124,10 +126,43 @@ const PoList = () => {
   ];
 
   const api = "/api/reports/poList-report";
+ const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData); // store for later
+    generateChart(finalData);
+  };
+
+  // 2️⃣ chart generator
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  // 3️⃣ useEffect: regenerate chart when selected keys change
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
+
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Po List" filterType="date" storageKey="POLIST_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="Po List" filterType="date" storageKey="POLIST_REPORT_COLUMNS"  onFetch={handleFetch}/>
     </div>
   );
 };

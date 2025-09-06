@@ -3,7 +3,8 @@ import CustomReport from '../../components/DKG_Report';
 import dayjs from "dayjs";
 
 
-const PerformanceAndWarrantySecurity = () => {
+const PerformanceAndWarrantySecurity = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const [reportData, setReportData] = useState([]);
 
   
   const columns = [
@@ -20,13 +21,43 @@ const PerformanceAndWarrantySecurity = () => {
     { title: 'Security Amount', dataIndex: 'securityAmount', key: 'securityAmount_po', filterable: true },
     
   ];
+ const api="/api/reports/performanceSecurityReport"
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
 
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.totalValueOfPo || 0);
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.totalValueOfPo || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
 
   return (
     <div>
       <CustomReport
         columns={columns}
-        api="/api/reports/performanceSecurityReport"
+        api
         title="PerformanceAndWarrantySecurity"
         filterType="date"
         storageKey="PerformanceAndWarrantySecurity_REPORT_COLUMNS"

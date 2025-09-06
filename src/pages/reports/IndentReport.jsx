@@ -3,8 +3,34 @@ import CustomReport from '../../components/DKG_Report';
 import dayjs from "dayjs";
 import { baseURL } from '../../App';
 
-const IndentReport = () => {
+const IndentReport =({ onChartData }) => {
+
   const api = "/api/reports/indent"
+  
+  const handleFetch = (startDate, endDate, reportData) => {
+    const finalData = reportData || [];
+
+    // Bar Chart: Vendor vs Value of Indent
+    const barData = finalData.map(item => ({
+      name: item.vendorName || "Unknown",
+      value: item.valueOfIndent || 0
+    }));
+
+    // Pie Chart: Project vs Value of Indent
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const project = item.project || "No Project";
+      acc[project] = (acc[project] || 0) + (item.valueOfIndent || 0);
+      return acc;
+    }, {});
+
+    const pieData = Object.keys(pieDataMap).map(project => ({
+      name: project,
+      value: pieDataMap[project]
+    }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
   const columns = [
     {
       title: "Indent ID",
@@ -186,7 +212,7 @@ const IndentReport = () => {
   ];
   
   
-  return <CustomReport showFilter api={api} columns={columns} title="Indent Report" filterType="date" storageKey="INDENTREPORT_REPORT_COLUMNS"/>
+  return <CustomReport showFilter api={api} columns={columns} title="Indent Report" filterType="date" storageKey="INDENTREPORT_REPORT_COLUMNS"  onFetch={handleFetch}/>
 }
 
 export default IndentReport

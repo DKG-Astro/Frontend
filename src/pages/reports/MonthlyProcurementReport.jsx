@@ -1,8 +1,10 @@
-import React from 'react';
+import React , {useState,useEffect} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 
-const MonthlyProcurementReport = () => {
+const MonthlyProcurementReport = ({ selectedBarKey, selectedPieKey, onChartData }) => {
+  const [reportData, setReportData] = useState([]);
+
  const columns = [
   {
     title: 'Month',
@@ -52,9 +54,40 @@ const MonthlyProcurementReport = () => {
 
   const api = "/api/reports/MonthlyProcurementReport";
 
+   const generateChart = (data) => {
+    const barDataMap = data.reduce((acc, item) => {
+      const key = item[selectedBarKey] || 'Unknown';
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const pieDataMap = data.reduce((acc, item) => {
+      const key = item[selectedPieKey] || 'Unknown';
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  // Handle fetched data
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  // Regenerate charts if selected keys change
+  useEffect(() => {
+    if (reportData.length > 0) generateChart(reportData);
+  }, [selectedBarKey, selectedPieKey]);
+
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Monthly Procurement Report" filterType="date" storageKey="MONTHLYPROC_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="Monthly Procurement Report" filterType="date" storageKey="MONTHLYPROC_REPORT_COLUMNS"  onFetch={handleFetch}/>
     </div>
   );
 };

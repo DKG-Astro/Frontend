@@ -316,34 +316,259 @@ const MainDashboard = () => {
 };
 
 export default MainDashboard;*/
-import React, { useState } from "react";
-import { FileTextOutlined, BarChartOutlined, SolutionOutlined } from '@ant-design/icons';
+import React, { useState ,useEffect} from "react";
+import { FileTextOutlined, BarChartOutlined, SolutionOutlined,PieChartOutlined  } from '@ant-design/icons';
 import CpReport from '../../reports/CpReport';
 import IndentReport from '../../reports/IndentReport';
 import PoList from '../../reports/PoList';
 import SoList from '../../reports/SoList';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import PoStatus from "../../reports/PoStatus";
+import TechnoMom from "../../reports/TechnoMom";
+import VendorContract from "../../reports/VendorContractReport";
+import SoStatus from "../../reports/SoStatus";
+import IndentList from "../../reports/IndentList";
+import QuarterlyVigilanceSoReport from "../../reports/QuarterlyVigilanceSoReport";
+import ShortClosedCancelledOrderReport from "../../reports/ShortClosedCancelledOrderReport";
+import MonthlyProcurementReport from "../../reports/MonthlyProcurementReport";
+import PerformanceAndWarrantySecurity from "../../reports/PerformanceAndWarrantySecurity";
+import IndentStatus from "../../reports/IndentStatus";
+import { useSelector } from "react-redux";  
+import PendingRecordsReport from "../../reports/pendingRecords";
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [chartDataMap, setChartDataMap] = useState({}); // Store chart data per report
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  const [selectedBarKey, setSelectedBarKey] = useState("vendorName"); // NEW: default bar attribute
+  const [selectedPieKey, setSelectedPieKey] = useState("project");
+  const auth = useSelector((state) => state.auth);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const roleName = auth.role; 
+  useEffect(() => {
+  if (roleName) {
+     fetch(`http://localhost:8081/astro-service/allPendingRecords?roleName=${encodeURIComponent(roleName)}`) 
+      .then(res => res.json())
+      .then(data => setPendingCount(data.responseData.length))
+      .catch(err => console.error(err));
+  }
+}, [roleName]);
+
 
   // Callback to update chart data dynamically
-  const handleChartData = (id, data) => {
-    setChartDataMap(prev => ({ ...prev, [id]: data }));
-  };
+const handleChartData = (id, barData, pieData) => {
+  setChartDataMap(prev => ({
+    ...prev,
+    [id]: { chart1: barData, chart2: pieData }
+  }));
+};
 
   // Only store component class/functions, not JSX
   const tiles = [
-    { id: 1, title: "Contingency Purchase Report", icon: <FileTextOutlined />, component: CpReport },
+      { id: 1, title: `Pending Total Records: ${pendingCount}`, icon: <BarChartOutlined />, component: PendingRecordsReport, attributes:["status"],  roles:[roleName]},
+    { id: 19, title: "Contingency Purchase Report", icon: <FileTextOutlined />, component: CpReport, attributes: [ "approvedDate",
+  "poId",
+  "vendorName",
+  "value",
+  "tenderId",
+  "project",
+  "vendorId",
+  "indentIds",
+  "modeOfProcurement"], roles: [
+      "CP Creator",
+      "Store Personnel",
+      "Reporting Officer",
+      "Project Head",
+      "Billing Section Personnel",
+      "Accounts Officer",
+      "Administrative Officer",
+      "Store Purchase Officer", "Purchase personnel",
+    ] },
     { id: 2, title: "Indent Report", icon: <BarChartOutlined />, component: IndentReport },
-    { id: 6, title: "PO List", icon: <SolutionOutlined />, component: PoList },
-    { id: 8, title: "SO List", icon: <SolutionOutlined />, component: SoList },
+    {
+  id: 3,
+  title: "Techno MOM Report",
+  icon: <PieChartOutlined />,
+  component: TechnoMom, // your component
+  attributes: [
+    "date",
+    "uploadedTechnoCommercialMoMReports",
+    "poWoNumber",
+    "value",
+  ], roles:["Store Purchase Officer", "Purchase personnel"],
+},
+    { id: 6, title: "PO List", icon: <SolutionOutlined />, component: PoList, attributes: [ "approvedDate",
+  "poId",
+  "vendorName",
+  "value",
+  "tenderId",
+  "project",
+  "vendorId",
+  "indentIds",
+  "modeOfProcurement"], roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", , "Store Person"] },
+    { id: 7, title: "PO Status", icon: <SolutionOutlined />, component: PoStatus, attributes: [  "poId",
+    "tenderId",
+    "indentIds",
+    "vendorName",
+    "value",
+    "submittedDate",
+    "pendingWith",
+    "pendingFrom",
+    "status",
+    "asOnDate",
+] ,roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", "Store Person"] },
+{
+  id: 4,
+  title: "Vendor Contract Report",
+  icon: <FileTextOutlined />,
+  component: VendorContract,   // use the component, not path
+  attributes: [
+    "orderId",
+    "modeOfProcurement",
+    "underAmc",
+    "amcExpiryDate",
+    "amcFor",
+    "endUser",
+    "noOfParticipants",
+    "value",
+    "location",
+    "vendorName",
+    "previouslyRenewedAmcs",
+    "categoryOfSecurity",
+    "validityOfSecurity"
+  ], roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
+},
+
+    { id: 8, title: "SO List", icon: <SolutionOutlined />, component: SoList , roles:["SO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person"]
+},
+    {
+  id: 9,
+  title: "SO Status",
+  icon: <BarChartOutlined />,
+  component: SoStatus,
+  attributes: [
+    "soId",
+    "tenderId",
+    "indentIds",
+    "vendorName",
+    "value",
+    "submittedDate",
+    "pendingWith",
+    "pendingFrom",
+    "status",
+    "asOnDate"
+  ], roles:["SO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person"]
+},{
+  id: 10,
+  title: "Indent List",
+  icon: <SolutionOutlined />,
+  component: IndentList,
+  attributes: [
+    "indentId",
+    "indentorName",
+    "indentorMobileNo",
+    "indentorEmailAddress",
+    "consignesLocation",
+    "projectName",
+    "submittedDate",
+    "pendingWith",
+    "pendingFrom",
+    "status",
+    "asOnDate",
+    "createdBy",
+  ], roles:["Indent Creator", "Reporting Officer", "Administrative Officer", "Field Station In Charge", "Computer Committee Chairman", "Dean", "Head SEG","Director", "Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+  id: 11,
+  title: "Quarterly Vigilance Report",
+  icon: <SolutionOutlined />,
+  component: QuarterlyVigilanceSoReport,
+  attributes: [
+    "orderNo",
+    "orderDate",
+    "value",
+    "vendorName",
+    "location",
+    "deliveryDate"
+  ] , roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+  id: 12,
+  title: "Short Closed Cancelled Order",
+  icon: <SolutionOutlined />,
+  component: ShortClosedCancelledOrderReport,
+  attributes: [
+    "poId",
+    "tenderId",
+    "indentIds",
+    "value",
+    "vendorName",
+    "submittedDate",
+    "reason",
+    "materials"
+  ],roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+  id: 13,
+  title: "Monthly Procurement Report",
+  icon: <SolutionOutlined />,
+  component: MonthlyProcurementReport,
+  attributes: [
+    "month",
+    "poNumber",
+    "modeOfProcurement",
+    "date",
+    "indentIds",
+    "value",
+    "vendorName"
+  ],roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+    id: 15,
+    title: "Performance & Warranty Security",
+    icon: <SolutionOutlined />,
+    component: PerformanceAndWarrantySecurity,
+    attributes: [
+        "poId",
+        "createdDate",
+        "modeOfProcurement",
+        "vendorName",
+        "titleOfTender",
+        "totalValueOfPo",
+        "typeOfSecurity",
+        "securityNumber",
+        "securityDate",
+        "expiryDate",
+        "securityAmount"
+    ],roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+  id: 16,
+  title: "Indent Status",
+  icon: <SolutionOutlined />,
+  component: IndentStatus,
+  attributes: [
+    "requestId",
+    "createdBy",
+    "modifiedBy",
+    "status",
+    "nextAction",
+    "action",
+    "currentRole",
+    "nextRole",
+    "remarks",
+    "modificationDate",
+    "createdDate"
+  ],roles:["Indent Creator", "Reporting Officer", "Administrative Officer", "Field Station In Charge", "Computer Committee Chairman", "Dean", "Head SEG","Director", "Store Purchase Officer", "Purchase personnel","Store Person"]
+},
+
     // Add other reports similarly
   ];
 
   const activeTile = tiles.find(tile => tile.id === activeTab);
-  const activeChartData = chartDataMap[activeTab] || []; // Get chart data for active tab
+//  const activeChartData = chartDataMap[activeTab] || []; // Get chart data for active tab
+const activeChartData = chartDataMap[activeTab] || { chart1: [], chart2: [] };
+
+const visibleTiles = tiles.filter(tile =>
+  tile.roles?.includes(roleName) // only show tiles that allow the user role
+);
+
 
   return (
     <div className="px-4 flex flex-col gap-6">
@@ -351,7 +576,7 @@ const MainDashboard = () => {
 
       {/* Tiles */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {tiles.map(tile => (
+        {visibleTiles.map(tile => (
           <div
             key={tile.id}
             className={`flex gap-2 bg-gray-200 border-darkBlue rounded-md h-24 items-center p-4 cursor-pointer ${
@@ -363,27 +588,80 @@ const MainDashboard = () => {
             <div className="flex-1 text-right !text-md font-semibold">{tile.title}</div>
           </div>
         ))}
+      
       </div>
+      {activeTile && (
+  <div className="flex gap-4 mt-4 items-center">
+    <div>
+      <label>Bar Chart Attribute: </label>
+      <select value={selectedBarKey} onChange={e => setSelectedBarKey(e.target.value)}>
+        {activeTile.attributes.map(attr => (
+          <option key={attr} value={attr}>{attr}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label>Pie Chart Attribute: </label>
+      <select value={selectedPieKey} onChange={e => setSelectedPieKey(e.target.value)}>
+        {activeTile.attributes.map(attr => (
+          <option key={attr} value={attr}>{attr}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+)}
+
 
       {/* Bar Chart */}
-      {activeTile && activeChartData.length > 0 && (
-        <div className="mt-6" style={{ height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={activeChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="value" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
+    
+{activeTile && (chartDataMap[activeTab]?.chart1?.length > 0 || chartDataMap[activeTab]?.chart2?.length > 0) && (
+  <div className="grid md:grid-cols-2 gap-6 mt-6">
+
+    {/* Bar Chart */}
+    <div style={{ height: 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartDataMap[activeTab]?.chart1 || []}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis domain={[0, 'auto']} />
+          <Tooltip />
+          <Bar dataKey="value" fill="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+
+    {/* Pie Chart */}
+    <div style={{ height: 300 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={chartDataMap[activeTab]?.chart2 || []}  // safe check
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            fill="#82ca9d"
+            label
+          >
+            {(chartDataMap[activeTab]?.chart2 || []).map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+
+  </div>
+)}
 
       {/* Report Table Component */}
       <div className="mt-6">
-        {activeTile && React.createElement(activeTile.component, {
-          onChartData: (data) => handleChartData(activeTile.id, data)
+        {activeTile  && React.createElement(activeTile.component, {selectedBarKey,
+          selectedPieKey,
+          roleName,
+         onChartData: (barData, pieData) => handleChartData(activeTile.id, barData, pieData)
+
         })}
       </div>
     </div>

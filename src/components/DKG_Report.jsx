@@ -128,6 +128,9 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
         }
         newApi = api.replace(/\{.*?\}/g, encodeURIComponent(textFilter));
       }
+       if (filterType === "none") {
+      newApi = api;
+    }
 
       const { data } = await apiCall('GET', newApi, token);
        const fetchedData = data?.responseData || [];
@@ -158,7 +161,7 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
         onFinish={populateData}
         className="grid md:grid-cols-4 grid-cols-2 gap-x-2 items-center px-2 pt-0 border !py-4 border-darkBlueHover mb-8"
       >
-        {filterType === "date" && (
+        {filterType != "none" && (
           <>
             <CustomDatePicker
               className="no-margin"

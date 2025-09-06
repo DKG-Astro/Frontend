@@ -1,8 +1,9 @@
-import React from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import React, { useState, useEffect } from 'react';
 
-const PoStatus = () => {
+const PoStatus =({ onChartData, selectedBarKey, selectedPieKey }) =>{
+  const [reportData, setReportData] = useState([]);
   const columns = [
   {
     title: 'PO ID',
@@ -127,10 +128,52 @@ const PoStatus = () => {
   ];
 
   const api = "/api/reports/pending-po-report";
+  
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData); // store data for chart regeneration
+    generateChart(finalData);
+  };
+
+  const getValueByKey = (item, key) => {
+    if (key.startsWith("purchaseOrderAttributes.")) {
+      const nestedKey = key.split(".")[1];
+      return (item.purchaseOrderAttributes || []).reduce(
+        (sum, mat) => sum + (mat[nestedKey] || 0),
+        0
+      );
+    }
+    return item[key] || "Unknown";
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = getValueByKey(item, selectedBarKey);
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = getValueByKey(item, selectedPieKey);
+      acc[key] = (acc[key] || 0) + (item.value || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Po Status" filterType="date" storageKey="POSTATUS_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="Po Status" filterType="date" storageKey="POSTATUS_REPORT_COLUMNS"   onFetch={handleFetch}/>
     </div>
   );
 };

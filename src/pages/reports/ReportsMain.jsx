@@ -102,7 +102,7 @@ const ReportsMain = () => {
             title:"Indent Status",
             icon: <SolutionOutlined />,
             path: "/reports/IndentStatus"
-        },
+        }, 
         {
             id:15,
             title:"Performance & Warranty Security",

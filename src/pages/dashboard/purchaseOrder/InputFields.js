@@ -6,6 +6,14 @@ const countryOptions = [
   { label: "ARGENTINA", value: "ARGENTINA" },
   { label: "BELGIUM", value: "BELGIUM" }
 ];
+const warrantyOptions = Array.from({ length: 20 }, (_, i) => {
+  const year = i + 1;
+  const label = `${year} Year${year > 1 ? "s" : ""}`;
+  return {
+    label: label,
+    value: label 
+  };
+});
 
 
 
@@ -169,7 +177,6 @@ export const PoDetails = [
             name: "duties",
             label: "Duties (%)",
             type: "text",
-            required: true
         },
         {
             name: "freightCharge",
@@ -194,7 +201,9 @@ export const PoDetails = [
         {
           name: "warranty",
           label: "Warranty",
-          type: "text",
+          //type: "text",
+          type:"select",
+          options:warrantyOptions,
         }, 
         {
           name: "ifLdClauseApplicable",
@@ -218,7 +227,7 @@ export const PoDetails = [
           span: 2,
           options: [
             ...Array.from({ length: 20 }, (_, i) => ({
-            label: String(i + 1),
+            label: `${i + 1}%`,
             value: String(i + 1),
           })),
           { label: "NA", value: "NA" },
@@ -230,7 +239,13 @@ export const PoDetails = [
           type: "text",
           required: true,
          // options: [],
-        }, 
+        },
+       {
+                    name: "buyBackAmount",
+                    label: "Buy Back Amount",
+                    type: "text",
+                    required: true,
+                },
          {
           name: "quotationDate",
           label: "Quotation Date",

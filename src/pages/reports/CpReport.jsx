@@ -10,14 +10,27 @@ const handleFetch = (startDate, endDate, reportData) => {
   const finalData = reportData || [];
   setData(finalData);
 
-  // Generate chart data
-  const chartData = finalData.map(cp => ({
+  // Bar chart: Vendor vs Total Price
+  const barData = finalData.map(cp => ({
     name: cp.vendorName || "Unknown",
     value: cp.cpMaterials.reduce((sum, m) => sum + (m.totalPrice || 0), 0)
   }));
 
-  // Send chart data to dashboard
-  if (onChartData) onChartData(chartData);
+  // Pie chart: Project vs Total Price
+  const pieData = finalData.reduce((acc, cp) => {
+    const project = cp.projectName || "Without Project";
+    const total = cp.cpMaterials.reduce((sum, m) => sum + (m.totalPrice || 0), 0);
+    acc[project] = (acc[project] || 0) + total;
+    return acc;
+  }, {});
+
+  const pieDataArr = Object.keys(pieData).map(project => ({
+    name: project,
+    value: pieData[project]
+  }));
+
+  // Send both chart data sets to dashboard
+  if (onChartData) onChartData(barData, pieDataArr);
 };
 
   

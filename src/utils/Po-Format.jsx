@@ -325,15 +325,15 @@ const PoFormat = forwardRef(({ po = {} }, ref) => {
             </tr>
             <tr>
               <td colSpan="6" style={{ textAlign: "right" }}>
-                (+) Buyback Amount
-              </td>
-              <td>{data.buyBackAmount || ""}</td>
-            </tr>
-            <tr>
-              <td colSpan="6" style={{ textAlign: "right" }}>
                 (+) GST Amount
               </td>
               <td>{data.totalGst || ""}</td>
+            </tr>
+            <tr>
+              <td colSpan="6" style={{ textAlign: "right" }}>
+                (-) Buyback Amount
+              </td>
+              <td>{data.buyBackAmount || ""}</td>
             </tr>
             <tr>
               <td colSpan="6" style={{ textAlign: "right" }}>
@@ -384,13 +384,20 @@ const PoFormat = forwardRef(({ po = {} }, ref) => {
           <br />
           Payment Term: {data.paymentTerms || ""}
           <br />
-          Duties & Taxes: {data.dutiesAndTaxes || ""}
+          Duties & Taxes: {data.duties || ""}
           <br />
           Delivery Period: {data.deliveryPeriod || ""} weeks from date of PO.
           <br />
           Liquidated Damages: @ 0.5% per week to a maximum of 10% of PO value will be deducted for delay in delivery.
           <br />
-          Performance & Warranty Security:{data.performanceAndWarrantySecurity || ""}
+          Performance & Warranty Security:{" "}
+  {data.performanceAndWarrantySecurity && data.performanceAndWarranty ? (
+    <span>
+      CCY Amount ({data.currencyOfMaterial} {data.performanceAndWarrantySecurity}) (computed as per percentage {data.performanceAndWarranty} mentioned in PO) to be submitted within 14 days from the date of purchase order as Security towards performance and warranty whose validity shall be 60 days beyond warranty/contract period.
+    </span>
+  ) : (
+    <span>-</span>
+  )}
           <br />
           Freight Forwarder: {data.freightForwarderDetails || ""}
           <br />
@@ -407,8 +414,8 @@ const PoFormat = forwardRef(({ po = {} }, ref) => {
         <p>
           Mark any communications to <a href="mailto:purchase@iiap.res.in">purchase@iiap.res.in</a>
         </p>
-        <p>For Purchase related queries contact: 080 22541384, 1363, 1244 </p>
-        <p>For Delivery and Payment related queries contact: 080 22541340, 1234</p>
+        <p>For Purchase related queries contact: 080 2254 1384/ 1363/ 1244 </p>
+        <p>For Delivery and Payment related queries contact: 080 2254 1340/ 1234</p>
 
      <div
   className="signature-block"

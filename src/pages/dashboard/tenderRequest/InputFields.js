@@ -1,3 +1,4 @@
+
 export const TenderDetails = [
   {
     heading: "Tender Basic Details",
