@@ -125,6 +125,13 @@ const Igp = () => {
                 // span: 2,
                 disabled: true,
                 required: true
+            }, {
+                name: "unitPrice",
+                label: "Unit Price",
+                type: "text",
+                // span: 2,
+                disabled: true,
+                required: true
             }
         ]
     },

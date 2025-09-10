@@ -1,36 +1,44 @@
-import React from 'react'
+import React , {useState, useEffect} from 'react'
 import CustomReport from '../../components/DKG_Report';
 import dayjs from "dayjs";
 import { baseURL } from '../../App';
 
-const IndentReport =({ onChartData }) => {
+const IndentReport =({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const [reportData, setReportData] = useState([]);
 
   const api = "/api/reports/indent"
-  
-  const handleFetch = (startDate, endDate, reportData) => {
-    const finalData = reportData || [];
+   const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
 
-    // Bar Chart: Vendor vs Value of Indent
-    const barData = finalData.map(item => ({
-      name: item.vendorName || "Unknown",
-      value: item.valueOfIndent || 0
-    }));
-
-    // Pie Chart: Project vs Value of Indent
-    const pieDataMap = finalData.reduce((acc, item) => {
-      const project = item.project || "No Project";
-      acc[project] = (acc[project] || 0) + (item.valueOfIndent || 0);
+  // Chart generator - dynamic based on selected keys
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.valueOfIndent || 0);
       return acc;
     }, {});
 
-    const pieData = Object.keys(pieDataMap).map(project => ({
-      name: project,
-      value: pieDataMap[project]
-    }));
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.valueOfIndent || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
 
     if (onChartData) onChartData(barData, pieData);
   };
 
+  // Re-generate chart if keys change
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
   const columns = [
     {
       title: "Indent ID",

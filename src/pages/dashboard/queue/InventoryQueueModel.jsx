@@ -152,6 +152,8 @@ const InventoryQueueModal = ({
                       { title: "Received Qty", dataIndex: "receivedQuantity" },
                       { title: "Accepted Qty", dataIndex: "acceptedQuantity" },
                       { title: "Rejected Qty", dataIndex: "rejectedQuantity" },
+                      { title: "Rejection Type", dataIndex: "rejectionType"},
+                      {title: "Reject Reason", dataIndex: "rejectReason"},
                     ]
                   : [
                       { title: "Material Code", dataIndex: "materialCode" },

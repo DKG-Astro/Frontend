@@ -1,9 +1,13 @@
 import React, {useEffect,useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
 const IndentList = ({ onChartData, selectedBarKey, selectedPieKey }) => {
   const [reportData, setReportData] = useState([]);
+   const auth = useSelector((state) => state.auth);
+    const userId = auth.userId;
+     const roleName = auth.role; 
 
   const columns = [
     {
@@ -76,6 +80,12 @@ const IndentList = ({ onChartData, selectedBarKey, selectedPieKey }) => {
       title: 'Created By',
       dataIndex: 'createdBy',
       key: 'createdBy_INDENT',
+      filterable: true,
+    },
+    {
+      title: 'Indent Value',
+      dataIndex: 'indentValue',
+      key: 'indentValueBy_INDENT',
       filterable: true,
     },
     {
@@ -155,40 +165,56 @@ const IndentList = ({ onChartData, selectedBarKey, selectedPieKey }) => {
 
 
   const api = "/api/reports/indentList-report";
-  const handleFetch = (startDate, endDate, data) => {
-    const finalData = data || [];
-    setReportData(finalData);
-    generateChart(finalData);
-  };
 
 
-  const generateChart = (finalData) => {
-    const barDataMap = finalData.reduce((acc, item) => {
-      const key = item[selectedBarKey] || "Unknown";
-      acc[key] = (acc[key] || 0) + (item.value || 0);
-      return acc;
-    }, {});
+const handleFetch = (startDate, endDate, data) => {
+  const finalData = data || [];
+  setReportData(finalData);
+  generateChart(finalData);
+};
+const generateChart = (finalData) => {
+  if (!finalData || finalData.length === 0) {
+    if (onChartData) onChartData([], []);
+    return;
+  }
 
-    const pieDataMap = finalData.reduce((acc, item) => {
-      const key = item[selectedPieKey] || "No Data";
-      acc[key] = (acc[key] || 0) + (item.value || 0);
-      return acc;
-    }, {});
+  // Bar Data
+  const barDataMap = finalData.reduce((acc, item) => {
+    const key = item[selectedBarKey] || "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
-    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
-    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+  // Pie Data
+  const pieDataMap = finalData.reduce((acc, item) => {
+    const key = item[selectedPieKey] || "Unknown";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+const barData = Object.keys(barDataMap).map(key => ({
+  name: key,
+  value: barDataMap[key]   // use value instead of count
+}));
 
-    if (onChartData) onChartData(barData, pieData);
-  };
+  const pieData = Object.keys(pieDataMap).map(key => ({
+    name: key,
+    value: pieDataMap[key]    // fixed value key for pie chart
+  }));
 
- 
-  useEffect(() => {
-    if (reportData.length > 0) generateChart(reportData);
-  }, [selectedBarKey, selectedPieKey]);
+  if (onChartData) onChartData(barData, pieData);
+};
+
+
+useEffect(() => {
+  if (reportData && reportData.length > 0) {
+    generateChart(reportData);
+  }
+}, [reportData, selectedBarKey, selectedPieKey]);
+
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Indent List" filterType="date" storageKey="INDENTLIST_REPORT_COLUMNS" onFetch={handleFetch}/>
+      <CustomReport columns={columns} api={api} title="Indent List" filterType="date" storageKey="INDENTLIST_REPORT_COLUMNS" onFetch={handleFetch} userId={userId} roleName={roleName}/>
     </div>
   );
 };

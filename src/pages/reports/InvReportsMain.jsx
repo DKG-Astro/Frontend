@@ -7,6 +7,7 @@ import IgpReport from './IgpReport';
 import OgpReport from './OgpReport';
 import RejectedGiReport from './RejectedGiReport';
 import IgpMaterialInReport from './IgpMaterialInReport';
+import WithInFieldStationGtReport from './withInFieldStationGtReport';
 
 const InvReportsMain = () => {
     const tiles = [
@@ -52,6 +53,12 @@ const InvReportsMain = () => {
             icon: <InboxOutlined />,
             path: "/reports/IgpMaterialInReport"
         },
+         {
+            id: 8,
+            title: "Gt Report",
+            icon: <InboxOutlined />,
+            path: "/reports/WithINFieldStationGtReport"
+        },
     ]
     const [activeTab, setActiveTab] = useState(1)
 
@@ -71,6 +78,8 @@ const InvReportsMain = () => {
                 return <RejectedGiReport />
             case 7:
                 return <IgpMaterialInReport />
+            case 8:
+                return <WithInFieldStationGtReport />
             default:
                 return <h1>Asset Report</h1>
         }

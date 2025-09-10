@@ -335,6 +335,7 @@ import PerformanceAndWarrantySecurity from "../../reports/PerformanceAndWarranty
 import IndentStatus from "../../reports/IndentStatus";
 import { useSelector } from "react-redux";  
 import PendingRecordsReport from "../../reports/pendingRecords";
+import axios from "axios";
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -346,6 +347,9 @@ const MainDashboard = () => {
   const [pendingCount, setPendingCount] = useState(0);
 
   const roleName = auth.role; 
+  const userId = auth.userId;
+
+/*
   useEffect(() => {
   if (roleName) {
      fetch(`http://localhost:8081/astro-service/allPendingRecords?roleName=${encodeURIComponent(roleName)}`) 
@@ -353,7 +357,20 @@ const MainDashboard = () => {
       .then(data => setPendingCount(data.responseData.length))
       .catch(err => console.error(err));
   }
-}, [roleName]);
+}, [roleName]);*/
+useEffect(() => {
+  if (roleName && userId) {
+    axios
+      .get("/allPendingRecords", {
+        params: {
+          roleName: roleName
+        }
+      })
+      .then((res) => setPendingCount(res.data.responseData.length))
+      .catch((err) => console.error(err));
+  }
+}, [roleName, userId]);
+
 
 
   // Callback to update chart data dynamically
@@ -367,15 +384,18 @@ const handleChartData = (id, barData, pieData) => {
   // Only store component class/functions, not JSX
   const tiles = [
       { id: 1, title: `Pending Total Records: ${pendingCount}`, icon: <BarChartOutlined />, component: PendingRecordsReport, attributes:["status"],  roles:[roleName]},
-    { id: 19, title: "Contingency Purchase Report", icon: <FileTextOutlined />, component: CpReport, attributes: [ "approvedDate",
-  "poId",
+    { id: 19, title: "Contingency Purchase", icon: <FileTextOutlined />, component: CpReport, attributes: [ 
+  "contigencyId",
   "vendorName",
-  "value",
-  "tenderId",
-  "project",
-  "vendorId",
-  "indentIds",
-  "modeOfProcurement"], roles: [
+  "projectName",
+  "paymentToVendor",
+  "paymentToEmployee",
+  "purpose",
+  "createdBy",
+  "pendingWith",
+  "pendingFrom",
+  "status",
+  "action",], roles: [
       "CP Creator",
       "Store Personnel",
       "Reporting Officer",
@@ -385,10 +405,37 @@ const handleChartData = (id, barData, pieData) => {
       "Administrative Officer",
       "Store Purchase Officer", "Purchase personnel",
     ] },
-    { id: 2, title: "Indent Report", icon: <BarChartOutlined />, component: IndentReport },
+    { id: 2, title: "Indent", icon: <BarChartOutlined />, component: IndentReport ,attributes:[
+    "indentId",
+    "approvedDate",
+    "assignedTo",
+    "tenderRequest",
+    "modeOfTendering",
+    "correspondingPoSo",
+    "statusOfPoSo",
+    "submittedDate",
+    "pendingApprovalWith",
+    "poSoApprovedDate",
+    "material",
+    "materialCategory",
+    "materialSubCategory",
+    "vendorName",
+    "indentorName",
+    "valueOfIndent",
+    "valueOfPo",
+    "project",
+    "grinNo",
+    "invoiceNo",
+    "gissNo",
+    "valuePendingToBePaid",
+    "currentStageOfIndent",
+    "shortClosedAndCancelled",
+    "reasonForShortClosure",
+    "gemContractFileName"
+  ], roles:[roleName]},
     {
   id: 3,
-  title: "Techno MOM Report",
+  title: "Techno MOM",
   icon: <PieChartOutlined />,
   component: TechnoMom, // your component
   attributes: [
@@ -406,7 +453,7 @@ const handleChartData = (id, barData, pieData) => {
   "project",
   "vendorId",
   "indentIds",
-  "modeOfProcurement"], roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", , "Store Person"] },
+  "modeOfProcurement"], roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", , "Store Person","Indent Creator"] },
     { id: 7, title: "PO Status", icon: <SolutionOutlined />, component: PoStatus, attributes: [  "poId",
     "tenderId",
     "indentIds",
@@ -417,12 +464,12 @@ const handleChartData = (id, barData, pieData) => {
     "pendingFrom",
     "status",
     "asOnDate",
-] ,roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", "Store Person"] },
+] ,roles:["PO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG", "Store Person", "Indent Creator"] },
 {
   id: 4,
-  title: "Vendor Contract Report",
+  title: "Vendor Contract",
   icon: <FileTextOutlined />,
-  component: VendorContract,   // use the component, not path
+  component: VendorContract,  
   attributes: [
     "orderId",
     "modeOfProcurement",
@@ -440,7 +487,15 @@ const handleChartData = (id, barData, pieData) => {
   ], roles:["Store Purchase Officer", "Purchase personnel","Store Person"]
 },
 
-    { id: 8, title: "SO List", icon: <SolutionOutlined />, component: SoList , roles:["SO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person"]
+    { id: 8, title: "SO List", icon: <SolutionOutlined />, component: SoList, attributes:["approvedDate",
+  "soId",
+  "vendorName",
+  "value",
+  "tenderId",
+  "project",
+  "vendorId",
+  "indentIds",
+  "modeOfProcurement",] , roles:["SO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person","Indent Creator"]
 },
     {
   id: 9,
@@ -458,7 +513,7 @@ const handleChartData = (id, barData, pieData) => {
     "pendingFrom",
     "status",
     "asOnDate"
-  ], roles:["SO Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person"]
+  ], roles:["SO Creator","Indent Creator","Store Purchase Officer", "Purchase personnel", "Administrative Officer", "Account Officer" , "Project Head", "Director","Dean", "Head SEG","Store Person"]
 },{
   id: 10,
   title: "Indent List",
@@ -480,7 +535,7 @@ const handleChartData = (id, barData, pieData) => {
   ], roles:["Indent Creator", "Reporting Officer", "Administrative Officer", "Field Station In Charge", "Computer Committee Chairman", "Dean", "Head SEG","Director", "Store Purchase Officer", "Purchase personnel","Store Person"]
 },{
   id: 11,
-  title: "Quarterly Vigilance Report",
+  title: "Quarterly Vigilance",
   icon: <SolutionOutlined />,
   component: QuarterlyVigilanceSoReport,
   attributes: [
@@ -568,6 +623,14 @@ const activeChartData = chartDataMap[activeTab] || { chart1: [], chart2: [] };
 const visibleTiles = tiles.filter(tile =>
   tile.roles?.includes(roleName) // only show tiles that allow the user role
 );
+useEffect(() => {
+  if (activeTile) {
+    // Set defaults only if nothing is selected yet
+    setSelectedBarKey(prev => prev || activeTile.attributes[0] || "status");
+    setSelectedPieKey(prev => prev || activeTile.attributes[0] || "status");
+  }
+}, [activeTile]);
+
 
 
   return (

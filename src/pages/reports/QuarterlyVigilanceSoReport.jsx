@@ -2,7 +2,11 @@ import React , {useEffect,useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 
-const QuarterlyVigilanceSoReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+const QuarterlyVigilanceSoReport = ({
+  onChartData,
+  selectedBarKey = 'vendorName',
+  selectedPieKey = 'orderNo'
+}) => {
   const [reportData, setReportData] = useState([]);
  const columns = [
     {
@@ -71,7 +75,6 @@ const QuarterlyVigilanceSoReport = ({ onChartData, selectedBarKey, selectedPieKe
   const handleFetch = (startDate, endDate, data) => {
     const finalData = data || [];
     setReportData(finalData);
-    generateChart(finalData);
   };
 
   const generateChart = (finalData) => {
@@ -97,7 +100,7 @@ const QuarterlyVigilanceSoReport = ({ onChartData, selectedBarKey, selectedPieKe
     if (reportData.length > 0) {
       generateChart(reportData);
     }
-  }, [selectedBarKey, selectedPieKey]);
+  }, [reportData, selectedBarKey, selectedPieKey]);
 
 
   return (

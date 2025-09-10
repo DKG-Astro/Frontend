@@ -6,7 +6,6 @@ import dayjs from "dayjs";
 const PerformanceAndWarrantySecurity = ({ onChartData, selectedBarKey, selectedPieKey }) => {
   const [reportData, setReportData] = useState([]);
 
-  
   const columns = [
     { title: 'PO Number', dataIndex: 'poId', key: 'poId_po', filterable: true },
     { title: 'PO Date', dataIndex: 'createdDate', key: 'createdDate_po', filterable: true,render: (text) => text ? dayjs(text).format("DD/MM/YYYY") : "", },
@@ -57,10 +56,11 @@ const PerformanceAndWarrantySecurity = ({ onChartData, selectedBarKey, selectedP
     <div>
       <CustomReport
         columns={columns}
-        api
+        api={api}
         title="PerformanceAndWarrantySecurity"
         filterType="date"
         storageKey="PerformanceAndWarrantySecurity_REPORT_COLUMNS"
+        onFetch={handleFetch}
       />
     </div>
   );

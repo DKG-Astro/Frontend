@@ -1,9 +1,13 @@
 import React, {useEffect,useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
 const SoStatus =({ onChartData, selectedBarKey, selectedPieKey }) => {
   const [reportData, setReportData] = useState([]);
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role; 
   const columns = [
    {
     title: 'SO ID',
@@ -162,7 +166,7 @@ const SoStatus =({ onChartData, selectedBarKey, selectedPieKey }) => {
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="So Status" filterType="date" storageKey="SOSTATUS_REPORT_COLUMNS" onFetch={handleFetch}/>
+      <CustomReport columns={columns} api={api} title="So Status" filterType="date" storageKey="SOSTATUS_REPORT_COLUMNS" onFetch={handleFetch} userId={userId} roleName={roleName}/>
     </div>
   );
 };

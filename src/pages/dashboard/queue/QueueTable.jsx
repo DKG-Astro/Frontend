@@ -44,7 +44,7 @@ const QueueTable = () => {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
       {!isRestricted && (
-          <Tabs.TabPane tab="Queue1" key="request">
+          <Tabs.TabPane tab="Procurement" key="request">
             <Queue1/>
           </Tabs.TabPane>
         )}
@@ -54,7 +54,7 @@ const QueueTable = () => {
 
         {
           (role === "Indent Creator" || role === "Store Purchase Officer" || role === "Store Person") &&
-          <Tabs.TabPane tab="Queue3" key="inventory">
+          <Tabs.TabPane tab="Inventory" key="inventory">
           <Queue3 />
           </Tabs.TabPane>
         }

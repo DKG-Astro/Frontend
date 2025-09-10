@@ -1,5 +1,5 @@
 import {Input, Button, Form, message } from 'antd'
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import CustomDatePicker from './DKG_CustomDatePicker'
 import { useSelector } from 'react-redux';
 import { apiCall } from '../utils/CommonFunctions';
@@ -92,7 +92,7 @@ const CustomReport = ({api, columns, title, showFilter}) => {
 
 export default CustomReport*/
 
-const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
+const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch, userId, roleName}) => {
   const { token } = useSelector((state) => state.auth);
   const [form] = Form.useForm();
 
@@ -103,6 +103,7 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
 
   const [textFilter, setTextFilter] = useState('');
   const [dataSource, setDataSource] = useState([]);
+
 
   const populateData = async () => {
     if (filterType === "date") {
@@ -127,11 +128,17 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
         return;
         }
         newApi = api.replace(/\{.*?\}/g, encodeURIComponent(textFilter));
-      }
-       if (filterType === "none") {
-      newApi = api;
+      } else if (filterType === "none") {
+      newApi = api; 
     }
+    const separator = newApi.includes('?') ? '&' : '?';
+    const params = [];
+    if (userId) params.push(`userId=${userId}`);
+    if (roleName) params.push(`roleName=${encodeURIComponent(roleName)}`);
+    if (params.length > 0) newApi += separator + params.join('&');
 
+    console.log("API URL:", newApi); 
+      
       const { data } = await apiCall('GET', newApi, token);
        const fetchedData = data?.responseData || [];
       setDataSource(data?.responseData);
@@ -151,7 +158,11 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
   const handleChange = (fieldName, value) => {
     setFilter((prev) => ({ ...prev, [fieldName]: value }));
   };
-
+useEffect(() => {
+  if (filterType === "none") {
+    populateData(); 
+  }
+}, []);
   return (
     <div>
       <h1 className="!text-lg font-semibold text-center mb-8">{title}</h1>
@@ -161,7 +172,7 @@ const CustomReport = ({ api, columns, title, filterType = "date" ,onFetch}) => {
         onFinish={populateData}
         className="grid md:grid-cols-4 grid-cols-2 gap-x-2 items-center px-2 pt-0 border !py-4 border-darkBlueHover mb-8"
       >
-        {filterType != "none" && (
+        {filterType === "date" && (
           <>
             <CustomDatePicker
               className="no-margin"

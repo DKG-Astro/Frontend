@@ -7,9 +7,11 @@ import { useSelector } from "react-redux";
 
 const GatePass = () => {
   const { role } = useSelector((state) => state?.auth);
+  const userId =useSelector((state) =>state?.auth?.userId)
 
   const handleApprove = async (record) => {
     if(record.formType === "GT"){
+      /*
       try{
         await axios.post("/api/process-controller/approveGtOgp", {ogpId: record.ogpId})
         message.success("Gate Pass Approved Successfully");
@@ -21,8 +23,24 @@ const GatePass = () => {
             "Failed to approve Gate Pass"
         );
       }
-      return
+      return*/
+       if (role === "Indent Creator") {
+        // Receiver Approval
+        await axios.post("/api/process-controller/approveReciverGtOgp", {
+          ogpId: record.ogpId,
+        });
+        message.success("Gate Pass Receiver Approved Successfully");
+      } else if (role === "Store Purchase Officer") {
+        // Final GT Approval
+        await axios.post("/api/process-controller/approveGtOgp", {
+          ogpId: record.ogpId,
+        });
+        message.success("Gate Pass Final Approved Successfully");
+      }
+      fetchGatePassData();
+      return;
     }
+
     if (record.formType === "IGP") {
       try {
         await axios.post("/api/process-controller/approveMaterialIgp", {
@@ -297,14 +315,14 @@ const GatePass = () => {
         />
       ),
     },
-    ...(role === "Store Purchase Officer"
+    ...(role === "Store Purchase Officer" || role === "Indent Creator"
       ? [
           {
             title: "Actions",
             key: "actions",
             fixed: "right",
             render: (_, record) => {
-              if (record.status === "AWAITING APPROVAL") {
+              if (record.status === "AWAITING APPROVAL" || record.status === "PENDING RECEIVER APPROVAL" || record.status === "RECEIVER APPROVED") {
                 return (
                   <Space>
                     <Button
@@ -427,9 +445,20 @@ const GatePass = () => {
         "/api/process-controller/getPendingIgp"
       );
 
-      const {data: data3} = await axios.get(
+    /*  const {data: data3} = await axios.get(
         "/api/process-controller/getPendingGtOgp"
+      );*/
+       let data3 = { responseData: [] }; // default empty
+    if (role === "Indent Creator") {
+    //  const { data: resp } = await axios.get("/api/process-controller/getRecevierPendingGtOgp");
+      const { data: resp } = await axios.get(
+        `/api/process-controller/getRecevierPendingGtOgp?userId=${userId}` // 👈 userId passed here
       );
+      data3 = resp;
+    } else if (role === "Store Purchase Officer") {
+      const { data: resp } = await axios.get("/api/process-controller/getPendingGtOgp");
+      data3 = resp;
+    }
       console.log("Data3.responseData: ", data3.responseData);
       const dataCopy = data1.responseData?.map((item) => ({
         ...item,

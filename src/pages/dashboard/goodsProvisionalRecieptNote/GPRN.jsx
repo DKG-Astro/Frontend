@@ -380,12 +380,12 @@ const GPRN = () => {
         },
         {
           name: "totalQuantity",
-          label: "Total Quantity",
+          label: "Ordered Quantity",
           type: "text",
         },
         {
           name: "orderedQuantity",
-          label: "Ordered Quantity",
+          label: "Pending Quantity",
           type: "text",
           required: true,
           // disabled: true

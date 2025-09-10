@@ -1,9 +1,13 @@
 import React , {useEffect,useState}from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
 const IndentList = ({ onChartData, selectedBarKey, selectedPieKey }) => {
   const [reportData, setReportData] = useState([]);
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role; 
 const columns = [
   {
     title: 'Indent ID',
@@ -76,7 +80,7 @@ const columns = [
 
 
   const api = "/api/indents/indentStatus/{indentId}";
-  const handleFetch = (startDate, endDate, data) => {
+  const handleFetch = (data) => {
     const finalData = data || [];
     setReportData(finalData);
     generateChart(finalData);
@@ -107,7 +111,7 @@ const columns = [
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Indent Status" filterType="text" storageKey="INDENTSTATUS_REPORT_COLUMNS" onFetch={handleFetch}/>
+      <CustomReport columns={columns} api={api} title="Indent Status" filterType="text" storageKey="INDENTSTATUS_REPORT_COLUMNS" onFetch={handleFetch} userId={userId} roleName={roleName}/>
     </div>
   );
 };

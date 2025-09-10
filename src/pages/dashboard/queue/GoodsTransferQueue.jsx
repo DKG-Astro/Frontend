@@ -8,7 +8,7 @@ const GoodsTransferQueue = () => {
   const { role } = useSelector(state => state?.auth);
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-
+/*
   const fetchGatePassQueue = async () => {
     try {
       setLoading(true);
@@ -17,6 +17,34 @@ const GoodsTransferQueue = () => {
       const rows = (data?.responseData || []).map(item => ({
         ...item,
         status: 'AWAITING APPROVAL',
+        details: item.materialDtlList || [],
+      }));
+
+      setDataSource(rows);
+    } catch (error) {
+      console.error(error);
+      message.error(error?.response?.data?.responseStatus?.message || 'Error fetching pending gate transfers.');
+    } finally {
+      setLoading(false);
+    }
+  };*/
+  const fetchGatePassQueue = async () => {
+    try {
+      setLoading(true);
+      let apiUrl = '';
+      if (role === 'Indent Creator') {
+        apiUrl = '/api/process-controller/getRecevierPendingGt';
+      } else if (role === 'Store Purchase Officer') {
+        apiUrl = '/api/process-controller/getPendingGt';
+      }
+
+      if (!apiUrl) return; // No API for other roles
+
+      const { data } = await axios.get(apiUrl);
+
+      const rows = (data?.responseData || []).map(item => ({
+        ...item,
+        status: item.status || 'AWAITING APPROVAL',
         details: item.materialDtlList || [],
       }));
 
@@ -41,6 +69,16 @@ const GoodsTransferQueue = () => {
     } catch (error) {
       console.error(error);
       message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve GT');
+    }
+  };
+   const handleReceiverApprove = async (record) => {
+    try {
+      await axios.post('/api/process-controller/receiverApproveGt', { gtId: record.id });
+      message.success('GT accepted by receiver');
+      fetchGatePassQueue();
+    } catch (error) {
+      console.error(error);
+      message.error(error?.response?.data?.responseStatus?.message || 'Failed to accept GT');
     }
   };
 
@@ -70,9 +108,15 @@ const GoodsTransferQueue = () => {
       searchable: true,
     },
     {
-      title: 'Sender Custodian',
+      title: 'Sender Custodian Id',
       dataIndex: 'senderCustodianId',
       key: 'senderCustodianId',
+      searchable: true,
+    },
+     {
+      title: 'Sender Custodian Name',
+      dataIndex: 'senderCustodianName',
+      key: 'senderCustodianName',
       searchable: true,
     },
     {
@@ -82,9 +126,15 @@ const GoodsTransferQueue = () => {
       searchable: true,
     },
     {
-      title: 'Receiver Custodian',
+      title: 'Receiver Custodian Id',
       dataIndex: 'receiverCustodianId',
       key: 'receiverCustodianId',
+      searchable: true,
+    },
+    {
+      title: 'Receiver Custodian Name',
+      dataIndex: 'receiverCustodianName',
+      key: 'receiverCustodianName',
       searchable: true,
     },
     {
@@ -127,6 +177,7 @@ const GoodsTransferQueue = () => {
         />
       ),
     },
+    /*
     ...(role === 'Store Purchase Officer'
       ? [
           {
@@ -146,7 +197,33 @@ const GoodsTransferQueue = () => {
               ) : null,
           },
         ]
-      : []),
+      : []),*/
+       {
+      title: 'Actions',
+      key: 'actions',
+      fixed: 'right',
+      render: (_, record) => {
+        // Receiver Actions
+        if (role === 'Indent Creator' && record.status === 'AWAITING APPROVAL') {
+          return (
+            <Space>
+              <Button type="primary" onClick={() => handleReceiverApprove(record)}>Accept</Button>
+              <Button danger onClick={() => handleReject(record)}>Reject</Button>
+            </Space>
+          );
+        }
+        // Store Purchase Officer Actions
+        if (role === 'Store Purchase Officer' && record.status === 'AWAITING APPROVAL') {
+          return (
+            <Space>
+              <Button type="primary" onClick={() => handleApprove(record)}>Approve</Button>
+              <Button danger onClick={() => handleReject(record)}>Reject</Button>
+            </Space>
+          );
+        }
+          return null;
+      },
+    }
   ];
 
   return (
