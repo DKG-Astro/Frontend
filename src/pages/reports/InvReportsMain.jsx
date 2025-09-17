@@ -8,6 +8,10 @@ import OgpReport from './OgpReport';
 import RejectedGiReport from './RejectedGiReport';
 import IgpMaterialInReport from './IgpMaterialInReport';
 import WithInFieldStationGtReport from './withInFieldStationGtReport';
+import DemandAndIssueQueue from '../dashboard/queue/DemandAndIssueQueue';
+import DemandAndIssueReport from './DemandAndIssueReport';
+import AssetDisposalReport from './ApprovedAssetDisposalReport';
+import DisposalReport from './DisposalReport';
 
 const InvReportsMain = () => {
     const tiles = [
@@ -58,7 +62,25 @@ const InvReportsMain = () => {
             title: "Gt Report",
             icon: <InboxOutlined />,
             path: "/reports/WithINFieldStationGtReport"
+        }, {
+            id: 9,
+            title: "Deamnd And Issue Report",
+            icon: <InboxOutlined />,
+            path: "/reports/DemandAndIssueReport"
         },
+         {
+            id: 10,
+            title: "Approved Assets Disposal Report",
+            icon: <InboxOutlined />,
+            path: "/reports/AssetDisposalReport"
+        },
+        {
+            id: 11,
+            title: "Disposal Report",
+            icon: <InboxOutlined />,
+            path: "/reports/DisposalReport"
+        },
+        
     ]
     const [activeTab, setActiveTab] = useState(1)
 
@@ -80,6 +102,12 @@ const InvReportsMain = () => {
                 return <IgpMaterialInReport />
             case 8:
                 return <WithInFieldStationGtReport />
+             case 9:
+                return <DemandAndIssueReport />
+            case 10:
+                return <AssetDisposalReport />
+            case 11:
+                return <DisposalReport />
             default:
                 return <h1>Asset Report</h1>
         }

@@ -55,7 +55,7 @@ const TenderEvaluatorGem = () => {
       try {
         setLoadingTender(true);
         const res = await axios.get(
-          `${baseURL}/api/vendor-quotation/${formData.tenderId}`,
+          `/api/vendor-quotation/${formData.tenderId}`,
           {
             params: { userRole: role },
           }
@@ -120,7 +120,7 @@ const fetchVendors = async (tenderId) => {
   try {
     setLoadingTender(true);
     const res = await axios.get(
-      `${baseURL}/api/vendor-quotation/${tenderId}`,
+      `/api/vendor-quotation/${tenderId}`,
       { params: { userRole: role } }
     );
 

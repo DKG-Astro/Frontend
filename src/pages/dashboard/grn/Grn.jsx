@@ -177,6 +177,7 @@ const Grn = () => {
           custodianId: data?.responseData?.gprnDtls?.indentId,
           //deliveryDate,
           gprnDtls: {
+             ...data?.responseData?.gprnDtls,
             deliveryDate,
           },
         });
@@ -439,7 +440,20 @@ const grvFields =(formData)=> [
                 label: "Commission Date",
                 type: "date",
                 required: true
-            }
+            },
+         ...(formData?.grnType === "GI" &&
+    formData?.gprnDtls?.materialDtlList?.some(m => m.category === "Consumable")
+    ? [
+        {
+          name: "storesStock",
+          label: "Stores Stock",
+          type: "checkbox",
+        }
+      ]
+    : []
+)
+
+
         ]
     },
     {

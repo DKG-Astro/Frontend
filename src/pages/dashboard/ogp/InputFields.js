@@ -533,3 +533,138 @@ export const gtOgpFields = [
       ],
     },
   ];
+  export const assetDisposalFields = [
+  {
+    heading: "Auction Details",
+    colCnt: 4,
+    fieldList: [
+      {
+        name: "auctionId",
+        label: "Auction ID",
+        type: "search",
+        disabled: true,
+      },
+      {
+        name: "auctionCode",
+        label: "Auction Code",
+        type: "text",
+        disabled: true,
+      },
+      {
+        name: "auctionDate",
+        label: "Auction Date",
+        type: "date",
+        required: true,
+      },
+      {
+        name: "vendorName",
+        label: "Vendor Name",
+        type: "text",
+      },
+      {
+        name: "reservePrice",
+        label: "Reserve Price",
+        type: "text",
+      },
+      {
+        name: "auctionPrice",
+        label: "Auction Price",
+        type: "text",
+      },
+    ],
+  },
+  {
+    heading: "Material Details",
+    name: "assets", 
+    colCnt: 6,
+    children: [
+      {
+        name: "disposalId",
+        label: "Disposal ID",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "assetId",
+        label: "Asset ID",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "assetDesc",
+        label: "Asset Description",
+        type: "text",
+        span: 2,
+        disabled: true,
+      },
+      {
+        name: "locatorId",
+        label: "Locator",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "custodianId",
+        label: "Custodian ID",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "disposalQuantity", 
+        label: "Quantity",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "unitPrice",
+        label: "Unit Price",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "bookValue",
+        label: "Book Value",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "reasonForDisposal",
+        label: "Reason for Disposal",
+        type: "text",
+        span: 2,
+        disabled: true,
+      },
+    /*  {
+        name: "disposalDate",
+        label: "Disposal Date",
+        type: "date",
+        span: 1,
+        disabled: true,
+      },*/
+      {
+        name: "locationId",
+        label: "Location",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "status",
+        label: "Status",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+    ],
+  },
+
+
+  
+];

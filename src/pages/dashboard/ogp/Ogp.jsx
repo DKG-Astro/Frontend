@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { gtOgpFields, ogpFields, ogpFieldsGiRejected, ogpFieldsPo } from "./InputFields";
 import { Modal } from "antd";  
+import { assetDisposalFields } from "./InputFields";
 
 import { set } from "lodash";
 const confirmReturnable = () => {
@@ -140,6 +141,21 @@ const senderName = useSelector(state => state.auth.userName)
       }))
       return
     }
+     if (formData.type === "Asset Disposal") {
+      if (!formData.auctionId) {
+        message.error("Please enter Disposal ID before searching.");
+        return;
+      }
+      const { data } = await axios.get(`/api/process-controller/SearchByAuctionId?auctionId=${formData.auctionId}`);
+      const disposalData = data?.responseData;
+      setFormData(prev => ({
+        ...prev,
+        ...disposalData,
+        type: "Asset Disposal",
+      }));
+      return;
+    }
+
     try {
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.issueNoteId}&processStage=ISN`);
       setFormData(prev => ({
@@ -188,6 +204,24 @@ const senderName = useSelector(state => state.auth.userName)
       setSubmitBtnLoading(false);
     }
     return
+  }
+  if (formData.type === "Asset Disposal") {
+    const pd = { ...formData, createdBy: userId };
+    try {
+      setSubmitBtnLoading(true);
+      const { data } = await axios.post("/api/process-controller/saveAssetDisposal", pd);
+      setFormData(prev => ({
+        ...prev,
+        ogpId: data?.responseData?.processNo
+      }));
+      localStorage.removeItem("ogpDraft");
+      setModalOpen(true);
+    } catch (error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to save Asset Disposal OGP.");
+    } finally {
+      setSubmitBtnLoading(false);
+    }
+    return;
   }
 
     const payload = {...formData, giId: formData.issueNoteId, createdBy: userId};
@@ -258,7 +292,7 @@ const getFilteredOgpFieldsPo = () => {
         <h1 className="font-semibold">Order Details</h1>
         <div className="grid md:gap-x-4 md:gap-y-2 md:grid-cols-3">
           <Form.Item name="type" label="Type">
-            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Rejected Items GI", value: "Rejected Items GI"}, {label: "Goods Transfer", value: "Goods Transfer"}]} onChange={(val) => handleChange("type", val)}/>
+            <Select options={[{label: "PO", value: "PO"}, {label: "Goods Issue", value: "Goods Issue"}, {label: "Rejected Items GI", value: "Rejected Items GI"}, {label: "Goods Transfer", value: "Goods Transfer"},{label: "Asset Disposal", value: "Asset Disposal"}]} onChange={(val) => handleChange("type", val)}/>
           </Form.Item>
         </div>
         
@@ -273,6 +307,9 @@ const getFilteredOgpFieldsPo = () => {
         }
         {
           formData.type === "Goods Transfer" && renderFormFields(gtOgpFields, handleChange, formData, "", null, setFormData, handleSearch)
+        }
+        {
+          formData.type === "Asset Disposal" && renderFormFields(assetDisposalFields, handleChange, formData, "", null, setFormData, handleSearch)
         }
         <ButtonContainer
           onFinish={onFinish}

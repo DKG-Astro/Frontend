@@ -1,4 +1,5 @@
-export const assetDisposalFields = [
+
+export const assetDisposalFields =(locations, isEditable)=> [    
     {
         heading: "Disposal Details",
         colCnt: 4,
@@ -10,15 +11,72 @@ export const assetDisposalFields = [
                 span: 2,
                 required: true
             },
-            {
-                name: "vendorId",
-                label: "Vendor ID",
-                type: "text",
-                span: 2,
-                required: true
-            }
+             {
+          name: "locationId",
+          label: "Field Station",
+          type: "select",
+          options: locations,
+          required: true,
+          span: 2,
+        },
         ]
     },
+  /*   ...(isEditable
+    ? [
+        {
+          heading: "Disposal Update",
+          colCnt: 4,
+          fieldList: [
+            {
+              name: "status",
+              label: "Status",
+              type: "select",
+              options: [
+                { value: "Disposed", label: "Disposed" },
+                { value: "Removal of Disposal", label: "Removal of Disposal" },
+              ],
+              span: 2,
+              required: true,
+            },
+            {
+              name: "auctionId",
+              label: "Auction ID",
+              type: "text",
+              span: 2,
+             
+            },
+            {
+              name: "auctionDate",
+              label: "Auction Date",
+              type: "date",
+              span: 2,
+             
+            },
+            {
+              name: "reservePrice",
+              label: "Reserve Price",
+              type: "text",
+              span: 2,
+              
+            },
+            {
+              name: "auctionPrice",
+              label: "Auction Price",
+              type: "text",
+              span: 2,
+            
+            },
+            {
+              name: "vendorName",
+              label: "Vendor Name",
+              type: "text",
+              span: 2,
+             
+            },
+          ],
+        },
+      ]
+    : []), */
     {
         heading: "Material Details",
         name: "materialDtlList",
@@ -41,8 +99,22 @@ export const assetDisposalFields = [
                 required: true
             },
             {
-                name: "disposalQuantity",
+                name: "quantity",
                 label: "Disposal Quantity",
+                type: "text",
+                span: 1,
+                required: true
+            },
+             {
+                name: "bookValue",
+                label: "Book Value",
+                type: "text",
+                span: 1,
+                required: true
+            },
+             {
+                name: "poValue",
+                label: "Po Value",
                 type: "text",
                 span: 1,
                 required: true
@@ -72,17 +144,17 @@ export const assetDisposalFields = [
                 required: true
             },
             {
-                name: "salesNoteFilename",
-                label: "Sales Note",
-                type: "image",
-                span: 2,
-                required: false
-            },
-            {
                 name: "locatorId",
                 label: "Locator ID",
                 type: "text",
                 disabled: true,
+                span: 2,
+                required: true
+            },
+             {
+                name: "reasonForDisposal",
+                label: "Reason For Disposal",
+                type: "text",
                 span: 2,
                 required: true
             }

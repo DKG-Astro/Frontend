@@ -73,6 +73,18 @@ const GatePass = () => {
       }
       return;
     }
+    if (record.formType === "ASSET_DISPOSAL") {
+    try {
+      await axios.post(`/api/process-controller/approveOgpAssetDisposal?disposalOgpId=${record.disposalOgpId}`);
+      message.success("Asset Disposal Approved Successfully");
+      fetchGatePassData(); // refresh after approval
+    } catch (error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to approve Asset Disposal");
+      console.error(error);
+    }
+    return;
+  }
+    
     try {
       await axios.post(
         `/api/process-controller/approveOgp?processNo=${
@@ -151,6 +163,17 @@ const GatePass = () => {
       }
       return;
     }
+     if (record.formType === "ASSET_DISPOSAL") {
+    try {
+      await axios.post(`/api/process-controller/rejectOgpAssetDisposal?disposalOgpId=${record.disposalOgpId}`);
+      message.success("Asset Disposal Rejected Successfully");
+      fetchGatePassData(); // refresh after rejection
+    } catch (error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Failed to reject Asset Disposal");
+      console.error(error);
+    }
+    return;
+  }
     try {
       await axios.post(`/api/process-controller/rejectOgp`, {
         processNo: "INV/" + record.ogpSubProcessId,
@@ -232,6 +255,14 @@ const GatePass = () => {
       searchable: true,
       render: (text, record) =>
         text ? "INV/" + text : record?.igpId ? record.igpId : null,
+    },
+    {title : "Ogp Asset Disposal Id",
+      dataIndex: "disposalOgpId",
+      key: "disposalOgpId",
+      searchable: true,
+      render: (text, record) =>
+        text ? "INV/" + text : record?.disposalOgpId ? record.disposalOgpId : null,
+
     },
     {
       title: "PO ID",
@@ -444,7 +475,7 @@ const GatePass = () => {
       const { data: data2 } = await axios.get(
         "/api/process-controller/getPendingIgp"
       );
-
+      const { data: data4 } = await axios.get("/api/process-controller/pendingOgpAssetDisposal");
     /*  const {data: data3} = await axios.get(
         "/api/process-controller/getPendingGtOgp"
       );*/
@@ -485,7 +516,13 @@ const GatePass = () => {
         formType: "GT",
         details: item.materialDtlList
       }));
-      setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2, ...data3Copy] || []);
+       const data4Copy = data4.responseData?.map((item) => ({
+      ...item,
+      formType: "ASSET_DISPOSAL",
+      status: "AWAITING APPROVAL",
+      details: item.assets
+    }));
+      setDataSource([...data?.responseData, ...dataCopy, ...dataCopy2, ...data3Copy , ...data4Copy] || []);
       // setDataSource(data3Copy)
       // setDataSource(dataCopy2 || []);
       // setDataSource([...dataCopy] || []);

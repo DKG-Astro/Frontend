@@ -1,301 +1,312 @@
-import { Button, DatePicker, Form, Input, Select, Space } from "antd";
-import { Option } from "antd/es/mentions";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import React from "react";
+import { Card, Form, message } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { renderFormFields } from "../../../utils/CommonFunctions";
+import Heading from "../../../components/DKG_Heading";
+import DKG_CustomForm from "../../../components/DKG_CustomForm";
+import { useSelector } from "react-redux";
+import MaterialSearch from "../../../components/MaterialSearch";
+import axios from "axios";
+import ButtonContainer from "../../../components/ButtonContainer";
+import { useReactToPrint } from "react-to-print";
+import CustomModal from "../../../components/CustomModal";
+import { useLocation } from "react-router-dom";
+const typeOptions = [
+  { label: "Demand & Issue", value: "DI" },
+  { label: "Issue Note", value: "IN" },
+];
 
-const Form20 = () => {
+const Form17 = () => {
   const [form] = Form.useForm();
+  const { userId } = useSelector((state) => state.auth);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchDone, setSearchDone] = useState(false);
+ const location = useLocation();
+  const [formData, setFormData] = useState({
+    materialDtlList: [],
+    senderCustodianId: userId,
+    senderLocationId: "",
+  });
+  const [formType, setFormType] = useState("DemandAndIssue"); // default type
 
-  const onFinish = (values) => {
-    ;
+
+  const roleName = useSelector((state) =>state.auth.role);
+  const { materialMaster, locationMaster, userMaster } =
+    useSelector((state) => state.masters) || [];
+
+  const materialMasterObj = materialMaster?.reduce((acc, item) => {
+    acc[item.materialCode] = item.description;
+    return acc;
+  }, {});
+
+  const indentList = userMaster
+    ?.filter((item) => item.roleName === "Indent Creator")
+    .map((item) => ({ label: item.userName, value: item.userId }));
+
+  const formattedLocations = locationMaster?.map((item) => ({
+    label: item.locationName,
+    value: item.locationCode,
+  }));
+
+  const [materialList, setMaterialList] = useState([]);
+  const [filteredMaterial, setFilteredMaterial] = useState([]);
+  const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
+
+  // Fetch materials
+  const populateData = async () => {
+    try {
+      const { data } = await axios.get("/api/process-controller/getStoreStockOhqConsumable");
+
+      if (data?.responseData?.length) {
+        setMaterialList(
+          data.responseData.map((item) => ({
+            ...item,
+            materialDesc: materialMasterObj?.[item.materialCode] || item.materialCode,
+          }))
+        );
+      } else {
+        setMaterialList([]);
+      }
+    } catch (error) {
+      console.error("Material Fetch Error:", error);
+      message.error("Error fetching material details.");
+    }
   };
+
+  useEffect(() => {
+    populateData();
+  }, []);
+
+  useEffect(() => {
+    setFilteredMaterial(materialList); // Show all consumable materials
+  }, [materialList]);
+
+  // Handle form field change
+  const handleChange = (fieldName, value) => {
+    if (typeof fieldName === "string") {
+      setFormData((prev) => ({ ...prev, [fieldName]: value }));
+    } else {
+      setFormData((prev) => {
+        const prevMaterialDtlList = prev.materialDtlList;
+        prevMaterialDtlList[fieldName[1]][fieldName[2]] = value;
+        return { ...prev, materialDtlList: prevMaterialDtlList };
+      });
+    }
+  };
+/*
+  // Submit form
+  const onFinish = async () => {
+    if (!formData.diDate) {
+      message.error("Please enter the Demand & Issue Date.");
+      return;
+    }
+    if (!formData.materialDtlList?.length) {
+      message.error("Please add at least one material.");
+      return;
+    }
+    for (const item of formData.materialDtlList) {
+      if (!item.quantity || item.quantity <= 0) {
+        message.error(`Please enter a valid quantity for ${item.materialDesc}.`);
+        return;
+      }
+    }
+
+    try {
+      setSubmitBtnLoading(true);
+      const { data } = await axios.post("/api/process-controller/createDi", {
+        ...formData,
+        createdBy: userId,
+      });
+
+      setFormData({ ...formData, diId: data?.responseData?.processNo });
+      setModalOpen(true);
+      message.success("Demand & Issue created successfully!");
+    } catch (error) {
+      message.error(error?.response?.data?.responseStatus?.message || "Error creating Demand & Issue.");
+    } finally {
+      setSubmitBtnLoading(false);
+    }
+  };*/
+  const onFinish = async () => {
+  if (!formData.diDate) { message.error("Please enter the DI Date."); return; }
+  if (!formData.materialDtlList?.length) { message.error("Add at least one material."); return; }
+
+  try {
+    setSubmitBtnLoading(true);
+
+    
+    const isUpdate = !!formData.diId;
+      if (isUpdate && roleName !== "Store Person") {
+      message.warning("Only Store Person can raise a Issue Note.");
+      return;
+    }
+
+    const url = isUpdate
+      ?  `/api/process-controller/issueNote`  // call PUT
+      : "/api/process-controller/createDi";                   // call POST
+
+    const { data } = await axios({
+      method: isUpdate ? "put" : "post",
+      url: url,
+      data: { ...formData, createdBy: userId },
+    });
+
+    setFormData({ ...formData, diId: data?.responseData?.processNo });
+    setModalOpen(true);
+
+    message.success(isUpdate
+      ? "Issue Note updated successfully!"
+      : "Demand & Issue created successfully!"
+    );
+
+  } catch (error) {
+    message.error(error?.response?.data?.responseStatus?.message || "Error processing request.");
+  } finally {
+    setSubmitBtnLoading(false);
+  }
+};
+
+
+
+  // Table columns
+  const materialColumn = [
+    { dataIndex: "materialCode", title: "Material Code" },
+    { dataIndex: "materialDesc", title: "Material Description" },
+    { dataIndex: "quantity", title: "Quantity" },
+  ];
+
+  // Print
+  const printRef = useRef();
+  const handlePrint = useReactToPrint({ content: () => printRef.current });
+  useEffect(() => {
+    if (location.state?.diId) {
+      fetchDIDataById(location.state.diId);
+    }
+  }, [location.state]);
+  const fetchDIDataById = async (diId) => {
+    try {
+      const { data } = await axios.get(`/api/process-controller/SearchByDiId`, {
+        params: { diId },
+      });
+      if (data?.responseData) {
+        setFormData({
+          ...data.responseData,
+          diId: data.responseData.diId,
+          materialDtlList: data.responseData.materialDtlList || [],
+        });
+        setSearchDone(true);
+      } else {
+        message.warning("No data found for this DI ID");
+      }
+    } catch (err) {
+      message.error("Error fetching DI data");
+    }
+  };
+const handleFetchDIData = async () => {
+  if (!formData.diId) {
+    message.error("Enter Demand Issue ID");
+    return;
+  }
+
+  try {
+const { data } = await axios.get(`/api/process-controller/SearchByDiId`, {
+  params: { diId: formData.diId },
+});
+    if (data?.responseData) {
+      setFormData((prev) => ({
+        ...prev,
+        ...data.responseData,
+        diId: data.responseData.diId,
+        materialDtlList: data.responseData.materialDtlList || [],
+      }));
+      setSearchDone(true);
+      message.success("Data loaded successfully!");
+    } else {
+      message.warning("No data found for this DI ID");
+    }
+  } catch (err) {
+    message.error("Error fetching DI data");
+  }
+};
+
+
+
+  // Form fields without receiver location/custodian & locator fields
+  const transferDtls = [
+    {
+      fieldList: [
+       
+        { name: "diId", label: "Demand Issue ID", type: "search",  onSearch: handleFetchDIData, span: 2 },
+     
+
+      ],
+    },
+    {
+        heading: "Status",
+        colCnt:2,
+        fieldList:[
+            ...(searchDone ? [
+    {
+        name: "status",
+        label: "Status",
+        type: "text",
+        disabled: true
+    }
+] : [])
+        ]
+    },
+    {
+      heading: "",
+      colCnt: 4,
+      fieldList: [
+        { name: "senderLocationId", label: "Field Station", type: "select", options: formattedLocations, required: true, span: 2 },
+        { name: "senderCustodianId", label: "Sender Custodian", type: "select", options: indentList, required: true, span: 2 },
+        { name: "diDate", label: "Date", type: "date", required: true, span: 1 },
+      ],
+    },
+    {
+      heading: "Material Details",
+      name: "materialDtlList",
+      colCnt: 5,
+      children: [
+        { name: "materialCode", label: "Material Code", type: "text", span: 2 },
+        { name: "materialDesc", label: "Material Description", type: "text", span: 3 },
+        { name: "quantity", label: "Quantity", type: "text", span: 2, required: true },
+        { name: "uom", label: "UOM", type: "text", span: 2, required: true },
+       
+      ],
+    },
+  ];
+
   return (
-    <div className="form-container">
-      <h2>Demand and Issue</h2>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
-        <h6>Demand (Consumable Request)</h6>
-        <div className="form-section">
-          <Form.Item
-            label="Requestor Name"
-            name="requestorName"
-            rules={[{ required: true, message: "Please enter requestor name" }]}
-          >
-            <Input />
-          </Form.Item>
+    <Card className="a4-container" ref={printRef}>
+      <Heading title="Demand And Issue" />
+      {!searchDone && filteredMaterial?.length > 0 ? (
+        <MaterialSearch
+          customCols={materialColumn}
+          itemsArray={filteredMaterial}
+          setFormData={setFormData}
+         
+        />
+      ) : (
+        <p></p>
+      )}
 
-          <Form.Item
-            label="Department"
-            name="department"
-            rules={[{ required: true, message: "Please enter department" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Employee ID"
-            name="empID"
-            rules={[{ required: true, message: "Please enter employee ID" }]}
-          >
-            <Input />
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Contact Information"
-            name="contactInfo"
-            rules={[
-              { required: true, message: "Please enter contact information" },
-            ]}
-          >
-            <Input placeholder="Enter Email" type="email" />
-          </Form.Item>
-
-          <Form.Item
-            label="Request Date"
-            name="reqDate"
-            rules={[{ required: true, message: "Please select request date" }]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-
-          <Form.Item
-            label="Priority"
-            name="priority"
-            rules={[{ required: true }]}
-          >
-            <Select placeholder="Select priority">
-              <Option value="urgent">Urgent</Option>
-              <Option value="normal">Normal</Option>
-            </Select>
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Item Code"
-            name="itemCode"
-            rules={[{ required: true, message: "Please enter item code" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Item Description"
-            name="itemDescription"
-            rules={[
-              { required: true, message: "Please enter item description" },
-            ]}
-          >
-            <Input.TextArea rows={1} />
-          </Form.Item>
-          <Form.Item label="UOM" name="UOM" rules={[{ required: true }]}>
-            <Select>
-              <Option value="KG">KG</Option>
-              <Option value="Litre">Litre</Option>
-            </Select>
-          </Form.Item>
-        </div>
-
-        <div className="form-section">
-          <Form.Item
-            label="Quantity Required"
-            name="quantityRequired"
-            rules={[
-              { required: true, message: "Please enter quantity required" },
-            ]}
-          >
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item
-            label="Expected delivery Date"
-            name="expectedDeliveryDate"
-            rules={[
-              {
-                required: true,
-                message: "Please select expected delivery date",
-              },
-            ]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            label="Usage Description"
-            name="usageDescription"
-            rules={[
-              { required: true, message: "Please enter usage description" },
-            ]}
-          >
-            <Input.TextArea />
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Request Status"
-            name="requestStatus"
-            rules={[{ required: true }]}
-          >
-            <Select disabled placeholder="Status">
-              <Option value="pending">Pending</Option>
-              <Option value="approved">Approved</Option>
-              <Option value="rejected">Rejected</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item label="Approved By" name="approvedBy">
-            <Input disabled />
-          </Form.Item>
-
-          <Form.Item label="Approved Date" name="approvedDate">
-            <DatePicker disabled style={{ width: "100%" }} />
-          </Form.Item>
-        </div>
-
-        <Form.Item label="Remarks" name="remarks">
-          <Input.TextArea
-            placeholder="Additional Notes (if any)"
-            rows={1}
-            style={{ width: "32%" }}
-          />
-        </Form.Item>
-        {/* <h6>Item Details</h6> */}
-
-
-        <h6>Issue (Consumable Issue)</h6>
-        <div className="form-section">
-          <Form.Item
-            label="Issue ID"
-            name="issueId"
-            rules={[{ required: true, message: "Please enter issue ID" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Issue Date"
-            name="issueDate"
-            rules={[{ required: true, message: "Please select issue date" }]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-
-          <Form.Item
-            label="Request Reference ID"
-            name="reqReferenceID"
-            rules={[{ required: true, message: "Please enter reference ID" }]}
-          >
-            <Input disabled placeholder="linked to demand form" />
-          </Form.Item>
-        </div>
-
-        <div className="form-section">
-          <Form.Item
-            label="Recipient Name"
-            name="recipientName"
-            rules={[{ required: true, message: "Please enter recipient name" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Department"
-            name="department"
-            rules={[{ required: true, message: "Please enter department" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Contact Information"
-            name="contactInfo"
-            rules={[{ required: true, message: "Please enter contact info" }]}
-          >
-            <Input placeholder="Enter Email" type="email" />
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Item Code"
-            name="itemCode"
-            rules={[{ required: true, message: "Please enter item code" }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            label="Item Description"
-            name="itemDescription"
-            rules={[
-              { required: true, message: "Please enter item description" },
-            ]}
-          >
-            <Input.TextArea rows={1} />
-          </Form.Item>
-
-          <Form.Item label="UOM" name="UOM" rules={[{ required: true }]}>
-            <Select>
-              <Option value="KG">KG</Option>
-              <Option value="Litre">Litre</Option>
-            </Select>
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item
-            label="Quantity Issued"
-            name="quantityIssued"
-            rules={[
-              { required: true, message: "Please enter quantity issued" },
-            ]}
-          >
-            <Input type="number" />
-          </Form.Item>
-
-          <Form.Item
-            label="Stock Balance"
-            name="stockBalance"
-            rules={[
-              { required: true, message: "Please enter quantity issued" },
-            ]}
-          >
-            <Input type="number" disabled placeholder="Auto-populated" />
-          </Form.Item>
-        </div>
-        <div className="form-section">
-          <Form.Item label="Name of Issuer" name="nameOfIssuer">
-            <Input disabled />
-          </Form.Item>
-
-          <Form.Item label="Designation" name="designation">
-            <Input disabled />
-          </Form.Item>
-
-          <Form.Item label="Date of Authorization" name="autorizationDate">
-            <DatePicker disabled style={{ width: "100%" }} />
-          </Form.Item>
-        </div>
-
-        <Form.Item label="Remarks" name="remarks">
-          <Input.TextArea
-            placeholder="Comments/Issues Noted (if any)"
-            rows={1}
-            style={{ width: "32%" }}
-          />
-        </Form.Item>
-        <Form.Item>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <Button type="default" htmlType="reset">
-              Reset
-            </Button>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-            <Button type="dashed" htmlType="button">
-              Save Draft
-            </Button>
-          </div>
-        </Form.Item>
-      </Form>
-    </div>
+      <DKG_CustomForm form={form} formData={formData} onFinish={onFinish}>
+        {renderFormFields(transferDtls, handleChange, formData, "", null, setFormData)}
+        <ButtonContainer
+          onFinish={onFinish}
+          formData={formData}
+          draftDataName="isnDraft"
+          submitBtnLoading={submitBtnLoading}
+          submitBtnEnabled
+          printBtnEnabled
+          draftBtnEnabled
+          handlePrint={handlePrint}
+        />
+      </DKG_CustomForm>
+      <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Demand And Issue" processNo={formData.diId} />
+    </Card>
   );
 };
 
-export default Form20;
+export default Form17;

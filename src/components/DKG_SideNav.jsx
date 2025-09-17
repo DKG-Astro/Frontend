@@ -162,14 +162,20 @@ const items = [
             label: "Material Disposal",
             path: "/inventory/materialDisposal",
           },
-          {
+           {
             key: "4.9",
+            icon: <TiFolderDelete />,
+            label: "Asset Auction",
+            path: "/inventory/ForDisposalAssets",
+          },
+          {
+            key: "4.21",
             icon: <CiPassport1 />,
             label: "Outward Gate Pass",
             path: "/inventory/outward",
           },
           {
-            key: "4.21",
+            key: "4.22",
             icon: <CiPassport1 />,
             label: "Inward Gate Pass",
             path: "/inventory/inward",

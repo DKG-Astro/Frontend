@@ -6,6 +6,9 @@ import GiApprovalPage from './GiApprovalPage'
 import GrnApproval from './GrnApproval'
 import { useSelector } from "react-redux";
 import GoodsTransferQueue from './GoodsTransferQueue'
+import DemandAndIssueQueue from './DemandAndIssueQueue'
+import AssetDispoaslQueue from './AssetDisposalQueue'
+import PendingIssueNote from './pendingIssueNote'
 
 const Queue3 = () => {
 const auth = useSelector((state) => state.auth);
@@ -29,6 +32,18 @@ const roleName=auth.role;
      <Tabs.TabPane tab="Goods Transfer" key="gt">
             <GoodsTransferQueue />
     </Tabs.TabPane> 
+    {(roleName === 'Store Purchase Officer' ) && (
+     <Tabs.TabPane tab="Pending Demand And issue" key="Di">
+            <DemandAndIssueQueue />
+    </Tabs.TabPane> )}
+     {(roleName === 'Store Purchase Officer') && (
+     <Tabs.TabPane tab="Asset Disposal" key="AD">
+            <AssetDispoaslQueue />
+    </Tabs.TabPane> )}
+     {(roleName === 'Store Person') && (
+     <Tabs.TabPane tab="Pending Issue Note" key="IN">
+            <PendingIssueNote />
+    </Tabs.TabPane> )}
     </Tabs>
   )
 }

@@ -51,6 +51,7 @@ import MonthlyProcurementReport from "../reports/MonthlyProcurementReport";
 import IndentStatus from '../reports/IndentStatus'
 import TenderEvaluator from "../dashboard/tenderRequest/TenderEvaluator";
 import TenderEvaluatorGem from "../dashboard/tenderRequest/TenderEvaluatorGem";
+import ForDisposalAssets from "../dashboard/assetDisposal/ForDisposalAssets";
 
 const RoutesComponent = () => {
   return (
@@ -116,6 +117,7 @@ const RoutesComponent = () => {
               <Route path="goodsIssue" element={<Isn />} />
               <Route path="goodsTransfer" element={<Form17 />} />
               <Route path="materialDisposal" element={<AssetDisposal />} />
+              <Route path="ForDisposalAssets" element={<ForDisposalAssets />} />
               <Route path="outward" element={<Ogp />} />
               <Route path="inward" element={<Igp />} />
               <Route path="demandIssue" element={<Form20 />} />
