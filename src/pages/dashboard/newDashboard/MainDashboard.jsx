@@ -336,6 +336,17 @@ import IndentStatus from "../../reports/IndentStatus";
 import { useSelector } from "react-redux";  
 import PendingRecordsReport from "../../reports/pendingRecords";
 import axios from "axios";
+import AssetReport from "../../reports/AssetReport";
+import StockReport from "../../reports/StockReport";
+import GoodsIssueReport from "../../reports/GoodsIssueReport";
+import IgpReport from "../../reports/IgpReport";
+import OgpReport from "../../reports/OgpReport";
+import RejectedGiReport from "../../reports/RejectedGiReport";
+import IgpMaterialInReport from "../../reports/IgpMaterialInReport";
+import WithInFieldStationGtReport from "../../reports/withInFieldStationGtReport";
+import DemandAndIssueReport from "../../reports/DemandAndIssueReport";
+import AssetDisposalReport from "../../reports/ApprovedAssetDisposalReport";
+import DisposalReport from "../../reports/DisposalReport";
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -611,9 +622,191 @@ const handleChartData = (id, barData, pieData) => {
     "modificationDate",
     "createdDate"
   ],roles:["Indent Creator", "Reporting Officer", "Administrative Officer", "Field Station In Charge", "Computer Committee Chairman", "Dean", "Head SEG","Director", "Store Purchase Officer", "Purchase personnel","Store Person"]
+},{
+  id: 17,
+  title: "Asset",
+  icon: <SolutionOutlined />,
+  component: AssetReport,
+  attributes: [
+    "Asset ID",
+    "materialCode",
+    "materialDesc",
+    "assetDesc",
+    "makeNo",
+    "serialNo",
+    "modelNo",
+    "uomId",
+    "poId",
+    "poValue",
+    "vendorId"
+  ],roles:[roleName]
 },
+{
+  id: 18,
+  title: "Stock",
+  icon: <SolutionOutlined />,
+  component: StockReport,
+  attributes: [
+    "assetId",
+    "assetDesc",
+    "materialCode",
+    "materialDesc",
+    "uomId",
+    "totalQuantity",
+    "bookValue",
+    "depriciationRate",
+    "unitPrice",
+  ],
+  roles: [roleName]
+},
+{
+  id: 20,
+  title: "GoodsIssue",
+  icon: <SolutionOutlined />,
+  component: GoodsIssueReport,
+  attributes: [
+    "issueNoteId",
+    "issueNoteType",
+    "issueDate",
+    "consigneeDetail",
+    "indentorName",
+    "fieldStation",
+    "locationId",
+  ],
+  roles: [roleName]
+},
+{
+  id: 21,
+  title: "IGP Report",
+  icon: <SolutionOutlined />,
+  component: IgpReport,
+  attributes: [
+    "igpProcessId",
+    "ogpSubProcessId",
+    "igpDate",
+    "locationId",
+    "createdBy"
+  ],
+  roles: [roleName]
+},
+{
+  id: 22,
+  title: "OGP Report",
+  icon: <SolutionOutlined />,
+  component: OgpReport,
+  attributes: [
+    "ogpProcessId",
+    "issueNoteId",
+    "ogpDate",
+    "locationId",
+    "createdBy"
+  ],
+  roles: [roleName]
+},
+{
+  id: 23,
+  title: "Rejected GI Report",
+  icon: <SolutionOutlined />,
+  component: RejectedGiReport,
+  attributes: [
+    "ogpSubProcessId",
+    "giId",
+    "ogpType",
+    "status",
+    "locationId",
+    "createdBy",
+    "senderName",
+    "receiverName",
+    "receiverLocation",
+    "ogpDate",
+    "returnDate"
+  ],
+  roles: [roleName]
+},
+{
+  id: 24,
+  title: "IGP Material In",
+  icon: <SolutionOutlined />,
+  component: IgpMaterialInReport,
+  attributes: [
+    "id",
+    "igpType",
+    "status",
+    "locationId",
+    "createdBy",
+    "indentId",
+    "igpDate"
+  ],
+  roles: [roleName]
+},
+{
+  id: 25,
+  title: "Goods Transfer",
+  icon: <SolutionOutlined />,
+  component: WithInFieldStationGtReport,
+  attributes: [
+    "gtId",
+    "type",
+    "senderLocationId",
+    "receiverLocationId",
+    "senderCustodianId",
+    "receiverCustodianId",
+    "status",
+    "gtDate",
+    "createDate",
+    "createdBy"
+  ],
+  roles: [roleName]
+},
+{
+  id: 26,
+  title: "Demand And Issue",
+  icon: <SolutionOutlined />,
+  component: DemandAndIssueReport,
+  attributes: [
+    "id",
+    "senderLocationId",
+    "status",
+    "senderCustodianId",
+    "issueDate",
+    "issueBy",
+  ],
+  roles: [roleName]
+},
+{
+  id: 27,
+  title: "Asset Disposal",
+  icon: <SolutionOutlined />,
+  component: AssetDisposalReport,
+  attributes: [
+    "disposalId",
+    "disposalDate",
+    "locationId",
+    "custodianId",
+    "status",
+    "action"
+  ],
+  roles: [roleName]
+},
+{
+  id: 28,
+  title: "Auction Asset Disposal",
+  icon: <SolutionOutlined />,
+  component: DisposalReport,
+  attributes: [
+    "auctionId",
+    "auctionCode",
+    "auctionDate",
+    "reservePrice",
+    "auctionPrice",
+    "vendorName"
+  ],
+  roles: [roleName]
+}
 
-    // Add other reports similarly
+
+
+
   ];
 
   const activeTile = tiles.find(tile => tile.id === activeTab);

@@ -1,4 +1,4 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 import { useSelector } from 'react-redux';
@@ -6,7 +6,12 @@ import { useSelector } from 'react-redux';
 
 
 
-const StockReport = () => {
+const StockReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role;
+
+  const [reportData, setReportData] = useState([]);
   const userMaster = useSelector((state) => state.masters.userMaster);
   const umObj = userMaster?.reduce((obj, item) => {
     obj[item.userId] = item.userName;
@@ -55,9 +60,42 @@ const StockReport = () => {
 
   const api = "/api/reports/stock";
 
+    const handleFetch = (data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.totalQuantity || 0); 
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.totalQuantity || 0);
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+
+  useEffect(() => {
+    if (reportData.length > 0) generateChart(reportData);
+  }, [selectedBarKey, selectedPieKey]);
+
+
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="Stock Report" filterType="none" storageKey="STOCK_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="Stock Report" filterType="none" storageKey="STOCK_COLUMNS" onFetch={handleFetch}
+        userId={userId}
+        roleName={roleName}/>
     </div>
   );
 };

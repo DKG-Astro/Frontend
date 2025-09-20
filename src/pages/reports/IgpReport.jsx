@@ -1,8 +1,14 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
-const IgpReport = () => {
+const IgpReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role;
+
+  const [reportData, setReportData] = useState([]);
   const columns = [
     { title: 'IGP Process No', dataIndex: 'igpProcessId', key: 'igpProcessId_IGP', render: (_, record) => record.igpProcessId + "/" + record.igpSubProcessId, searchable: true },
     { title: 'OGP Sub Process ID', dataIndex: 'ogpSubProcessId', key: 'ogpSubProcessId_IGP', searchable: true },
@@ -33,10 +39,44 @@ const IgpReport = () => {
   ];
 
   const api = "/api/reports/igp";
+   const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+ 
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + 1; // count records
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + 1; // count records
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
 
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="IGP Report" filterType="date" storageKey="IGP_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="IGP Report" filterType="date" storageKey="IGP_REPORT_COLUMNS" onFetch={handleFetch}
+        userId={userId}
+        roleName={roleName}/>
     </div>
   );
 };

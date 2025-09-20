@@ -1,8 +1,9 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 
-const RejectedGiReport = () => {
+const RejectedGiReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const [reportData, setReportData] = useState([]);
   const columns = [
     { 
       title: 'OGP Process ID', 
@@ -45,6 +46,36 @@ const RejectedGiReport = () => {
   ];
 
   const api = "/api/reports/rejected-gi"; 
+   const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
 
   return (
     <div>
@@ -54,6 +85,7 @@ const RejectedGiReport = () => {
         title="Rejected GI Report" 
         filterType="date" 
         storageKey="REJECTED_GI_REPORT_COLUMNS"
+        onFetch={handleFetch}
       />
     </div>
   );

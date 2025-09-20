@@ -1,8 +1,14 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
-const OgpReport = () => {
+const OgpReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role;
+
+  const [reportData, setReportData] = useState([]);
   const columns = [
     { title: 'OGP Process No', dataIndex: 'ogpProcessId', key: 'ogpProcessId_ogp', render: (_, record) => record.ogpProcessId + "/" + record.ogpSubProcessId , searchable: true },
     // { title: 'OGP Sub Process ID', dataIndex: 'ogpSubProcessId', key: 'ogpSubProcessId', searchable: true },
@@ -35,9 +41,42 @@ const OgpReport = () => {
 
   const api = "/api/reports/ogp";
 
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + 1; // Using count instead of value
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + 1; // Using count instead of value
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
+
   return (
     <div>
-      <CustomReport columns={columns} api={api} title="OGP Report" filterType="date" storageKey="OGP_REPORT_COLUMNS"/>
+      <CustomReport columns={columns} api={api} title="OGP Report" filterType="date" storageKey="OGP_REPORT_COLUMNS"  onFetch={handleFetch}
+        userId={userId}
+        roleName={roleName}/>
     </div>
   );
 };

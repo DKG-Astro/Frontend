@@ -1,8 +1,10 @@
-import React from 'react';
+import {React, useEffect, useState} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
 
-const DisposalReport = () => {
+const DisposalReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const [reportData, setReportData] = useState([]);
+
   const columns = [
     { title: 'Auction ID', dataIndex: 'auctionId', key: 'auctionId', render: (text) => `INV/${text}`, searchable: true  },
     { title: 'Auction Code', dataIndex: 'auctionCode', key: 'auctionCode' },
@@ -56,6 +58,36 @@ const DisposalReport = () => {
 
   const api = "/api/reports/DisposalReport";
 
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
   return (
     <div>
       <CustomReport
@@ -64,6 +96,7 @@ const DisposalReport = () => {
         title="Asset Disposal Report"
         filterType="date"
         storageKey="ASSET_DISPOSAL_REPORT_COLUMNS"
+        onFetch={handleFetch}
       />
     </div>
   );

@@ -1,8 +1,15 @@
-import React from 'react';
+import {React, useState, useEffect} from 'react';
 import CustomReport from '../../components/DKG_Report';
 import { Table } from 'antd';
+import { useSelector } from 'react-redux';
 
-const IgpMaterialInReport = () => {
+
+const IgpMaterialInReport =({ onChartData, selectedBarKey, selectedPieKey }) => {
+  const auth = useSelector((state) => state.auth);
+  const userId = auth.userId;
+  const roleName = auth.role;
+
+  const [reportData, setReportData] = useState([]);
   const columns = [
     { 
       title: 'IGP ID', 
@@ -45,6 +52,38 @@ const IgpMaterialInReport = () => {
   ];
 
   const api = "/api/reports/igp-materail-in"; 
+  const handleFetch = (startDate, endDate, data) => {
+    const finalData = data || [];
+    setReportData(finalData);
+    generateChart(finalData);
+  };
+
+  
+  const generateChart = (finalData) => {
+    const barDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedBarKey] || "Unknown";
+      acc[key] = (acc[key] || 0) + (item.igpDetails?.length || 0); // Using count of items
+      return acc;
+    }, {});
+
+    const pieDataMap = finalData.reduce((acc, item) => {
+      const key = item[selectedPieKey] || "No Data";
+      acc[key] = (acc[key] || 0) + (item.igpDetails?.length || 0); 
+      return acc;
+    }, {});
+
+    const barData = Object.keys(barDataMap).map(k => ({ name: k, value: barDataMap[k] }));
+    const pieData = Object.keys(pieDataMap).map(k => ({ name: k, value: pieDataMap[k] }));
+
+    if (onChartData) onChartData(barData, pieData);
+  };
+
+
+  useEffect(() => {
+    if (reportData.length > 0) {
+      generateChart(reportData);
+    }
+  }, [selectedBarKey, selectedPieKey]);
 
   return (
     <div>
@@ -54,6 +93,9 @@ const IgpMaterialInReport = () => {
         title="IGP Material In Report" 
         filterType="date" 
         storageKey="IGP_MATERIAL_IN_REPORT_COLUMNS"
+        onFetch={handleFetch}
+        userId={userId}
+        roleName={roleName}
       />
     </div>
   );
