@@ -52,7 +52,8 @@ import IndentStatus from '../reports/IndentStatus'
 import TenderEvaluator from "../dashboard/tenderRequest/TenderEvaluator";
 import TenderEvaluatorGem from "../dashboard/tenderRequest/TenderEvaluatorGem";
 import ForDisposalAssets from "../dashboard/assetDisposal/ForDisposalAssets";
-
+import { useSelector } from "react-redux";
+/*
 const RoutesComponent = () => {
   return (
     <BrowserRouter>
@@ -124,6 +125,137 @@ const RoutesComponent = () => {
             </Route>
           </Route>
         <Route path="/login" element={<Login />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+export default RoutesComponent;*/
+// Default: first role
+
+const indentCreatorRoutes = (
+  <>
+    <Route path="/masters" element={<Master />} />
+    <Route path="/procurement/indent/creation" element={<Indent1 />} />
+    <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
+    <Route path="/inventory/goodsInspection" element={<GoodsInspection />} />
+    <Route path="/inventory/demandIssue" element={<Form20 />} />
+    <Route path="/procurement/tender/Quotations" element={<Quotations />} />
+  </>
+);
+
+const storePurchaseRoutes = (
+  <>
+     <Route path="/procurement/tender/request" element={<Tender />} />
+     <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
+    <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
+    <Route path="/procurement/tender/Quotations" element={<Quotations />} />
+    <Route path="/inventory/goodsReceipt" element={<Grn />} />
+    <Route path="/inventory/goodsInspection" element={<GoodsInspection />} />
+    <Route path="/inventory/goodsReturn" element={<Grv />} />
+    <Route path="/inventory/goodsIssue" element={<Isn />} />
+    <Route path="/inventory/materialDisposal" element={<AssetDisposal />} />
+    <Route path="/inventory/outward" element={<Ogp />} />
+    <Route path="/inventory/inward" element={<Igp />} />
+    <Route path="/inventory/goodsTransfer" element={<Form17 />} />
+  </>
+);
+
+
+const storePersonRoutes = (
+  <>
+    <Route path="/masters" element={<Master />} />
+    <Route path="/inventory/gprn" element={<GPRN />} />
+    <Route path="/inventory/goodsInspection" element={<GoodsInspection />} />
+    <Route path="/inventory/goodsReturn" element={<Grv />} />
+    <Route path="/inventory/goodsReceipt" element={<Grn />} />
+    <Route path="/inventory/goodsIssue" element={<Isn />} />
+    <Route path="/inventory/assetMaster" element={<Asset />} />
+    <Route path="/inventory/goodsTransfer" element={<Form17 />} />
+    <Route path="/inventory/materialDisposal" element={<AssetDisposal />} />
+     <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
+    <Route path="/inventory/outward" element={<Ogp />} />
+    <Route path="/inventory/inward" element={<Igp />} />
+   
+
+  </>
+);
+
+
+const purchasePersonnelRoutes = (
+  <>
+
+    <Route path="/procurement/tender/request" element={<Tender />} />
+    <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
+    <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
+    <Route path="/procurement/tender/Quotations" element={<Quotations />} />
+   
+    <Route path="/procurement/purchaseOrder" element={<PO />} />
+    <Route path="/procurement/serviceOrder" element={<SO />} />
+
+  </>
+);
+
+const generateRoutes = (roleName) => {
+  switch (roleName) {
+    case "Indent Creator":
+      return indentCreatorRoutes;
+    case "Store Purchase Officer":
+      return storePurchaseRoutes;
+    case "Store Person":
+      return storePersonRoutes;
+    case "Purchase Personnel":
+      return purchasePersonnelRoutes;
+    default:
+      return null;
+  }
+};
+
+const RoutesComponent = () => {
+  const auth = useSelector((state) => state.auth);
+  const roleName=auth.role;
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<CustomLayout />}>
+          <Route index element={<MainDashboard />} />
+          <Route path="/queue" element={<QueueTable />} />
+
+          {/* Reports - Common for all */}
+          <Route path="/reports" element={<ReportsMain />}>
+            <Route path="cpReport" element={<CpReport />} />
+            <Route path="indentReport" element={<IndentReport />} />
+            <Route path="technoMom" element={<TechnoMom />} />
+            <Route path="vendorContract" element={<VendorContract />} />
+            <Route path="procurementActivity" element={<ProcurementActivityReport />} />
+            <Route path="PoList" element={<PoList />} />
+            <Route path="SoList" element={<SoList />} />
+            <Route path="PoStatus" element={<PoStatus />} />
+            <Route path="SoStatus" element={<SoStatus />} />
+            <Route path="IndentList" element={<IndentList />} />
+            <Route path="QuarterlyVigilanceSoReport" element={<QuarterlyVigilanceSoReport />} />
+            <Route path="ShortClosedCancelledOrderReport" element={<ShortClosedCancelledOrderReport />} />
+            <Route path="MonthlyProcurementReport" element={<MonthlyProcurementReport />} />
+            <Route path="IndentStatus" element={<IndentStatus />} />
+          </Route>
+
+          <Route path="/invReports" element={<InvReportsMain />}>
+            <Route path="goodsIssue" element={<GoodsIssueReport />} />
+            <Route path="igp" element={<IgpReport />} />
+            <Route path="ogp" element={<OgpReport />} />
+            <Route path="asset" element={<AssetReport />} />
+            <Route path="stock" element={<StockReport />} />
+          </Route>
+
+           <Route path="/procurement/contingencyPurchase" element={<ContingencyPurchase />} />
+
+          {/* Role-based routes only for roleId 1 */}
+          {generateRoutes(roleName)}
+        </Route>
+
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>

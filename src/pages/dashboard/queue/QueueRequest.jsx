@@ -549,6 +549,7 @@ const fetchEmployees = () => {
           remarks: "Approved successfully",
           requestId: record.requestId,
           workflowTransitionId: record.workflowTransitionId,
+          roleName: auth.role,
         };
         await axios.post("/performTransitionAction", payload);
       }

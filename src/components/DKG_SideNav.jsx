@@ -24,7 +24,9 @@ import { GoIssueReopened } from "react-icons/go";
 import IconBtn from "./DKG_IconBtn";
 import { useDispatch } from "react-redux";
 import { logout } from "../store/slice/authSlice";
-
+import { useSelector } from "react-redux";
+import { sidebarMenus } from "./SideNavMenus";
+/*
 const items = [
   {
     key: "1",
@@ -290,5 +292,109 @@ const SideNav = ({ collapsed, toggleCollapse }) => {
     </Layout>
   );
 };
+*/
+
+const SideNav = ({ collapsed, toggleCollapse }) => {
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { role } = useSelector((state) => state.auth); // role name 
+  const items = sidebarMenus[role] || sidebarMenus.default;
+
+  
+
+
+
+
+  const getSelectedKey = (item) => {
+    if (item.path === currentPath) {
+      return item.key;
+    }
+    if (item.items) {
+      for (const child of item.items) {
+        const key = getSelectedKey(child);
+        if (key) {
+          return key;
+        }
+      }
+    }
+    return null;
+  };
+
+  const selectedKey = items.reduce((acc, item) => {
+    return acc || getSelectedKey(item);
+  }, null);
+
+  const handleMenuItemClick = () => {
+    if (window.innerWidth <= 768) {
+      toggleCollapse();
+    }
+  };
+
+  const displaySideNavItems = (item) => {
+    if (!item.items) {
+      return (
+        <Menu.Item
+          key={item.key}
+          icon={item.icon}
+          onClick={() => handleMenuItemClick()}
+        >
+          <Link to={item.path}>{item.label}</Link>
+        </Menu.Item>
+      );
+    }
+
+    return (
+      <Menu.SubMenu key={item.key} icon={item.icon} title={item.label}>
+        {item.items.map((child) => displaySideNavItems(child))}
+      </Menu.SubMenu>
+    );
+  };
+
+  const menuItems = items.map(displaySideNavItems);
+
+  // Handler for logging out
+  const handleLogout = () => {
+    dispatch(logout());
+    // Navigate to the login page after logging out
+    navigate("/login");
+  };
+
+  return (
+    <Layout
+      style={{ flex: 0 }}
+      className={`absolute md:static h-full w-fit bg-offWhite z-10 !flex !flex-col transition-all duration-150 ${
+        collapsed ? "-translate-x-full md:-translate-x-0" : ""
+      }`}
+    >
+      <Sider
+        width={300}
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={toggleCollapse}
+        className="overflow-y-auto !bg-offWhite !w-[100vw] !flex-1 custom-sider-css"
+      >
+        <Menu
+          mode="inline"
+          defaultSelectedKeys={["1"]}
+          selectedKeys={selectedKey ? [selectedKey] : []}
+          className="!bg-offWhite"
+        >
+          {menuItems}
+        </Menu>
+      </Sider>
+      <Divider className="m-0 w-4" />
+      <IconBtn
+        text="Logout"
+        icon={LogoutOutlined}
+        className="bg-offWhite overflow-hidden"
+        onClick={handleLogout}
+      />
+    </Layout>
+  );
+};
+
 
 export default SideNav;
