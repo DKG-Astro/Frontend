@@ -823,6 +823,10 @@ const fetchEmployees = () => {
       case 7:
         endpoint = `/api/tender-requests/${record.requestId}`;
         break;
+       case 10:
+        endpoint = `/api/process-controller/VoucherData?processNo=${record.requestId}`;
+        break;
+      
       default:
         message.error("Invalid workflow ID.");
         setLoading(false);
@@ -965,6 +969,10 @@ if (isPurchaseHead && requestType === "C") {
             indentorName: item.indentorName,
             amount: item.amount,
           }),
+          ...(item.workflowId === 10 && {
+            indentorName: item.indentorName,
+            amount: item.amount,
+          }),
           status: item.nextAction,
           workflowTransitionId: item.workflowTransitionId,
         }))
@@ -987,9 +995,12 @@ if (isPurchaseHead && requestType === "C") {
        filteredData = formattedData.filter(
       item => item.action === "Indentor Cancelled" 
       )
-     }
+     }else if(requestType === "PV"){
+      filteredData = formattedData.filter(
+      item => item.workflowId === 10
+      )
   
-
+    }
 
 
      setData(filteredData);

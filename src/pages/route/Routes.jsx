@@ -53,6 +53,7 @@ import TenderEvaluator from "../dashboard/tenderRequest/TenderEvaluator";
 import TenderEvaluatorGem from "../dashboard/tenderRequest/TenderEvaluatorGem";
 import ForDisposalAssets from "../dashboard/assetDisposal/ForDisposalAssets";
 import { useSelector } from "react-redux";
+import Invoice from "../dashboard/PaymentVoucher/Invoice";
 /*
 const RoutesComponent = () => {
   return (
@@ -159,6 +160,7 @@ const storePurchaseRoutes = (
     <Route path="/inventory/outward" element={<Ogp />} />
     <Route path="/inventory/inward" element={<Igp />} />
     <Route path="/inventory/goodsTransfer" element={<Form17 />} />
+    
   </>
 );
 
@@ -251,7 +253,7 @@ const RoutesComponent = () => {
           </Route>
 
            <Route path="/procurement/contingencyPurchase" element={<ContingencyPurchase />} />
-
+           <Route path="/procurement/paymentVoucher/Invoice" element={<Invoice />} />
           {/* Role-based routes only for roleId 1 */}
           {generateRoutes(roleName)}
         </Route>

@@ -25,7 +25,7 @@ import {
   ShopOutlined,
   ShoppingOutlined,
   SolutionOutlined,
-  ToolOutlined,
+  ToolOutlined,DollarOutlined
 } from "@ant-design/icons";
 import QueueHistory from "./QueueHistory";
 import MaterialHistory from "./MaterialIndentHistory";
@@ -1203,6 +1203,128 @@ const QueueModal = ({
                 )}
             </div>
           )}
+          {parseInt(selectedRecord?.workflowId, 10) === 10 && ( 
+  <div>
+    {/* Basic Payment Voucher Details */}
+    <div className="detail-section">
+      <Typography.Title level={5} className="section-title">
+        <FileTextOutlined /> Payment Voucher Basic Details
+      </Typography.Title>
+      <Row gutter={24}>
+        <Col span={12}>
+          <div className="detail-item">
+            <strong>Payment Voucher Date:</strong> {detailsData.paymentVoucherDate || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Voucher Type:</strong> {detailsData.paymentVoucherType || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Purchase Order ID:</strong> {detailsData.purchaseOrderId || "N/A"}
+          </div>
+        </Col>
+        <Col span={12}>
+          <div className="detail-item">
+            <strong>GRN Number:</strong> {detailsData.grnNumber || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Status:</strong> {detailsData.status || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Remarks:</strong> {detailsData.remarks || "N/A"}
+          </div>
+        </Col>
+      </Row>
+    </div>
+
+    {/* Vendor Details */}
+    <div className="detail-section">
+      <Typography.Title level={5} className="section-title">
+        <ShopOutlined /> Vendor Details
+      </Typography.Title>
+      <Row gutter={24}>
+        <Col span={12}>
+          <div className="detail-item">
+            <strong>Vendor Name:</strong> {detailsData.vendorName || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Vendor Invoice No:</strong> {detailsData.vendorInvoiceNumber || "N/A"}
+          </div>
+        </Col>
+        <Col span={12}>
+          <div className="detail-item">
+            <strong>Vendor Invoice Date:</strong> {detailsData.vendorInvoiceDate || "N/A"}
+          </div>
+          <div className="detail-item">
+            <strong>Currency:</strong> {detailsData.currency || "N/A"}
+          </div>
+        </Col>
+      </Row>
+    </div>
+
+    {/* Amount Details */}
+    <div className="detail-section">
+      <Typography.Title level={5} className="section-title">
+        <DollarOutlined /> Amount Details
+      </Typography.Title>
+      <Row gutter={24}>
+        <Col span={8}>
+          <div className="detail-item">
+            <strong>Total Amount:</strong> ₹{detailsData.totalAmount?.toFixed(2) || "0.00"}
+          </div>
+        </Col>
+        <Col span={8}>
+          <div className="detail-item">
+            <strong>Partial Amount:</strong> ₹{detailsData.partialAmount?.toFixed(2) || "0.00"}
+          </div>
+        </Col>
+        <Col span={8}>
+          <div className="detail-item">
+            <strong>Advance Amount:</strong> ₹{detailsData.advanceAmount?.toFixed(2) || "0.00"}
+          </div>
+        </Col>
+      </Row>
+    </div>
+
+    {/* Material Details Table */}
+    <div className="detail-section">
+      <Typography.Title level={5} className="section-title">
+        <BarsOutlined /> Materials Details
+      </Typography.Title>
+      <Table
+        dataSource={detailsData.materials}
+        pagination={false}
+        bordered
+        scroll={{ x: true }}
+        rowKey="materialCode"
+        columns={[
+          { title: "Material Code", dataIndex: "materialCode", width: 120 },
+          { title: "Description", dataIndex: "materialDescription", ellipsis: true },
+          { title: "Quantity", dataIndex: "quantity", align: "right" },
+          {
+            title: "Unit Price",
+            dataIndex: "unitPrice",
+            align: "right",
+            render: (text) => `₹${text?.toFixed(2)}`
+          },
+          { title: "Currency", dataIndex: "currency", width: 100 },
+          {
+            title: "Exchange Rate",
+            dataIndex: "exchangeRate",
+            align: "right",
+            render: (text) => text || "0"
+          },
+          {
+            title: "GST",
+            dataIndex: "gst",
+            align: "right",
+            render: (text) => `${text}%`
+          }
+        ]}
+      />
+    </div>
+  </div>
+)}
+
 
           {parseInt(selectedRecord?.workflowId, 10) === 5 && (
             <div>

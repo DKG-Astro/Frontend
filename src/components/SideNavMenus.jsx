@@ -48,6 +48,12 @@ export const commonMenu = [
     label: "Contingency Purchase",
     path: "/procurement/contingencyPurchase",
   },
+  {
+    key: "9",
+    icon: <MoneyCollectOutlined />,
+    label: "Payment Voucher",
+    path: "/procurement/PaymentVoucher/Invoice",
+  },
 ];
 export const sidebarMenus = {
   "Indent Creator": [

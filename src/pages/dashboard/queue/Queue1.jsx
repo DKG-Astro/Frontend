@@ -29,6 +29,9 @@ const Queue1 = () => {
       <Tabs.TabPane tab="Cancelled Indents" key="C">
             <QueueRequest requestType="C" />
     </Tabs.TabPane>
+     <Tabs.TabPane tab="Payment Voucher" key="PV">
+            <QueueRequest requestType="PV" />
+    </Tabs.TabPane>
     </Tabs>
   )
 }
