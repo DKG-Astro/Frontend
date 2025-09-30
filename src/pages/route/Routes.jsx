@@ -193,8 +193,9 @@ const purchasePersonnelRoutes = (
     <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
     <Route path="/procurement/tender/Quotations" element={<Quotations />} />
    
-    <Route path="/procurement/purchaseOrder" element={<PO />} />
-    <Route path="/procurement/serviceOrder" element={<SO />} />
+    
+      <Route path="/procurement/purchaseOrder" element={<PO />} />
+              <Route path="/procurement/serviceOrder" element={<SO />} />
 
   </>
 );
@@ -207,7 +208,7 @@ const generateRoutes = (roleName) => {
       return storePurchaseRoutes;
     case "Store Person":
       return storePersonRoutes;
-    case "Purchase Personnel":
+    case "Purchase personnel":
       return purchasePersonnelRoutes;
     default:
       return null;

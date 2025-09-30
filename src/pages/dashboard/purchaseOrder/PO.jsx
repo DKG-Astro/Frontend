@@ -429,6 +429,7 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
         : [],
 
       });
+      console.log(formData);
       setSearchDone(true);
     } catch (error) {
       ;

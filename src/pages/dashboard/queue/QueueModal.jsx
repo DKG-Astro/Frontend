@@ -323,8 +323,13 @@ const QueueModal = ({
                     <div className="detail-item">
                       <strong>Reason:</strong> {detailsData.reason || "N/A"}
                     </div>
-                    <div>
-                        <strong>Proprietary And Limited Declaration:</strong> {detailsData.proprietaryAndLimitedDeclaration || "N/A"}
+                   <div>
+                    <strong>Proprietary And Limited Declaration:</strong>{" "}
+                      {detailsData.proprietaryAndLimitedDeclaration === true
+                        ? "Yes"
+                        : detailsData.proprietaryAndLimitedDeclaration === false
+                        ? "No"
+                        : "N/A"}
                     </div>
                     </Col>
                     </Row>

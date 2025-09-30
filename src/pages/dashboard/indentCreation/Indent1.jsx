@@ -10,6 +10,7 @@ import axios from 'axios'
 import CustomModal from '../../../components/CustomModal'
 import PrintFormate from '../../../utils/PrintFormate'
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const proprietaryLimitedDeclarationLabel = "The budgetary quote was obtained informing the vendor about:  (i) IIA's Payment Terms - 100% payment within 30 days from acceptance (ii). Applicability of providing performance & warranty security. (iii) Applicability of LD Clause."
 
@@ -62,6 +63,7 @@ const reasonDropdown = [
 ];
 
 const Indent1 = () => {
+     const navigate = useNavigate();
 
     const { userName, mobileNumber, email, userId, employeeDepartment } = useSelector(state => state.auth)
 
@@ -457,7 +459,7 @@ const Indent1 = () => {
                     {
                         name: "proprietaryAndLimitedDeclaration",
                         label: proprietaryLimitedDeclarationLabel,
-                        type: "text",
+                        type: "checkbox",
                         span: 2,
                         required: true
 
@@ -877,6 +879,7 @@ const Indent1 = () => {
             response = await axios.put(`/api/indents/${formData.indentId}`, payload);
            // data = response.data;
             message.success("Indent updated successfully");
+            navigate("/queue");
         } else {
             // Create new indent
             response = await axios.post("/api/indents", payload);

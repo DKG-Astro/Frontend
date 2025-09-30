@@ -284,7 +284,7 @@ export const sidebarMenus = {
       path: "/masters",
     },
   ],
-  "Purchase Personnel" : [
+  "Purchase personnel" : [
      ...commonMenu,
      {
       key: "4",
@@ -311,17 +311,17 @@ export const sidebarMenus = {
                     icon: <FileTextOutlined />,
                     label: "Gem Tender Evaluation",
                     path: "/procurement/tender/gem",
-                },
+                },  
             ]
         },
           {
-            key: "4.2",
+            key: "4.7.1",
             icon: <MoneyCollectOutlined />,
-            label: "Purchase Order (PO)",
+            label: "Purchase Order",
             path: "/procurement/purchaseOrder",
           },
            {
-            key: "4.3",
+            key: "4.7.2",
             icon: <MoneyCollectOutlined />,
             label: "Service Order",
             path: "/procurement/serviceOrder",
