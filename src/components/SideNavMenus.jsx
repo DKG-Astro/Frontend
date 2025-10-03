@@ -10,7 +10,10 @@ import {
   ReconciliationOutlined,
   ApartmentOutlined,
   UsergroupAddOutlined,
-  DashboardOutlined
+  DashboardOutlined,
+  BankOutlined,
+  UserOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import { MdOutlineAddBox, MdOutlineSettings } from "react-icons/md";
 import { BiTransferAlt } from "react-icons/bi";
@@ -53,6 +56,43 @@ export const commonMenu = [
     icon: <MoneyCollectOutlined />,
     label: "Payment Voucher",
     path: "/procurement/PaymentVoucher/Invoice",
+  },
+   {
+    key: "accounting",
+    icon: <BankOutlined />,
+    label: "Accounting",
+    items: [
+      // {
+      //   key: "accounting-dashboard",
+      //   icon: <DashboardOutlined />,
+      //   label: "Accounting Dashboard",
+      //   path: "/accounting/dashboard",
+      // },
+      {
+        key: "vendor-ledger",
+        icon: <UserOutlined />,
+        label: "Vendor Ledgers",
+        path: "/accounting/vendor-ledger",
+      },
+      {
+        key: "tally-integration",
+        icon: <FileTextOutlined />,
+        label: "Tally Integration",
+        path: "/accounting/tally-integration",
+      },
+      // {
+      //   key: "trial-balance",
+      //   icon: <CalculatorOutlined />,
+      //   label: "Trial Balance",
+      //   path: "/accounting/trial-balance",
+      // },
+      {
+        key: "payment-register",
+        icon: <CalendarOutlined />,
+        label: "Payment Register",
+        path: "/accounting/payment-register",
+      },
+    ],
   },
 ];
 export const sidebarMenus = {

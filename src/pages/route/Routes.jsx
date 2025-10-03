@@ -54,6 +54,11 @@ import TenderEvaluatorGem from "../dashboard/tenderRequest/TenderEvaluatorGem";
 import ForDisposalAssets from "../dashboard/assetDisposal/ForDisposalAssets";
 import { useSelector } from "react-redux";
 import Invoice from "../dashboard/PaymentVoucher/Invoice";
+import AccountingDashboard from "../accounting/AccountingDashboard";
+import VendorLedger from "../accounting/VendorLedger";
+import TrialBalance from "../accounting/TrialBalance";
+import PaymentRegister from "../accounting/PaymentRegister";
+import TallyIntegrationReport from "../reports/TallyIntegrationReport"
 /*
 const RoutesComponent = () => {
   return (
@@ -252,6 +257,14 @@ const RoutesComponent = () => {
             <Route path="asset" element={<AssetReport />} />
             <Route path="stock" element={<StockReport />} />
           </Route>
+
+            {/* Accounting Routes - Common for all */}
+          <Route path="/accounting/dashboard" element={<AccountingDashboard />} />
+          <Route path="/accounting/vendor-ledger" element={<VendorLedger />} />
+          <Route path="/accounting/trial-balance" element={<TrialBalance />} />
+          <Route path="/accounting/payment-register" element={<PaymentRegister />} />
+          <Route path="/accounting/tally-integration" element={<TallyIntegrationReport />} />
+
 
            <Route path="/procurement/contingencyPurchase" element={<ContingencyPurchase />} />
            <Route path="/procurement/paymentVoucher/Invoice" element={<Invoice />} />
