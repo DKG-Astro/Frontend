@@ -144,6 +144,18 @@ export const sidebarMenus = {
           label: "Demand and Issue",
           path: "/inventory/demandIssue",
         },
+         {
+          key: "5.3",
+          icon: <BiTransferAlt />,
+          label: "Goods Transfer",
+          path: "/inventory/goodsTransfer",
+        },
+        {
+          key: "5.4",
+          icon: <TiFolderDelete />,
+          label: "Material Disposal",
+          path: "/inventory/materialDisposal",
+        },
       ],
     },
     {

@@ -148,6 +148,8 @@ const indentCreatorRoutes = (
     <Route path="/inventory/goodsInspection" element={<GoodsInspection />} />
     <Route path="/inventory/demandIssue" element={<Form20 />} />
     <Route path="/procurement/tender/Quotations" element={<Quotations />} />
+    <Route path="/inventory/goodsTransfer" element={<Form17 />} />
+    <Route path="/inventory/materialDisposal" element={<AssetDisposal />} />
   </>
 );
 
