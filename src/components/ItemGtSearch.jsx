@@ -16,6 +16,7 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
   const [filteredData, setFilteredData] = useState(itemsArray);
   const [tableOpen, setTableOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
+  
 
   const { locatorMaster } = useSelector(state => state.masters);
 

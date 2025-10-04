@@ -169,12 +169,12 @@ const Grn = () => {
 
         setFormData({
           ...data?.responseData?.giDtls,
-          indentorName: data?.responseData?.gprnDtls?.indentorName,
+          indentorName: data?.responseData?.gprnDtls?.receivedBy,
           giNo: data?.responseData?.giDtls?.inspectionNo,
           grnType: "GI",
           materialDtlList: materialWithPrice,
           locationId: data?.responseData?.gprnDtls?.locationId,
-          custodianId: data?.responseData?.gprnDtls?.indentId,
+          custodianId: data?.responseData?.gprnDtls?.receivedBy,
           //deliveryDate,
           gprnDtls: {
              ...data?.responseData?.gprnDtls,
@@ -542,7 +542,7 @@ const grvFields =(formData)=> [
         heading: "Custodian Details",
         fieldList: [
             {
-                label: "Custodian Name",
+                label: "Custodian Id",
                 name: "indentorName",
               //  disabled: true,
                 type: "text"

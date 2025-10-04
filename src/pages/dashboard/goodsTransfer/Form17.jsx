@@ -415,13 +415,13 @@ const Form17 = () => {
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Goods Transfer" />
-      {filteredMaterial.length > 0 && (
+      {/*filteredMaterial.length > 0 && (
         <MaterialSearch
           customCols = {materialColumn}
           itemsArray={filteredMaterial}
           setFormData={setFormData}
         />
-      )}
+      )*/}
       {filteredAsset.length > 0 && (
         <ItemGtSearch itemsArray={filteredAsset} setFormData={setFormData} />
       )}
