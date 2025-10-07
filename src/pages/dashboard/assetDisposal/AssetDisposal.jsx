@@ -180,7 +180,7 @@ const handleAssetSearch = async (value) => {
 const onFinish = async () => {
   const payload = {
     ...formData,
-    locationId,
+    locationId: formData.locationId || locationId,
     createdBy: userId,
   
   };

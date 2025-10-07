@@ -167,6 +167,7 @@ const storePurchaseRoutes = (
     <Route path="/inventory/outward" element={<Ogp />} />
     <Route path="/inventory/inward" element={<Igp />} />
     <Route path="/inventory/goodsTransfer" element={<Form17 />} />
+      <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
     
   </>
 );
@@ -202,7 +203,7 @@ const purchasePersonnelRoutes = (
    
     
       <Route path="/procurement/purchaseOrder" element={<PO />} />
-              <Route path="/procurement/serviceOrder" element={<SO />} />
+      <Route path="/procurement/serviceOrder" element={<SO />} />
 
   </>
 );

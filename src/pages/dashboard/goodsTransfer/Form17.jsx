@@ -351,7 +351,8 @@ const Form17 = () => {
       });
 
       setFilteredMaterial(filtered);
-      setFilteredAsset(filteredAsset);
+    //  setFilteredAsset(filteredAsset);
+    setFilteredAsset([...filteredAsset]);
     } else {
       setFilteredMaterial([]);
     }
@@ -360,7 +361,10 @@ const Form17 = () => {
     formData.senderCustodianId,
     locatorMaster,
     materialList,
+    assetList
   ]);
+
+  console.log("filteredAsset for ItemGtSearch:", filteredAsset);
 
   console.log("Filtered asset: ", filteredAsset);
   console.log("Filtered material: ", filteredMaterial);
@@ -422,9 +426,10 @@ const Form17 = () => {
           setFormData={setFormData}
         />
       )*/}
-      {filteredAsset.length > 0 && (
+      {/*filteredAsset.length > 0 && (
         <ItemGtSearch itemsArray={filteredAsset} setFormData={setFormData} />
-      )}
+      )*/}
+      <ItemGtSearch itemsArray={filteredAsset} setFormData={setFormData} />
       <DKG_CustomForm form={form} formData={formData} onFinish={onFinish}>
         {renderFormFields(
           transferDtls,
