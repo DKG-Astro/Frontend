@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Typography, Row, Col, Table, Button, Spin, Tag } from "antd";
-import { HistoryOutlined, BarsOutlined } from "@ant-design/icons";
+import { HistoryOutlined, BarsOutlined,ProjectOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { baseURL } from '../../../App';
 
 const InventoryQueueModal = ({
   modalVisible,
@@ -90,6 +91,38 @@ const InventoryQueueModal = ({
                 </Col>
                 <Col span={12}>
                   <div className="detail-item"><strong>Commissioning Date:</strong> {giDtls.commissioningDate || "N/A"}</div>
+                  {giDtls.installationReportFileName && (
+  <div className="detail-section">
+    <Typography.Title level={5} className="section-title">
+      <ProjectOutlined /> Installation Report
+    </Typography.Title>
+    <Row gutter={24}>
+      <Col span={12}>
+        <div className="detail-item">
+          <strong>Installation Report:</strong>{" "}
+          {giDtls.installationReportFileName
+            ? giDtls.installationReportFileName
+                .split(",")
+                .map((fileName, index) => (
+                  <div key={index}>
+                    <a
+                      href={`${baseURL}/file/view/INV/${fileName.trim()}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {fileName.trim()} (View)
+                    </a>
+                    {index <
+                      giDtls.installationReportFileName.split(", ").length - 1 && ", "}
+                  </div>
+                ))
+            : "N/A"}
+        </div>
+      </Col>
+    </Row>
+  </div>
+)}
+
                 </Col>
               </Row>
 
@@ -122,6 +155,9 @@ const InventoryQueueModal = ({
                   <Col span={12}><div className="detail-item"><strong>Indentor Name:</strong> {gprnDtls.indentorName || "N/A"}</div></Col>
                 </Row>
               </div>
+              <div>
+                
+              </div>
 
               <div className="detail-section">
                 <Typography.Title level={5} className="section-title">Consignee & Warranty</Typography.Title>
@@ -143,6 +179,7 @@ const InventoryQueueModal = ({
               pagination={false}
               bordered
               rowKey="materialCode"
+              scroll={{ x: "max-content" }}
               columns={
                 type === "GI"
                   ? [
@@ -154,6 +191,23 @@ const InventoryQueueModal = ({
                       { title: "Rejected Qty", dataIndex: "rejectedQuantity" },
                       { title: "Rejection Type", dataIndex: "rejectionType"},
                       {title: "Reject Reason", dataIndex: "rejectReason"},
+                       {
+                          title: "View Installation Report",
+                          dataIndex: "installationReportFileName",
+                          key: "viewReport",
+                          render: (fileName) =>
+                          fileName ? (
+                          <a
+                            href={`${baseURL}/file/view/INV/${fileName}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            View
+                          </a>
+                        ) : (
+                            "--"
+                      ),
+              },
                     ]
                   : [
                       { title: "Material Code", dataIndex: "materialCode" },

@@ -77,6 +77,7 @@ const AssetDisposalApproval = () => {
     { title: "Disposal ID", dataIndex: "disposalId", key: "id", searchable: true, fixed: "left" },
     { title: "Location", dataIndex: "locationId", key: "locationId", searchable: true },
     { title: "Custodian ID", dataIndex: "custodianId", key: "custodianId", searchable: true },
+     { title: "Custodian Name", dataIndex: "custodianName", key: "custodianName", searchable: true },
     { title: "Disposal Date", dataIndex: "disposalDate", key: "disposalDate", searchable: true },
     { title: "Status", dataIndex: "status", key: "status" },
     {
@@ -99,7 +100,12 @@ const AssetDisposalApproval = () => {
             { title: "Book Value", dataIndex: "bookValue", key: "bookValue" },
             { title: "Depreciation Rate", dataIndex: "depriciationRate", key: "depriciationRate" },
             { title: "Unit Price", dataIndex: "unitPrice", key: "unitPrice" },
+            { title: "PO Id", dataIndex: "poId", key: "poId" },
             { title: "PO Value", dataIndex: "poValue", key: "poValue" },
+            { title: "Po Date", dataIndex: "poDate", key: "poDate" },
+            { title: "Serial No", dataIndex: "serialNo", key: "serialNo" },
+            { title: "Model No", dataIndex: "modelNo", key: "modelNo" },
+            { title: "Reason For Disposal", dataIndex: "reasonForDisposal", key: "reasonForDisposal" },
           ]}
         />
       ),

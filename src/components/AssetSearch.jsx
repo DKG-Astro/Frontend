@@ -2,6 +2,7 @@ import { Button, Popover, Table, Input } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { convertToCurrency, updateFormData } from '../utils/CommonFunctions';
+import dayjs from "dayjs";
 
 const { Search } = Input;
 
@@ -12,7 +13,7 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
   const [searchText, setSearchText] = useState("");
 
   const { locatorMaster } = useSelector(state => state.masters);
-
+ const { locationMaster } = useSelector(state => state.masters);
   const locatorMasterObj = locatorMaster?.reduce((acc, obj) => {
     const { value, label } = obj;
     acc[value] = label;
@@ -41,6 +42,12 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
     if (index === -1) {
       setSelectedAssets(prev => [...prev, record]);
 
+       const locator = locatorMaster?.find(loc => loc.value === record.locatorId);
+    const locationCode = locator?.locationId;
+
+    // Find location name from locationMaster using locationCode
+    const location = locationMaster?.find(loc => loc.locationCode === locationCode);
+    const locationName = location?.locationCode;
       const newAsset = {
       /*  ohqId: record.ohqId,
         assetId: record.assetId,
@@ -64,9 +71,19 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
   depriciationRate: record?.depriciationRate || 0,
   custodianId: record?.custodianId || "unassigned",
   poValue: record?.poValue || 0,
+   poId:  record?.poId,
+      poDate: record?.gprnDate ? dayjs(record.gprnDate, "DD/MM/YYYY") : null,
+        serialNo:  record?.serialNo,
+        modelNo:  record?.modelNo,
+        locationId: locationName,
       };
+        setFormData(prev => ({
+      ...prev,
+      locationId: locationName,            // <-- Top-level field station
+      materialDtlList: [...prev.materialDtlList, newAsset],
+    }));
 
-      updateFormData(newAsset, setFormData);
+   //   updateFormData(newAsset, setFormData);
     } else {
       const updatedAssets = [...selectedAssets];
       updatedAssets.splice(index, 1);

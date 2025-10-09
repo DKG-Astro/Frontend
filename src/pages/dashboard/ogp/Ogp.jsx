@@ -57,7 +57,13 @@ const senderName = useSelector(state => state.auth.userName)
   });
 
   const handleChange = (fieldName, value) => {
+    if (fieldName === "issueNoteId" && formData.type === "Rejected Items GI") {
+    setFormData(prev => ({ ...prev, issueNoteId: value }));
+    console.log("issueNoteId:", value); 
 
+    handleSearchRejectedGI(value);
+    return;
+}
    if (fieldName === "ogpType") {
     if (value === "Non Returnable") {
       setFormData((prev) => ({ ...prev, [fieldName]: value, dateOfReturn: null }));
@@ -85,6 +91,35 @@ const senderName = useSelector(state => state.auth.userName)
     acc[value] = label;
     return acc;
   }, {});
+
+const handleSearchRejectedGI = async (issueNoteId) => {
+  if (!issueNoteId) return;
+
+  try {
+    const { data } = await axios.get(
+      `/api/process-controller/getSubProcessDtls?processNo=${issueNoteId}&processStage=GI`
+    );
+
+    const giDtls = data?.responseData?.giDtls;
+    const gprnDtls = data?.responseData?.gprnDtls;
+
+    setFormData(prev => ({
+      ...prev,
+      ...giDtls,
+      issueNoteId: giDtls?.inspectionNo,
+      type: "Rejected Items GI",
+      ogpType: prev.ogpType,
+      locationId: gprnDtls?.locationId,
+      senderName: prev.senderName,
+      ogpDate: prev.ogpDate,
+      receiverName: gprnDtls?.vendorName,
+      receiverLocation: gprnDtls?.consigneeDetail,
+    }));
+  } catch (error) {
+    message.error(error?.response?.data?.responseStatus?.message || "Error fetching Rejected GI data.");
+  }
+};
+
 
 
   const handleSearch = async () => {
@@ -128,7 +163,7 @@ const senderName = useSelector(state => state.auth.userName)
 
           return;
     }
-    if(formData.type === "Rejected Items GI"){
+   /* if(formData.type === "Rejected Items GI"){
       const {data} = await axios.get(`/api/process-controller/getSubProcessDtls?processNo=${formData.issueNoteId}&processStage=GI`);
       setFormData(prev => ({
         ...data?.responseData?.giDtls,
@@ -140,7 +175,7 @@ const senderName = useSelector(state => state.auth.userName)
         ogpDate: prev.ogpDate,
       }))
       return
-    }
+    }*/
      if (formData.type === "Asset Disposal") {
       if (!formData.auctionId) {
         message.error("Please enter Disposal ID before searching.");
@@ -282,6 +317,16 @@ const getFilteredOgpFieldsPo = () => {
   return ogpFieldsPo;
 };
 
+const getFilteredOgpFieldsRejectedGI = () => {
+  return ogpFieldsGiRejected.map(section => {
+    if (!section.fieldList) return section;
+    return {
+      ...section,
+      fieldList: section.fieldList.filter(f => f.name !== "dateOfReturn" || formData.ogpType === "Returnable")
+    };
+  });
+};
+
 
   
 
@@ -303,7 +348,7 @@ const getFilteredOgpFieldsPo = () => {
           formData.type === "Goods Issue" && renderFormFields(getFilteredOgpFields(), handleChange, formData, "", null, setFormData, handleSearch)
         }
         {
-          formData.type === "Rejected Items GI" && renderFormFields(ogpFieldsGiRejected, handleChange, formData, "", null, setFormData, handleSearch)
+          formData.type === "Rejected Items GI" && renderFormFields(getFilteredOgpFieldsRejectedGI(), handleChange, formData, "", null, setFormData,  handleSearchRejectedGI)
         }
         {
           formData.type === "Goods Transfer" && renderFormFields(gtOgpFields, handleChange, formData, "", null, setFormData, handleSearch)

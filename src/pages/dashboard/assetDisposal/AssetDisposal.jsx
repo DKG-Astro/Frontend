@@ -58,6 +58,10 @@ const [isEditable, setIsEditable] = useState(false);
           custodianId: item.custodianId ? item.custodianId.toString() : null,
           poValue: item.poValue,
           ohqId : item.ohqId,
+          poId: item.poId,
+          poDate: item?.gprnDate ? dayjs(item.gprnDate, "DD/MM/YYYY") : null,
+          serialNo: item.serialNo, 
+          modelNo: item.modelNo, 
         }));
         setAssetList(formattedAssets);
       }
@@ -226,7 +230,7 @@ const onFinish = async () => {
       message.success("Form loaded from draft.");
     }
   }, []);
-
+console.log(formData);
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Asset Disposal" />

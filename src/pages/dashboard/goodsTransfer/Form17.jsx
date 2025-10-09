@@ -15,7 +15,7 @@ const Form17 = () => {
   const [form] = Form.useForm();
   const {userId} = useSelector(state => state.auth)
   const [modalOpen, setModalOpen] = useState(false)
-  const [formData, setFormData] = useState({materialDtlList: [], senderCustodianId: 18, senderLocationId: "BNG"});
+  const [formData, setFormData] = useState({materialDtlList: [], senderCustodianId: userId, senderLocationId: "BNG"});
   const onFinish = async () => {
     if(!formData.gtDate) {
       message.error("Please enter the Goods Transfer Date.");
@@ -210,7 +210,7 @@ const Form17 = () => {
           span: 2,
           required: true,
         },
-                {
+        {
           name: "unitPrice",
           label: "Unit Price",
           type: "text",
@@ -227,6 +227,32 @@ const Form17 = () => {
           {
           name: "bookValue",
           label: "Book Value",
+          type: "text",
+          span: 2,
+          required: true
+        },
+         {
+          name: "poId",
+          label: "Po Id",
+          type: "text",
+          span: 2,
+          required: true
+        },
+         {
+          name: "modelNo",
+          label: "Model No",
+          type: "text",
+          span: 2,
+          required: true
+        },{
+          name: "serialNo",
+          label: "Serial No",
+          type: "text",
+          span: 2,
+          required: true
+        },{
+          name: "reasonForTransfer",
+          label: "Reason for Transfer",
           type: "text",
           span: 2,
           required: true
@@ -273,7 +299,7 @@ const Form17 = () => {
   const populateData = async () => {
     try {
       const [data, data1, data2] = await Promise.all([
-        axios.get("/api/process-controller/getAssetOhq"),
+        axios.get("/api/process-controller/getAssetOhqDetails"),
         axios.get("/api/process-controller/getAssetOhqConsumable"),
         axios.get("/api/reports/asset"),
       ]);
@@ -285,7 +311,8 @@ const Form17 = () => {
 
       console.log("Asset obj: ", assetObj);
 
-      setAssetList(data.data.responseData.map(item => ({...item, assetDesc: assetObj[item.assetId]})) || []);
+      setAssetList(data.data.responseData.map(item => ({...item, assetDesc: assetObj[item.assetId], modelNo: item.modelNo,
+    poId: item.poId,serialNo: item.serialNo})) || []);
       setMaterialList(data1.data.responseData.map(item => ({...item, materialDesc: materialMasterObj[item.materialCode]})) || []);
     } catch (error) {
       message.error("Error fetching goods details.");
@@ -299,9 +326,31 @@ const Form17 = () => {
     const populateItemQtyDtls = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/process-controller/getIsnAssetOhqDtls');
-      if (data?.responseData) {
-        setAssetList(data.responseData);
-      }
+       if (data?.responseData) {
+      const flatAssets = data.responseData.flatMap(asset =>
+        asset.qtyList.map(qtyItem => ({
+          assetId: asset.assetId,
+          assetDesc: asset.assetDesc,
+         
+        
+          unitPrice: asset.unitPrice,
+          depriciationRate: asset.depriciationRate,
+         
+          uomId: asset.uomId,
+          locatorId: qtyItem.locatorId,
+          quantity: qtyItem.quantity,
+          bookValue: qtyItem.bookValue,
+          custodianId: qtyItem.custodianId,
+          poId: asset.poId,        
+    modelNo: asset.modelNo,     
+    makeNo: asset.makeNo, 
+        }))
+      );
+      setAssetList(flatAssets);
+    }
+      // if (data?.responseData) {
+      //   setAssetList(data.responseData);
+      // }
     } catch (error) {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching item quantity details.");
     }
@@ -351,8 +400,7 @@ const Form17 = () => {
       });
 
       setFilteredMaterial(filtered);
-    //  setFilteredAsset(filteredAsset);
-    setFilteredAsset([...filteredAsset]);
+      setFilteredAsset(filteredAsset);
     } else {
       setFilteredMaterial([]);
     }
@@ -361,10 +409,7 @@ const Form17 = () => {
     formData.senderCustodianId,
     locatorMaster,
     materialList,
-    assetList
   ]);
-
-  console.log("filteredAsset for ItemGtSearch:", filteredAsset);
 
   console.log("Filtered asset: ", filteredAsset);
   console.log("Filtered material: ", filteredMaterial);
@@ -396,6 +441,9 @@ const Form17 = () => {
       dataIndex: "assetDesc",
       title: "Asset Description",
     },
+     { dataIndex: "modelNo", title: "Model No" },
+      { dataIndex: "serialNo", title: "Serial No" },
+    { dataIndex: "poId", title: "PO Id" },
     { 
       dataIndex: "locatorId",
       title: "Locator Id"
@@ -426,10 +474,9 @@ const Form17 = () => {
           setFormData={setFormData}
         />
       )*/}
-      {/*filteredAsset.length > 0 && (
+      {filteredAsset.length > 0 && (
         <ItemGtSearch itemsArray={filteredAsset} setFormData={setFormData} />
-      )*/}
-      <ItemGtSearch itemsArray={filteredAsset} setFormData={setFormData} />
+      )}
       <DKG_CustomForm form={form} formData={formData} onFinish={onFinish}>
         {renderFormFields(
           transferDtls,

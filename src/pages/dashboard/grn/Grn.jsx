@@ -9,6 +9,7 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { useLocation } from "react-router-dom";
+import GrnSearchDropdown from "../../../components/GrnSearchDropDown";
 
 const Grn = () => {
   const printRef = useRef();
@@ -85,7 +86,8 @@ const Grn = () => {
 
   console.log("Foprmdata: ", formData);
 
-  const handleSearch = async () => {
+  const handleSearch = async (selectedGiNo) => {
+    let giNo = selectedGiNo || formData.giNo;
     if(formData.grnType === "materialIn") {
       try{
 
@@ -113,7 +115,8 @@ const Grn = () => {
       if (!formData.grnNo) {
         if (formData.grnType === "GI") {
           processStage = "GI";
-          processNo = formData.giNo;
+        //  processNo = formData.giNo;
+         processNo = selectedGiNo;
         } else if (formData.grnType === "IGP") {
           processStage = "IGP";
           processNo = formData.giNo;
@@ -205,7 +208,7 @@ const Grn = () => {
           grnDate: data?.responseData?.grnDtls?.grnDate,
           installationDate: data?.responseData?.grnDtls?.installationDate,
           commissioningDate: data?.responseData?.grnDtls?.commissioningDate,
-          indentorName: data?.responseData.grnDtls?.createdBy,
+          indentorName: data?.responseData.grnDtls?.custodianId,
           materialDtlList: data?.responseData?.grnDtls?.materialDtlList?.map(
             (grnMaterial) => {
               const giMaterial =
@@ -409,13 +412,40 @@ const grvFields =(formData)=> [
                     }
                 ],
             },
-            {
+           /* {
                 name: "giNo",
                 label: "Enter Process No",
                 type: "search",
                 required: true,
                 span: 2
-            },
+            }*/
+        {
+  name: "giNo",
+  label: "Enter GI No",
+  type: "custom",
+  render: () => (
+   <GrnSearchDropdown
+  label="GI No"
+  value={formData.giNo}
+  onChange={(val) => setFormData(prev => ({ ...prev, giNo: val }))}
+  onSelect={(selectedItem) => {
+    if (selectedItem) {
+      const selectedGiNo = selectedItem.giNo;
+
+      // Update state
+      setFormData(prev => ({ ...prev, giNo: selectedGiNo }));
+
+      // Call search immediately with selected value
+      handleSearch(selectedGiNo);
+    }
+  }}
+/>
+
+
+  ),
+  required: true,
+  span: 2
+},
             {
                 name: "grnNo",
                 label: "GRN No",

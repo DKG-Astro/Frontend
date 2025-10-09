@@ -1,4 +1,4 @@
-
+import PendingRejectedGiDropdown from "../../../components/PendingRejectedGiDropdown";
 export const ogpFields = [
     {
         // heading: "OGP Details",
@@ -136,13 +136,19 @@ export const ogpFieldsGiRejected = [
                     }
                 ],
             },
-            {
+          /*  {
                 name: "issueNoteId",
                 label: "Process No",
                 type: "search",
                 // span: 2,
                 required: true
-            },
+            },*/{
+                  name: "issueNoteId",
+                  label: "Process No",
+                  type: "customDropdown", 
+                  required: true,
+                  component: PendingRejectedGiDropdown
+                },
             {
                 name: "ogpId",
                 label: "OGP No",

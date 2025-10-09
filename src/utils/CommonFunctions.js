@@ -11,6 +11,7 @@ import UploadFile from "../components/UploadFile";
 import Btn from "../components/DKG_Btn";
 import DownloadFile from "../components/DowloadFile";
 import CustomIndentSearch from "../components/CustomIndentSearch";
+import CustomGprnSearch from "../components/CoustomGprnSearch";
 
 
 export const apiCall = async (method, url, token, payload = null) => {
@@ -231,7 +232,24 @@ export const apiCall = async (method, url, token, payload = null) => {
       value={formData[field.name]}
       accept="image/*"
     />
-  );
+  ); 
+  case "customDropdown":
+      if (!field.component) {
+        throw new Error("customDropdown type requires a 'component' property.");
+      }
+      const Component = field.component;
+      return (
+        <Form.Item key={field.name} label={field.label} required={field.required}>
+          <Component
+            value={formData[field.name]}
+            onChange={(val) => handleChange(field.name, val)}
+            onSelect={(item) => handleChange("selectedProcessObj", item)} 
+          
+          />
+        </Form.Item>
+      );
+
+
 
 
       case "image":
@@ -271,6 +289,13 @@ export const apiCall = async (method, url, token, payload = null) => {
   } />
             </Form.Item>
         );
+        case "custom":
+  
+  if (typeof field.render === "function") {
+    return field.render();
+  }
+  throw new Error("Custom type requires a render function.");
+
         case "multiselect":
           return (
             <Form.Item 
@@ -339,6 +364,18 @@ export const apiCall = async (method, url, token, payload = null) => {
         case "indentSearch":
   return (
     <CustomIndentSearch
+      label={field?.label}
+      name={field?.name}
+      searchType={formData.searchType}
+      setSearchType={(val) => handleChange("searchType", val)}
+      searchValue={formData.searchValue}
+      setSearchValue={(val) => handleChange("searchValue", val)}
+      onSearch={field?.onSearch}
+    />
+  );
+   case "gprnSearch":
+  return (
+    <CustomGprnSearch
       label={field?.label}
       name={field?.name}
       searchType={formData.searchType}

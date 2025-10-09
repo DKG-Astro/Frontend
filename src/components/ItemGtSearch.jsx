@@ -51,6 +51,9 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
         unitPrice: record.unitPrice,
         bookValue: record.bookValue,
         depriciationRate: record.depriciationRate,
+        poId: record?.poId,
+        modelNo: record?.modelNo,
+        serialNo:record?.serialNo,
       };
 
       updateFormData(newItem, setFormData);

@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 import { useLocation } from "react-router-dom";
 import { Input } from 'antd'; 
+import GprnSearchDropdown from "../../../components/GprnSearchDropdown";
 const GoodsInspection = () => {
   const printRef = useRef();
   const handlePrint = useReactToPrint({
@@ -184,7 +185,7 @@ const handleGISearch = async () => {
         heading: "Order Details", // optional
         colCnt: 5, // optional
         fieldList: [
-            {
+          /*  {
             name: "gprnNo",
             label: "GPRN No",
             type:"search",
@@ -201,7 +202,24 @@ const handleGISearch = async () => {
             // onPressEnter={(e) => handleSearch(e.target.value, true)}
             // />
             // )
-          },
+          },*/
+         {
+          name: "gprnNo",
+          label: "GPRN No",
+          required: true,
+          span: 2,
+          type: "custom",
+          render: () => (
+            <GprnSearchDropdown
+              label="GPRN No" 
+              value={formData.gprnNo}
+              onChange={(val) => {
+              handleChange("gprnNo", val); 
+              handleSearch(val, true); 
+          }}
+          />
+        ),
+      },
             {
               name: "poId",
               label: "PO Id.",
@@ -420,7 +438,7 @@ const handleGISearch = async () => {
               span: 2,
             },
             {
-                name: "installationRepostBase64",
+                name: "installationReportBase64",
                 label: "Installation Report",
                 type: "image",
                 span: 2,

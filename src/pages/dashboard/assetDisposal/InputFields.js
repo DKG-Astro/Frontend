@@ -106,8 +106,29 @@ export const assetDisposalFields =(locations, isEditable)=> [
                 required: true
             },
              {
+                name: "serialNo",
+                label: "Serial No",
+                type: "text",
+                span: 1,
+                required: true
+            },
+             {
+                name: "modelNo",
+                label: "Model No",
+                type: "text",
+                span: 1,
+                required: true
+            },
+             {
                 name: "bookValue",
                 label: "Book Value",
+                type: "text",
+                span: 1,
+                required: true
+            },
+             {
+                name: "poId",
+                label: "Po Id",
                 type: "text",
                 span: 1,
                 required: true
@@ -116,6 +137,13 @@ export const assetDisposalFields =(locations, isEditable)=> [
                 name: "poValue",
                 label: "Po Value",
                 type: "text",
+                span: 1,
+                required: true
+            },
+             {
+                name: "poDate",
+                label: "Po Delivery Date",
+                type: "date",
                 span: 1,
                 required: true
             },

@@ -167,7 +167,7 @@ const storePurchaseRoutes = (
     <Route path="/inventory/outward" element={<Ogp />} />
     <Route path="/inventory/inward" element={<Igp />} />
     <Route path="/inventory/goodsTransfer" element={<Form17 />} />
-      <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
+    <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
     
   </>
 );
