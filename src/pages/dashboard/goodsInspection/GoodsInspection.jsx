@@ -347,6 +347,18 @@ const handleGISearch = async () => {
                 required: true,
                 span: 2
             },
+            {
+              name: "gprnAmount",
+              label: "Gprn Amount",
+              type: "text",
+              span: 2,
+            },
+             {
+              name: "poAmount",
+              label: "Po Amount",
+              type: "text",
+              span: 2,
+            },
         ]
     },
     {
@@ -487,6 +499,7 @@ const handleGISearch = async () => {
             // }
         ]
     },
+     
     {
         heading: "Consignee & Warranty Information",
         colCnt: 3,

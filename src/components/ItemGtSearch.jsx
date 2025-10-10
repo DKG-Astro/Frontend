@@ -2,6 +2,7 @@ import { Button, Popover, Table, Input } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { convertToCurrency, handleSearch, updateFormData } from '../utils/CommonFunctions';
+import dayjs from 'dayjs';
 
 const { Search } = Input;
 
@@ -54,6 +55,7 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
         poId: record?.poId,
         modelNo: record?.modelNo,
         serialNo:record?.serialNo,
+        
       };
 
       updateFormData(newItem, setFormData);

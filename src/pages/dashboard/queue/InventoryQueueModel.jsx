@@ -88,9 +88,12 @@ const InventoryQueueModal = ({
                 <Col span={12}>
                   <div className="detail-item"><strong>GI No:</strong> {giDtls.inspectionNo || "N/A"}</div>
                   <div className="detail-item"><strong>Installation Date:</strong> {giDtls.installationDate || "N/A"}</div>
+                    <div className="detail-item"><strong>Commissioning Date:</strong> {giDtls.commissioningDate || "N/A"}</div>
                 </Col>
                 <Col span={12}>
-                  <div className="detail-item"><strong>Commissioning Date:</strong> {giDtls.commissioningDate || "N/A"}</div>
+                
+                   <div className="detail-item"><strong>Po Amount:</strong> {giDtls.poAmount || "N/A"}</div>
+                    <div className="detail-item"><strong>Gprn Amount:</strong> {giDtls.gprnAmount || "N/A"}</div>
                   {giDtls.installationReportFileName && (
   <div className="detail-section">
     <Typography.Title level={5} className="section-title">

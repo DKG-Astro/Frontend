@@ -10,12 +10,13 @@ import ItemGtSearch from "../../../components/ItemGtSearch";
 import ButtonContainer from "../../../components/ButtonContainer";
 import { useReactToPrint } from "react-to-print";
 import CustomModal from "../../../components/CustomModal";
+import dayjs from "dayjs";
 
 const Form17 = () => {
   const [form] = Form.useForm();
   const {userId} = useSelector(state => state.auth)
   const [modalOpen, setModalOpen] = useState(false)
-  const [formData, setFormData] = useState({materialDtlList: [], senderCustodianId: userId, senderLocationId: "BNG"});
+  const [formData, setFormData] = useState({materialDtlList: [], senderCustodianId: userId, senderLocationId: "BNG",});
   const onFinish = async () => {
     if(!formData.gtDate) {
       message.error("Please enter the Goods Transfer Date.");
@@ -312,7 +313,7 @@ const Form17 = () => {
       console.log("Asset obj: ", assetObj);
 
       setAssetList(data.data.responseData.map(item => ({...item, assetDesc: assetObj[item.assetId], modelNo: item.modelNo,
-    poId: item.poId,serialNo: item.serialNo})) || []);
+    poId: item.poId,serialNo: item.serialNo,})) || []);
       setMaterialList(data1.data.responseData.map(item => ({...item, materialDesc: materialMasterObj[item.materialCode]})) || []);
     } catch (error) {
       message.error("Error fetching goods details.");
@@ -443,6 +444,7 @@ const Form17 = () => {
     },
      { dataIndex: "modelNo", title: "Model No" },
       { dataIndex: "serialNo", title: "Serial No" },
+      
     { dataIndex: "poId", title: "PO Id" },
     { 
       dataIndex: "locatorId",

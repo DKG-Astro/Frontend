@@ -126,6 +126,18 @@ export const sidebarMenus = {
                 },
             ]
          },
+          {
+            key: "4.3",
+            icon: <MoneyCollectOutlined />,
+            label: "Purchase Order (PO)",
+            path: "/procurement/purchaseOrder",
+          },
+          {
+            key: "4.4",
+            icon: <MoneyCollectOutlined />,
+            label: "Service Order",
+            path: "/procurement/serviceOrder",
+          },
       ],
     },
     {
