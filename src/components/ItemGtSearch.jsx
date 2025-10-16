@@ -55,7 +55,7 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
         poId: record?.poId,
         modelNo: record?.modelNo,
         serialNo:record?.serialNo,
-        gprnDate: record?.gprnDate,
+        //gprnDate: record?.gprnDate,
       };
 
       updateFormData(newItem, setFormData);
