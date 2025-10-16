@@ -27,7 +27,7 @@ import { useLocation, useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import TextAreaComponent from "../../components/DKG_TextAreaComponent";
 import axios from "axios";
-
+import ImageUploadBase64 from "../../components/ImageUploadBas64";
 
 const MaterialForm = ({materialCode}) => {
   const auth = useSelector((state) => state.auth);
@@ -46,6 +46,7 @@ const MaterialForm = ({materialCode}) => {
   const [loading, setLoading] = useState(false);
   const [showMaterialCodePopup, setShowMaterialCodePopup] = useState(false);
   const [generatedMaterialCode, setGeneratedMaterialCode] = useState("");
+ const [uploadedFiles, setUploadedFiles] = useState([]); 
 
   useEffect(() => {
     if (materialCode) {
@@ -144,6 +145,8 @@ const MaterialForm = ({materialCode}) => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+
 
   // Add new state
   const [procurementMode, setProcurementMode] = useState("");
@@ -249,7 +252,8 @@ const MaterialForm = ({materialCode}) => {
         unitPrice: values.unitPrice,
         uom: values.uom,
         updatedBy: String(actionPerformer), // Convert to string
-        uploadImageFileName: uploadedFileNameString,
+       // uploadImageFileName: uploadedFileNameString,
+        uploadImageFileName: uploadedFiles,
         briefDescription: values.briefDescription
       };
 
@@ -506,7 +510,7 @@ const MaterialForm = ({materialCode}) => {
         </div>
 
         <div className="form-section">
-          <Form.Item label="Upload Document">
+         {/* <Form.Item label="Upload Document">
             <Upload
               beforeUpload={() => false}
               multiple={true}
@@ -517,7 +521,18 @@ const MaterialForm = ({materialCode}) => {
             >
               <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
-          </Form.Item>
+          </Form.Item> */}
+           <Form.Item>
+ <ImageUploadBase64
+  label="Upload Document"
+  name="uploadingPriorApprovalsFileName"
+  multiple={true}
+  value={uploadedFiles} // <- always an array
+  onChange={(name, files) => setUploadedFiles(files)}
+/>
+
+</Form.Item>
+
         </div>
 
         <div
