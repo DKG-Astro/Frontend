@@ -51,6 +51,7 @@ const Tender = () => {
   const [tenderIdOptions,setTenderIdOptions] = useState([]);
   const [searchDone, setSearchDone] = useState(false);
 
+  const [buyBackFields, setBuyBackFields] = useState([]);
 
   const { userName, email, mobileNumber, token, userId } = useSelector(
     (state) => state.auth
@@ -65,6 +66,7 @@ const Tender = () => {
     indentId: [],  
     materialDetails: [],
     billingAddress: "Koramangala, 2nd Block, Bangalore -560034",
+    buyBack: false,
 
   });
   useEffect(() => {
@@ -110,24 +112,19 @@ const Tender = () => {
 
       // Set approved indents as options for the dropdown
       const approvedIds = approvedResponse.data?.responseData || [];
-     /*setApprovedIndents(
-        (approvedIds || [])
-          .filter(indent => indent.indentId && indent.projectName)
-          .map(indent => ({
-            label: `${indent.indentId} - ${indent.projectName}`,
-            value: indent.indentId,
-            projectName: indent.projectName,
-          }))*/
-            setApprovedIndents(
-              approvedIds.map((indent) => ({
-                label: `${indent.indentId} - ${indent.projectName || ""}`,
-                value: indent.indentId,
-                projectName: indent.projectName,
-              }))
+      setApprovedIndents(
+        approvedIds.map((indent) => ({
+          label: `${indent.indentId} - ${indent.projectName || ""}`,
+          value: indent.indentId,
+          projectName: indent.projectName,
+          indentorName: indent.indentorName || "",
+          createdDate: indent.createdDate || "",
+          materialDes: indent.materialDes || [],
+        }))
       );
-     
-       
-      
+
+
+
     } catch (error) {
       message.error("Failed to load dropdown data");
       console.error("Dropdown fetch error:", error);
@@ -139,15 +136,53 @@ const Tender = () => {
   fetchAllData();
 }, []);
 
-  
- 
+
+
+  // Custom filter function for indent search across all fields
+  const filterIndentOption = (input, option) => {
+    if (!input) return true;
+
+    const searchTerm = input.toLowerCase();
+    // In Ant Design Select, the option object contains the properties directly
+    const optionData = option || {};
+
+    // Search in Indent ID (stored in 'value' property)
+    if (optionData.value && String(optionData.value).toLowerCase().includes(searchTerm)) {
+      return true;
+    }
+
+    // Search in Project Name
+    if (optionData.projectName && String(optionData.projectName).toLowerCase().includes(searchTerm)) {
+      return true;
+    }
+
+    // Search in Indentor Name
+    if (optionData.indentorName && String(optionData.indentorName).toLowerCase().includes(searchTerm)) {
+      return true;
+    }
+
+    // Search in Created Date
+    if (optionData.createdDate && String(optionData.createdDate).toLowerCase().includes(searchTerm)) {
+      return true;
+    }
+
+    // Search in Material Description array
+    if (Array.isArray(optionData.materialDes)) {
+      return optionData.materialDes.some(material =>
+        String(material).toLowerCase().includes(searchTerm)
+      );
+    }
+
+    return false;
+  };
+
   // Now, your indentOptions will use the updated project names:
   const indentOptions = approvedIndents.map((indent) => ({
     value: indent.indentId,
     label: `Indent ${indent.indentId} (${indent.projectName})`,
   }));
 
-  
+
   ;
   
   const formatMaterial = (material) => ({
@@ -169,15 +204,28 @@ const Tender = () => {
   const handleIndentSearch = async (indentIds) => {
     try {
       const allMaterials = [];
-  
+      let isBuyBack = false; 
+      let buyBackData = {};
       // Loop through all selected indent IDs
       for (const id of indentIds) {
-        const res = await axios.get(`/api/indents/${id}`);
+        const res = await axios.get(`/api/indents/IndentDataForTender/${id}`);
         const indentData = res.data?.responseData;
-  
+   
         if (indentData?.materialDetails) {
           allMaterials.push(...indentData.materialDetails);
         }
+         if (indentData?.buyBack) {
+        isBuyBack = true;
+         buyBackData = {
+          uploadBuyBackFileNames: indentData.uploadBuyBackFile || [],
+          modelNumber: indentData.modelNumber || "",
+          serialNumber: indentData.serialNumber || "",
+          dateOfPurchase: indentData.dateOfPurchase || null,
+          buyBackAmount: indentData.buyBackAmount || "",
+        };
+        
+      }
+
        
       }
       
@@ -201,9 +249,12 @@ const Tender = () => {
       setFormData((prev) => ({
         ...prev,
         materialDetails: formattedMaterials,
+         buyBack: isBuyBack, 
+          ...buyBackData,
+
       }));
   
-      form.setFieldsValue({ materialDetails: formattedMaterials });
+      form.setFieldsValue({ materialDetails: formattedMaterials,buyBack: isBuyBack,  ...buyBackData,});
   
     } catch (err) {
       console.error("Failed to fetch materials for indent", err);
@@ -392,6 +443,16 @@ const Tender = () => {
         modeOfProcurement: m.modeOfProcurement || "",
         vendorNames: m.vendorNames || "",
       })),
+       ...(formData.buyBack
+        ? {
+            buyBack: formData.buyBack,
+            buyBackAmount: formData.buyBackAmount || "",
+            modelNumber: formData.modelNumber || "",
+            serialNumber: formData.serialNumber || "",
+            dateOfPurchase: formData.dateOfPurchase || null,
+            uploadBuyBackFileNames: formData.uploadBuyBackFileNames || "",
+          }
+        : {}),
     };
 
     let data;
@@ -458,10 +519,47 @@ const Tender = () => {
     message.error("Error fetching Tender IDs.");
   }
 };
+useEffect(() => {
+  if (formData.buyBack) {
+    setBuyBackFields([
+      {
+        name: "uploadBuyBackFileNames",
+        label: "Upload Buy Back File",
+        type: "multiImage",
+        required: true,
+      },
+      {
+        name: "modelNumber",
+        label: "Model Number",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "serialNumber",
+        label: "Serial Number",
+        type: "text",
+        required: true,
+      },
+      {
+        name: "dateOfPurchase",
+        label: "Date Of Purchase",
+        type: "date",
+        required: true,
+      },
+      {
+        name: "buyBackAmount",
+        label: "Buy Back Amount",
+        type: "text",
+        required: true,
+      },
+    ]);
+  } else {
+    setBuyBackFields([]);
+  }
+}, [formData.buyBack]);
 
 
-
-
+console.log("uday"+formData.buyBack);
 
 
   const TenderDetails = [
@@ -544,12 +642,14 @@ const Tender = () => {
           {
               name: "indentId",
               label: "Select Indent ID",
-              type: "multiselect", // or "select" if single-select
+              type: "multiIndentselect", // or "select" if single-select
               mode: "multiple",
               required: true,
               options: approvedIndents, // This will be overridden dynamically
-              onChange: (val) => handleChange("indentId", val), 
-            },          
+              onChange: (val) => handleChange("indentId", val),
+              showSearch: true,
+              filterOption: filterIndentOption,
+            },
       ]
     },
     {
@@ -770,7 +870,7 @@ const Tender = () => {
         {
           name: "ldClause",
           label: "LD Clause",
-          type: "text",
+          type: "checkbox",
           required: true,
           span: 1
         },
@@ -783,6 +883,15 @@ const Tender = () => {
         }*/
       ]
     },
+     ...(buyBackFields.length
+    ? [
+        {
+          heading: "Buy Back Details",
+          colCnt: 3,
+          fieldList: buyBackFields,
+        },
+      ]
+    : []),
     {
       heading: "Declarations",
       colCnt: 2,

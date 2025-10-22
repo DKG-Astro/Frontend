@@ -994,6 +994,58 @@ const QueueModal = ({
                   </Row>
                 </div>
               )}
+               {detailsData.buyBack && (
+                <div className="detail-section">
+                  <Typography.Title level={5} className="section-title">
+                    <ProjectOutlined /> Buy Back
+                  </Typography.Title>
+                  <Row gutter={24}>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Buy Back:</strong>{" "}
+                        {String(detailsData.buyBack) || "N/A"}
+                      </div>
+                    </Col>
+                    <Col span={12}>
+                      <div className="detail-item">
+                        <strong>Buy Back File:</strong>
+                        {detailsData.uploadBuyBackFileNames
+                          ? detailsData.uploadBuyBackFileNames
+                              .split(",")
+                              .map((fileName, index) => (
+                                <div key={index}>
+                                  <a
+                                    href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    {fileName.trim()} (View)
+                                  </a>
+                                  {index <
+                                    detailsData.uploadPACOrBrandPACFileName.split(
+                                      ", "
+                                    ).length -
+                                      1 && ", "}
+                                </div>
+                              ))
+                          : "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Model Number:</strong>{" "}
+                        {detailsData.modelNumber || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Serial Number:</strong>{" "}
+                        {detailsData.serialNumber || "N/A"}
+                      </div>
+                      <div className="detail-item">
+                        <strong>Date Of Purchase:</strong> 
+                        {detailsData.dateOfPurchase}
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )}
               {detailsData.mllStatusDeclaration && (
                 <div className="detail-section">
                   <Typography.Title level={5} className="section-title">
@@ -1099,6 +1151,20 @@ const QueueModal = ({
                                   {indent.totalPriceOfAllMaterials?.toFixed(
                                     2
                                   ) || "N/A"}
+                                </div>
+                              </Col>
+                              <Col span={12}>
+                                <div className="detail-item">
+                                  <strong>Employee Id:</strong>{" "}
+                                  {indent.employeeId || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Employee Name:</strong>{" "}
+                                  {indent.employeeName || "N/A"}
+                                </div>
+                                <div className="detail-item">
+                                  <strong>Employee Department:</strong> ₹
+                                  {indent.employeeDept || "N/A"}
                                 </div>
                               </Col>
                             </Row>

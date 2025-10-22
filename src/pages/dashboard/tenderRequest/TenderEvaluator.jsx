@@ -71,6 +71,7 @@ const canPerformActions = (role === 'Purchase personnel' || (role === 'Indent Cr
 
   const fetchQuotationsAndPending = async (tid) => {
   setLoadingQuotations(true);
+   console.log("Inside fetchQuotationsAndPending:", tenderId);
   try {
     const [qRes, nsvRes] = await Promise.all([
       axios.get(`/api/vendor-quotation/${tid}`, {
@@ -155,6 +156,9 @@ const handleSearchTender = async () => {
     };
     setFormData(updatedFormData);
 
+    await fetchQuotationsAndPending(updatedFormData.tenderId);
+    console.log("Calling fetchQuotationsAndPending with ID:", updatedFormData.tenderId);
+
     const isBelow10LLocal = updatedFormData.totalValue <= 1000000;
     const hasMultipleIndentsLocal = updatedFormData.indentNumber > 1;
 
@@ -171,14 +175,20 @@ const handleSearchTender = async () => {
       return;
     }
 
-    // finally fetch the normal quotation + pending vendors list
-    await fetchQuotationsAndPending(updatedFormData.tenderId);
+   
   } catch (err) {
    // message.error('Failed to fetch approved tender');
   } finally {
     setLoadingTender(false);
   }
 };
+useEffect(() => {
+  if (formData?.tenderId) {
+    console.log("Fetching quotations & pending for:", formData.tenderId);
+    fetchQuotationsAndPending(formData.tenderId);
+  }
+}, [formData?.tenderId]);
+
 
   const fetchVendorHistory = async (vendorId) => {
     try {
@@ -458,22 +468,38 @@ if (role === 'Store Purchase Officer') {
           title: 'Indentor Status',
           key: 'indentorStatus',
           dataIndex: 'indentorStatus',
-          render: (indentorStatus) =>
-          indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+          render: (indentorStatus) =>{
+        //  indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+            if (indentorStatus === 'CHANGE_REQUESTED') return 'Pending Clarification';
+            if (indentorStatus === 'Rejected') return 'Rejected'; 
+            if (indentorStatus === 'Completed') return 'Accepted';
+            return indentorStatus || 'N/A';
+          }
         },
         {
           title: `${role} Status`,
           key: 'status',
           dataIndex: 'status',
-          render: (status) =>
-            status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
+          render: (status) =>{
+        //    status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
+            if (status === 'CHANGE_REQUESTED') return 'Pending Clarification';
+            if (status === 'Rejected') return 'Rejected'; 
+            if (status === 'Completed') return 'Accepted';
+            return status || 'N/A';
+      
+          }
         },
         {
           title: 'Status',
           key: 'status',
           dataIndex: 'status',
-          render: (status) =>
-            status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
+          render: (status) =>{
+          //  status === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (status || 'N/A'),
+            if (status === 'CHANGE_REQUESTED_TO_INTENTOR') return 'Pending Clarification';
+            if (status === 'Rejected') return 'Disqualified';
+            if (status === 'Completed') return 'Qualified';
+            return status || 'N/A';
+          }
         },
           
 
@@ -647,15 +673,25 @@ if (role === 'Store Purchase Officer') {
       title: `${role} Status`,
       key: 'indentorStatus',
       dataIndex: 'indentorStatus',
-      render: (indentorStatus) =>
-        indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+      render: (indentorStatus) => {
+      //  indentorStatus === 'CHANGE_REQUESTED' ? 'Pending Clarification' : (indentorStatus || 'N/A'),
+      if (indentorStatus === 'CHANGE_REQUESTED') return 'Pending Clarification';
+        if (indentorStatus === 'Rejected') return 'Rejected'; 
+        if (indentorStatus === 'Completed') return 'Accepted';
+        return indentorStatus || 'N/A';
+      }
     },
     {
       title: 'Store Purchase Officer Status',
       key: 'sopStatus',
       dataIndex: 'sopStatus',
-      render: (sopStatus) =>
-        sopStatus === 'CHANGE_REQUESTED_TO_INTENTOR' ? 'Pending Clarification' : (sopStatus || 'N/A'),
+      render: (sopStatus) => {
+       // sopStatus === 'CHANGE_REQUESTED_TO_INTENTOR' ? 'Pending Clarification' : (sopStatus || 'N/A'),
+        if (sopStatus === 'CHANGE_REQUESTED_TO_INTENTOR') return 'Pending Clarification';
+        if (sopStatus === 'Rejected') return 'Disqualified';
+        if (sopStatus === 'Completed') return 'Qualified';
+        return sopStatus || 'N/A';
+      }
     },
 
    /* {

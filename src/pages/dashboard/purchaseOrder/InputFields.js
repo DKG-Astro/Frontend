@@ -6,7 +6,7 @@ const countryOptions = [
   { label: "ARGENTINA", value: "ARGENTINA" },
   { label: "BELGIUM", value: "BELGIUM" }
 ];
-const warrantyOptions = Array.from({ length: 20 }, (_, i) => {
+/*const warrantyOptions = Array.from({ length: 20 }, (_, i) => {
   const year = i + 1;
   const label = `${year} Year${year > 1 ? "s" : ""}`;
   return {
@@ -14,6 +14,18 @@ const warrantyOptions = Array.from({ length: 20 }, (_, i) => {
     value: label 
   };
 });
+*/
+const warrantyOptions = [
+  { label: "NA", value: "NA" },
+  ...Array.from({ length: 20 }, (_, i) => {
+    const year = i + 1;
+    const label = `${year} Year${year > 1 ? "s" : ""}`;
+    return {
+      label: label,
+      value: label
+    };
+  })
+];
 
 
 

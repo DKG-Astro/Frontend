@@ -251,7 +251,6 @@ export const apiCall = async (method, url, token, payload = null) => {
 
 
 
-
       case "image":
         return (
           <ImageUploadBase64
@@ -306,6 +305,37 @@ export const apiCall = async (method, url, token, payload = null) => {
               <Select mode="multiple" showSearch options={field?.options} disabled={field?.disabled} onChange={(val) => handleChange(field?.name, val)} {...field.props} />
             </Form.Item>
         );
+        case "multiIndentselect":
+  return (
+    <Form.Item 
+      name={field?.name}
+      label={field?.label}
+      rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+    >
+      <Select
+        mode="multiple"
+        showSearch
+        options={field?.options}
+        disabled={field?.disabled}
+        onChange={(val) => handleChange(field?.name, val)}
+        filterOption={(input, option) => {
+          const searchTerm = input.toLowerCase();
+          return (
+            option.value.toLowerCase().includes(searchTerm) ||
+            option.projectName?.toLowerCase().includes(searchTerm) ||
+            option.indentorName?.toLowerCase().includes(searchTerm) ||
+            option.createdDate?.toLowerCase().includes(searchTerm) ||
+            (Array.isArray(option.materialDes) &&
+              option.materialDes.some((m) =>
+                String(m).toLowerCase().includes(searchTerm)
+              ))
+          );
+        }}
+        {...field.props}
+      />
+    </Form.Item>
+  );
+
 
         case "checkbox":
         return (
