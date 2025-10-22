@@ -398,27 +398,24 @@ const QueueModal = ({
                     <Col span={12}>
                       <div className="detail-item">
                         <strong>Buy Back File:</strong>
-                        {detailsData.uploadBuyBackFileNames
-                          ? detailsData.uploadBuyBackFileNames
-                              .split(",")
-                              .map((fileName, index) => (
-                                <div key={index}>
-                                  <a
-                                    href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    {fileName.trim()} (View)
-                                  </a>
-                                  {index <
-                                    detailsData.uploadPACOrBrandPACFileName.split(
-                                      ", "
-                                    ).length -
-                                      1 && ", "}
-                                </div>
-                              ))
-                          : "N/A"}
-                      </div>
+    {detailsData.uploadBuyBackFileNames
+      ? detailsData.uploadBuyBackFileNames
+          .split(",")
+          .map((fileName, index, arr) => (
+            <div key={index}>
+              <a
+                href={`${baseURL}/file/view/Indent/${fileName.trim()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {fileName.trim()} (View)
+              </a>
+              {index < arr.length - 1 && ", "}
+            </div>
+          ))
+      : "N/A"}
+  </div>
+
                       <div className="detail-item">
                         <strong>Model Number:</strong>{" "}
                         {detailsData.modelNumber || "N/A"}
@@ -1009,27 +1006,24 @@ const QueueModal = ({
                     <Col span={12}>
                       <div className="detail-item">
                         <strong>Buy Back File:</strong>
-                        {detailsData.uploadBuyBackFileNames
-                          ? detailsData.uploadBuyBackFileNames
-                              .split(",")
-                              .map((fileName, index) => (
-                                <div key={index}>
-                                  <a
-                                    href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    {fileName.trim()} (View)
-                                  </a>
-                                  {index <
-                                    detailsData.uploadPACOrBrandPACFileName.split(
-                                      ", "
-                                    ).length -
-                                      1 && ", "}
-                                </div>
-                              ))
-                          : "N/A"}
-                      </div>
+                       {detailsData.uploadBuyBackFileNames
+      ? detailsData.uploadBuyBackFileNames
+          .split(",")
+          .map((fileName, index, arr) => (
+            <div key={index}>
+              <a
+                href={`${baseURL}/file/view/Tender/${fileName.trim()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {fileName.trim()} (View)
+              </a>
+              {index < arr.length - 1 && ", "}
+            </div>
+          ))
+      : "N/A"}
+  </div>
+
                       <div className="detail-item">
                         <strong>Model Number:</strong>{" "}
                         {detailsData.modelNumber || "N/A"}
