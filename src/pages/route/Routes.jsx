@@ -210,6 +210,36 @@ const purchasePersonnelRoutes = (
   </>
 );
 
+const tenderCreatorRoutes = (
+  <>
+
+    <Route path="/procurement/tender/request" element={<Tender />} />
+    <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
+    <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
+    <Route path="/procurement/tender/Quotations" element={<Quotations />} />
+
+  </>
+);
+
+const poCreatorRoutes = (
+  <>
+   
+    
+      <Route path="/procurement/purchaseOrder" element={<PO />} />
+    
+
+  </>
+);
+const soCreatorRoutes = (
+  <>
+   
+    
+       <Route path="/procurement/serviceOrder" element={<SO />} />
+    
+
+  </>
+);
+
 const generateRoutes = (roleName) => {
   switch (roleName) {
     case "Indent Creator":
@@ -220,6 +250,12 @@ const generateRoutes = (roleName) => {
       return storePersonRoutes;
     case "Purchase personnel":
       return purchasePersonnelRoutes;
+    case "PO Creator":
+      return poCreatorRoutes;
+    case "SO Creator":
+      return soCreatorRoutes;
+    case "Tender Creator":
+      return tenderCreatorRoutes;
     default:
       return null;
   }

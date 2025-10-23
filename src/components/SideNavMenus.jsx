@@ -393,5 +393,70 @@ export const sidebarMenus = {
       ],
     },
   ],
+   "PO Creator" : [
+     ...commonMenu,
+     {
+      key: "4",
+      label: "Procurement",
+      items: [
+          {
+            key: "4.7.1",
+            icon: <MoneyCollectOutlined />,
+            label: "Purchase Order",
+            path: "/procurement/purchaseOrder",
+          },
+          
+      ],
+    },
+  ],
+   "Tender Creator" : [
+     ...commonMenu,
+     {
+      key: "4",
+      label: "Procurement",
+      items: [
+        {
+            key: "4.1",
+            label: "Tender",
+            items:[
+                {
+                    key: "4.2.1",
+                    icon: <FileExclamationOutlined />,
+                    label: "Tender Request",
+                    path: "/procurement/tender/request",
+                },
+                 {
+                    key: "2.2.2",
+                    icon: <FileTextOutlined />,
+                    label: "Tender Evaluation",
+                    path: "/procurement/tender/evaluation",
+                },
+                 {
+                    key: "2.2.3",
+                    icon: <FileTextOutlined />,
+                    label: "Gem Tender Evaluation",
+                    path: "/procurement/tender/gem",
+                },  
+            ]
+        },
+        
+      ],
+    },
+  ],
+   "SO Creator" : [
+     ...commonMenu,
+     {
+      key: "4",
+      label: "Procurement",
+      items: [
+           {
+            key: "4.7.2",
+            icon: <MoneyCollectOutlined />,
+            label: "Service Order",
+            path: "/procurement/serviceOrder",
+          },
+      ],
+    },
+  ],
   default: [...commonMenu],
 };

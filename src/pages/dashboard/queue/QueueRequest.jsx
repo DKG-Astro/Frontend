@@ -946,6 +946,7 @@ if (isPurchaseHead && requestType === "C") {
             projectName: item.projectName,
             budgetCode: item.budgetCode,
             procurementType: item.procurementType,
+            modeOfProcurement: item.modeOfProcurement,
             consignee: item.consignee,
           }),
        //   ...(item.workflowId === 4 && {
@@ -1066,6 +1067,7 @@ const {userId} = useSelector(state => state.auth)
             apiData.tenderDetails?.indentResponseDTO?.[0]?.projectName || "N/A",
           budgetName: apiData.budgetCode,
           indentTitle: "Purchase Order",
+          modeOfProcurement: apiData.modeOfProcurement,
           procurementMode: apiData.procurementType,
           consignee: apiData.consignee,
         }[field];

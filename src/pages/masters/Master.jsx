@@ -5,6 +5,7 @@ import JobForm from './JobForm'
 import WorkForm from './WorkForm'
 import MaterialForm from './MaterialForm'
 import { useLocation } from 'react-router-dom'
+import VendorMasterForm from './VendorMaster'
 
 const masterDropDown = [
     {
@@ -18,6 +19,9 @@ const masterDropDown = [
     {
         value: "Material",
         label: "Material"
+    }, {
+        value: "Vendor",
+        label: "Vendor"
     },
 ]
 
@@ -44,6 +48,8 @@ const Master = () => {
                 return <WorkForm />
             case "Material":
                 return <MaterialForm materialCode = {materialCode} />
+            case "Vendor":
+                return <VendorMasterForm />
             default:
                 return <div className='text-gray-400'>Select a master</div>
         }
