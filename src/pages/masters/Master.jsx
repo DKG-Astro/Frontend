@@ -6,6 +6,7 @@ import WorkForm from './WorkForm'
 import MaterialForm from './MaterialForm'
 import { useLocation } from 'react-router-dom'
 import VendorMasterForm from './VendorMaster'
+import EmployeeMaster from './EmployeeMaster'
 
 const masterDropDown = [
     {
@@ -23,10 +24,16 @@ const masterDropDown = [
         value: "Vendor",
         label: "Vendor"
     },
+    {
+        value: "Employee",
+        label: "Employee"
+    },
 ]
 
 const Master = () => {
     const [selectedMaster, setSelectedMaster] = useState("");
+ // const [selectedMaster, setSelectedMaster] = useState(location?.state?.master || "");
+
     const handleChange = (value) => {
         setSelectedMaster(value);
     };
@@ -50,6 +57,8 @@ const Master = () => {
                 return <MaterialForm materialCode = {materialCode} />
             case "Vendor":
                 return <VendorMasterForm />
+            case "Employee":
+               return <EmployeeMaster />
             default:
                 return <div className='text-gray-400'>Select a master</div>
         }

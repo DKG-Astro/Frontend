@@ -427,7 +427,7 @@ const handleGISearch = async () => {
                 disabled: true,
                 required: true
             },
-            {
+          /*  {
                 name: "rejectionType",
                 label: "Rejection Type",
                 type: "select",
@@ -448,7 +448,27 @@ const handleGISearch = async () => {
               label: "Reason for Rejection",
               type: "text",
               span: 2,
-            },
+            },*/
+              ...(formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0)
+      ? [
+          {
+            name: "rejectionType",
+            label: "Rejection Type",
+            type: "select",
+            span: 2,
+            options: [
+              { label: "Permanent", value: "permanent" },
+              { label: "Replacement", value: "replacement" },
+            ],
+          },
+          {
+            name: "rejectReason",
+            label: "Reason for Rejection",
+            type: "text",
+            span: 2,
+          },
+        ]
+      : []),
             {
                 name: "installationReportBase64",
                 label: "Installation Report",

@@ -32,6 +32,7 @@ import ImageUploadBase64 from "../../components/ImageUploadBas64";
 const MaterialForm = ({materialCode}) => {
   const auth = useSelector((state) => state.auth);
   const actionPerformer = auth.userId;
+  
   // const { materialCode } = useParams(); // Get material code from URL
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingData, setExistingData] = useState(null);
@@ -56,7 +57,7 @@ const MaterialForm = ({materialCode}) => {
             `/api/material-master-util/${materialCode}`
           );
           const data = await response.json();*/
-          const response = await axios.get(`/api/material-master-util/${materialCode}`);
+          const response = await axios.get(`/api/material-master-util/base64/${materialCode}`);
           const data = response.data;
           if (data.responseStatus?.statusCode === 0) {
             const materialData = data.responseData;
@@ -66,9 +67,28 @@ const MaterialForm = ({materialCode}) => {
               ...materialData,
               materialCode: materialData.materialCode, // Show existing code
               indigenousOrImported: originValue,//seting the origin if true then inigenous,flase Imported
+              status: materialData.status,
             });
+             if (materialData.materialFile && Array.isArray(materialData.materialFile)) {
+  const fileListData = materialData.materialFile.map((base64Data, index) => {
+    const isPdf = base64Data.startsWith("data:application/pdf");
+    const fileName =
+      materialData.uploadImageFileName?.split(",")[index]?.trim() ||
+      `file_${index + 1}.${isPdf ? "pdf" : "jpg"}`;
+
+    return {
+      uid: `${index}`,
+      name: fileName,
+      status: "done",
+      url: base64Data, // preview directly from base64
+      base64: base64Data, // keep actual base64 for upload
+    };
+  });
+
+  setFileList(fileListData);
+  setUploadedFiles(fileListData.map((f) => f.base64));
             // Parse comma-separated file names and set fileList
-          if (materialData.uploadImageFileName) {
+         /* if (materialData.uploadImageFileName) {
             const fileArray = materialData.uploadImageFileName
               .split(",")
               .map((fileName, index) => ({
@@ -77,7 +97,7 @@ const MaterialForm = ({materialCode}) => {
                 status: "done",
                 url: `/file/view/Material/${fileName.trim()}`, // Update if different
               }));
-            setFileList(fileArray);
+            setFileList(fileArray);*/
           }
             setIsEditMode(true);
           }
@@ -124,7 +144,13 @@ const MaterialForm = ({materialCode}) => {
       );
 
       setMaterialDetailsMap(materialMap);
-      setMaterialList(Object.keys(materialMap));
+    //  setMaterialList(Object.keys(materialMap));
+     setMaterialList(
+      Object.values(materialMap).map((item) => ({
+        label: `${item.materialCode} - ${item.description}`,
+        value: item.materialCode,
+      }))
+    );
      const uomResponse = await axios.get("/api/uom-master");
      const uomData = uomResponse.data;
 
@@ -145,6 +171,51 @@ const MaterialForm = ({materialCode}) => {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+ /* // Debounced material search API call
+const searchMaterials = async (searchText) => {
+  if (!searchText || searchText.trim().length < 2) {
+    return []; // wait for at least 2 characters
+  }
+
+  try {
+    const response = await axios.get(`/api/material-master/search?keyword=${searchText}`);
+    const data = response.data;
+    if (data?.responseData) {
+      return data.responseData.map((item) => ({
+        label: `${item.materialCode} - ${item.description}`,
+        value: item.materialCode,
+      }));
+    }
+  } catch (error) {
+    console.error("Material search error:", error);
+  }
+
+  return [];
+};*/
+const searchMaterials = async (searchText) => {
+  if (!searchText || searchText.trim().length < 2) {
+    return [];
+  }
+
+  try {
+    const response = await axios.get(`/api/material-master/materialSearch?keyword=${searchText}`);
+    const data = response.data;
+
+    if (Array.isArray(data?.responseData)) {
+      return data.responseData.map((item) => ({
+        label: `${item.materialCode} - ${item.description}`,
+        value: item.materialCode,
+      }));
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error("Material search error:", error);
+    return [];
+  }
+};
+
 
 
 
@@ -340,12 +411,92 @@ const MaterialForm = ({materialCode}) => {
       >
         <Heading title={"Material Details"} />
         <div className="form-section">
-          <FormInputItem
+           <Form.Item label="Search Material">
+  <Select
+    showSearch
+    placeholder="Type to search material..."
+    filterOption={false}
+    onSearch={async (value) => {
+  const results = await searchMaterials(value);
+  setMaterialList(Array.isArray(results) ? results : []);
+}}
+options={Array.isArray(materialList) ? materialList : []}
+    onChange={async (selectedCode) => {
+  try {
+    const response = await axios.get(`/api/material-master/base64/${selectedCode}`);
+    const data = response.data;
+
+    if (data?.responseData) {
+      const materialData = data.responseData;
+      setExistingData(materialData);
+
+      // Convert boolean to radio value for Indigenous/Imported
+      const originValue = materialData.indigenousOrImported ? "indigenous" : "imported";
+
+      // Autofill material fields
+      form.setFieldsValue({
+        materialCode: materialData.materialCode,
+        category: materialData.category,
+        subCategory: materialData.subCategory,
+        description: materialData.description,
+        uom: materialData.uom,
+        unitPrice: materialData.unitPrice,
+        currency: materialData.currency,
+        indigenousOrImported: originValue,
+        briefDescription: materialData.briefDescription,
+        status: materialData.status,
+      });
+
+     if (materialData.materialFile && Array.isArray(materialData.materialFile)) {
+  const fileListData = materialData.materialFile.map((base64Data, index) => {
+    const isPdf = base64Data.startsWith("data:application/pdf");
+    const fileName =
+      materialData.uploadImageFileName?.split(",")[index]?.trim() ||
+      `file_${index + 1}.${isPdf ? "pdf" : "jpg"}`;
+
+    return {
+      uid: `${index}`,
+      name: fileName,
+      status: "done",
+      url: base64Data, // preview directly from base64
+      base64: base64Data, // keep actual base64 for upload
+    };
+  });
+
+  setFileList(fileListData);
+  setUploadedFiles(fileListData.map((f) => f.base64)); // important!
+} else {
+  setFileList([]);
+  setUploadedFiles([]);
+}
+
+
+      message.success("Material details loaded successfully!");
+    }
+  } catch (error) {
+    console.error("Error fetching material details:", error);
+    message.error("Failed to load material details");
+  }
+}}
+   
+    style={{ width: "100%" }}
+  />
+</Form.Item>
+ <FormInputItem
+  label="Status"
+  name="status"
+  placeholder="Status"
+  disabled
+/>
+ <FormInputItem
             label="Material Code"
             name="materialCode"
             placeholder={isEditMode ? materialCode : "Auto-generated"}
             disabled
           />
+
+        </div>
+        <div className="form-section">
           <Form.Item
             name="category"
             label="Category"
@@ -393,12 +544,13 @@ const MaterialForm = ({materialCode}) => {
               <Option value="Vehicles">Vehicles</Option>
             </Select>
           </Form.Item>
+           <Form.Item label="Description" name="description" required>
+            <Input />
+          </Form.Item>
         </div>
 
         <div className="form-section">
-          <Form.Item label="Description" name="description" required>
-            <Input />
-          </Form.Item>
+         
           <Form.Item
             name="uom"
             label="UOM"
@@ -434,6 +586,12 @@ const MaterialForm = ({materialCode}) => {
           <TextAreaComponent
             label="Brief Description of Material"
             name="briefDescription"
+            required
+          />
+          <FormInputItem
+            type="number"
+            name="unitPrice"
+            label="Estimated Price"
             required
           />
         </div>
@@ -477,12 +635,7 @@ const MaterialForm = ({materialCode}) => {
         <div className="form-section">
           {/* <FormInputItem label="Condition of Goods" name="conditionOfGoods" />
           <FormInputItem label="Shelf Life" name="shelfLife" /> */}
-          <FormInputItem
-            type="number"
-            name="unitPrice"
-            label="Estimated Price"
-            required
-          />
+          
           <Form.Item
             name="currency"
             label="Currency"
@@ -507,6 +660,16 @@ const MaterialForm = ({materialCode}) => {
               <Radio value="imported">Imported</Radio>
             </Radio.Group>
           </Form.Item>
+           <Form.Item>
+ <ImageUploadBase64
+  label="Upload Document"
+  name="uploadingPriorApprovalsFileName"
+  multiple={true}
+  value={uploadedFiles} // <- always an array
+  onChange={(name, files) => setUploadedFiles(files)}
+/>
+
+</Form.Item>
         </div>
 
         <div className="form-section">
@@ -522,16 +685,7 @@ const MaterialForm = ({materialCode}) => {
               <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
           </Form.Item> */}
-           <Form.Item>
- <ImageUploadBase64
-  label="Upload Document"
-  name="uploadingPriorApprovalsFileName"
-  multiple={true}
-  value={uploadedFiles} // <- always an array
-  onChange={(name, files) => setUploadedFiles(files)}
-/>
-
-</Form.Item>
+          
 
         </div>
 
@@ -542,10 +696,25 @@ const MaterialForm = ({materialCode}) => {
             margin: "20px",
           }}
         >
-          <Button type="default" htmlType="reset">
-            <ReloadOutlined />
-            Reset
-          </Button>
+         <Button
+  type="default"
+  htmlType="button"
+  onClick={() => {
+    form.resetFields();
+    setFileList([]);
+    setUploadedFiles([]);
+    setExistingData(null);
+    setIsEditMode(false);
+    form.setFieldsValue({
+      materialCode: "",
+      status: "",
+    });
+  }}
+>
+  <ReloadOutlined />
+  Reset
+</Button>
+
           <Button type="primary" htmlType="submit" loading={loading}>
             <SendOutlined /> {
               materialCode ? "Update" : "Create"

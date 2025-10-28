@@ -37,7 +37,7 @@ const VendorMasterForm = () => {
     const fetchVendors = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8081/astro-service/api/vendor-master/vendorIdVendorName"
+          "/api/vendor-master/vendorIdVendorName"
         );
         setVendorList(response.data?.responseData || []);
       } catch (err) {
@@ -51,7 +51,7 @@ const VendorMasterForm = () => {
   const handleVendorSelect = async (vendorId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8081/astro-service/api/vendor-master/vendor/${vendorId}`
+        `/api/vendor-master/vendor/${vendorId}`
       );
       const vendor = response.data?.responseData;
       if (!vendor) return message.error("No vendor details found");
@@ -131,7 +131,7 @@ const VendorMasterForm = () => {
       };
 
       await axios.put(
-        `http://localhost:8081/astro-service/api/vendor-master/update/${values.vendorId}`,
+        `/api/vendor-master/update/${values.vendorId}`,
         payload,
         {
           headers: {

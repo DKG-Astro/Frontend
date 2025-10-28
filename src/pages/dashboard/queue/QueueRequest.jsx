@@ -1474,12 +1474,12 @@ const {userId} = useSelector(state => state.auth)
             <Space>
               {
                 record.requestId.startsWith('M') && (
-                  <Button
-                    type="primary"
-                    onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
-                  >
-                    Edit
-                  </Button>
+                  <Button 
+              type="primary" 
+              onClick={() => navigate("/masters", {state: {materialCode: record.requestId, master: "Material"}})}
+            >
+              Edit
+            </Button>
                 )
               }
               {/* <Button 
