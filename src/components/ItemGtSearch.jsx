@@ -1,8 +1,9 @@
-import { Button, Popover, Table, Input } from 'antd';
+import { Button, Popover, Table, Input,Checkbox } from 'antd';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { convertToCurrency, handleSearch, updateFormData } from '../utils/CommonFunctions';
 import dayjs from 'dayjs';
+import { updateFormDataWithSerial } from '../utils/CommonFunctions';
 
 const { Search } = Input;
 
@@ -19,7 +20,15 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
   const [searchText, setSearchText] = useState('');
   
 
+  const [selectedSerials, setSelectedSerials] = useState({});
+
   const { locatorMaster } = useSelector(state => state.masters);
+
+
+function getSerialUniqueKey(record, sn) {
+  return `${record.assetId}_${record.locatorId}_${record.custodianId}_${sn}`;
+}
+
 
   useEffect(() => {
     setFilteredData(itemsArray || []);
@@ -33,37 +42,71 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
     }, {});
   }, [locatorMaster]);
 
-  const handleSelectItem = (record) => {
+   const handleSelectItem = (record) => {
     setTableOpen(false);
+    const uniqueKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
 
-    const isSelected = selectedItems.some(item => item.ohqId === record.ohqId);
+    const isSelected = selectedItems.some(item => item.uniqueKey === uniqueKey);
 
     if (!isSelected) {
-      setSelectedItems(prev => [...prev, record]);
-
       const newItem = {
-        ohqId: record.ohqId,
-        assetId: record.assetId,
-        assetDesc: record.assetDesc,
-        locatorId: record.locatorId,
+        ...record,
+        uniqueKey,
         senderLocatorId: record.locatorId,
-        custodianId: record.custodianId,
-        quantity: record.quantity,
-        unitPrice: record.unitPrice,
-        bookValue: record.bookValue,
-        depriciationRate: record.depriciationRate,
-        poId: record?.poId,
-        modelNo: record?.modelNo,
-        serialNo:record?.serialNo,
-        //gprnDate: record?.gprnDate,
+        serialNumbers: selectedSerials[uniqueKey] || [], 
       };
 
+      setSelectedItems(prev => [...prev, newItem]);
       updateFormData(newItem, setFormData);
+  //   updateFormDataWithSerial(record, sn, setFormData);
+
     } else {
-      setSelectedItems(prev => prev.filter(it => it.ohqId !== record.ohqId));
+      setSelectedItems(prev => prev.filter(it => it.uniqueKey !== uniqueKey));
     }
   };
+ 
+const handleSerialSelect = (e, record, sn) => {
+  const assetKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
+  const lineKey = getSerialUniqueKey(record, sn); // Use new key format
+  const isChecked = e.target.checked;
+console.log("selected sn:" + sn);
+  setSelectedSerials(prev => {
+    const current = prev[assetKey] || [];
+    const updated = isChecked
+      ? [...current, sn]
+      : current.filter(s => s !== sn);
 
+    // This only updates mapping; the items update is separate below
+    return { ...prev, [assetKey]: updated };
+  });
+
+  setSelectedItems(prevItems => {
+    let updatedItems = [...prevItems];
+    if (isChecked) {
+      // Line item per selected serial
+      if (!updatedItems.some(it => it.uniqueKey === lineKey)) {
+        updatedItems.push({
+          ...record,
+          assetCode: record.assetCode,
+          senderLocatorId: record.locatorId,
+          selectedSerial: sn,
+          quantity: 1,
+          uniqueKey: lineKey,
+        });
+      }
+      updateFormDataWithSerial(record, sn, setFormData);
+    } else {
+      updatedItems = updatedItems.filter(it => it.uniqueKey !== lineKey);
+    }
+    return updatedItems;
+  });
+};
+
+
+
+
+
+/*
   const baseColumns = [
     { title: 'OHQ ID', dataIndex: 'ohqId', key: 'ohqId', fixed: 'left' },
     { title: 'Asset ID', dataIndex: 'assetId', key: 'assetId' },
@@ -94,14 +137,57 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
       key: 'depriciationRate',
       render: (v) => (v ?? v === 0 ? `${v}%` : '—'),
     },
-  ];
+  ];*/
+  const baseColumns = [
+  { title: 'Asset Code', dataIndex: 'assetCode', key: 'assetCode', fixed: 'left' },
+  { title: 'Custodian ID', dataIndex: 'custodianId', key: 'custodianId' },
+  { title: 'Locator ID', dataIndex: 'locatorId', key: 'locatorId' },
+  { title: 'Asset Description', dataIndex: 'assetDesc', key: 'assetDesc' },
+  { title: 'Quantity', dataIndex: 'quantity', key: 'quantity' },
+  { title: 'Unit Price', dataIndex: 'unitPrice', key: 'unitPrice', render: v => convertToCurrency(v) || 'N/A' },
+  { title: 'Book Value', dataIndex: 'bookValue', key: 'bookValue', render: v => convertToCurrency(v) || 'N/A' },
+{
+  title: 'Serial Numbers',
+  dataIndex: 'serialNumbers',
+  key: 'serialNumbers',
+ // 🚩 REPLACE Render Section of 'Serial Numbers' Column
+render: (serials, record) => {
+  const assetKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
+  if (serials?.length > 0) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {serials.map(sn => {
+          const checked = selectedSerials[assetKey]?.includes(sn);
+          return (
+            <div key={sn} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{sn}</span>
+              <Checkbox
+                checked={checked}
+                onChange={(e) => handleSerialSelect(e, record, sn)}
+              >
+                {checked ? 'Deselect' : 'Select'}
+              </Checkbox>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  return <span>No Serials</span>;
+},
 
-  const actionCol = {
+},
+
+
+];
+/*
+const actionCol = {
     title: 'Action',
     key: 'action',
     fixed: 'right',
     render: (_, record) => {
-      const isSelected = selectedItems?.some(item => item.ohqId === record.ohqId);
+      const uniqueKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
+      const isSelected = selectedItems?.some(item => item.uniqueKey === uniqueKey);
       return (
         <Button
           onClick={() => handleSelectItem(record)}
@@ -113,15 +199,16 @@ const ItemGtSearch = ({ customCols, itemsArray = [], setFormData }) => {
     },
   };
 
-  const columns = customCols ? [...customCols, actionCol] : [...baseColumns, actionCol];
+  const columns = customCols ? [...customCols, actionCol] : [...baseColumns, actionCol];*/
+  const columns = customCols ? [...customCols] : [...baseColumns];
 
-  const content = (
+ const content = (
     <Table
       pagination={{ pageSize: 5 }}
       dataSource={filteredData}
       columns={columns}
       scroll={{ x: 'max-content' }}
-      rowKey="ohqId"
+      rowKey={record => `${record.assetId}_${record.locatorId}_${record.custodianId}`}
     />
   );
 

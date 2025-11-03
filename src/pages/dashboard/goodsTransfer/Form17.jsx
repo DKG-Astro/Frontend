@@ -170,6 +170,13 @@ const Form17 = () => {
         },
         {
           name: "assetId",
+          label: "Asset Id",
+          type: "text",
+          span: 2,
+          // required: true,
+        },
+         {
+          name: "assetCode",
           label: "Asset Code",
           type: "text",
           span: 2,
@@ -296,7 +303,7 @@ const Form17 = () => {
 
   const [filteredAsset, setFilteredAsset] = useState([]);
   const [filteredMaterial, setFilteredMaterial] = useState([]);
-
+/*
   const populateData = async () => {
     try {
       const [data, data1, data2] = await Promise.all([
@@ -319,11 +326,20 @@ const Form17 = () => {
       message.error("Error fetching goods details.");
     }
   };
+*/
+const populateData = async () => {
+  try {
+    const { data } = await axios.get("/api/asset/assetDataForGt");
+    setAssetList(data.responseData || []);
+  } catch (error) {
+    message.error("Error fetching asset data for GT.");
+  }
+};
 
   console.log("Assetlist: ", assetList.filter(item => !item.custodianId && !item.locatorId));
 
   const handleSearch = async () => {};
-
+/*
     const populateItemQtyDtls = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/process-controller/getIsnAssetOhqDtls');
@@ -356,7 +372,7 @@ const Form17 = () => {
       message.error(error?.response?.data?.responseStatus?.message || "Error fetching item quantity details.");
     }
   }, [])
-
+*/
 
   useEffect(() => {
     if (formData.receiverLocationId) {
@@ -375,7 +391,7 @@ const Form17 = () => {
   useEffect(() => {
     populateData();
   }, []);
-
+/*
   useEffect(() => {
     if (formData.senderLocationId && formData.senderCustodianId) {
       // Create a quick lookup map from locatorId to locationId
@@ -410,10 +426,51 @@ const Form17 = () => {
     formData.senderCustodianId,
     locatorMaster,
     materialList,
-  ]);
+  ]);*/
+  console.log(assetList);
+  useEffect(() => {
+  if (formData.senderLocationId && formData.senderCustodianId) {
+    const locatorMap =
+      locatorMaster?.reduce((acc, loc) => {
+        acc[loc.value] = loc.locationId;
+        return acc;
+      }, {}) || {};
+
+    const filtered = materialList.filter((item) => {
+      const locationId = locatorMap[item.locatorId];
+      return (
+        (!item.locatorId || locationId === formData.senderLocationId) &&
+        (!item.custodianId || parseInt(item.custodianId) === parseInt(formData.senderCustodianId))
+      );
+    });
+
+    const filteredAsset = assetList.filter((item) => {
+      const locationId = locatorMap[item.locatorId];
+      return (
+        (!item.locatorId || locationId === formData.senderLocationId) &&
+        (!item.custodianId || parseInt(item.custodianId) === parseInt(formData.senderCustodianId))
+      );
+    });
+
+    setFilteredMaterial(filtered);
+    setFilteredAsset(filteredAsset);
+  } else {
+    setFilteredMaterial([]);
+  }
+}, [
+  formData.senderLocationId,
+  formData.senderCustodianId,
+  locatorMaster,
+  materialList,
+  assetList,
+]);
+
 
   console.log("Filtered asset: ", filteredAsset);
   console.log("Filtered material: ", filteredMaterial);
+  console.log("Sender Location:", formData.senderLocationId);
+console.log("Sender Custodian:", formData.senderCustodianId);
+
 
   const materialColumn = [
     {
@@ -461,11 +518,11 @@ const Form17 = () => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
   });
-
+/*
   useEffect(() => {
     populateItemQtyDtls();
   }, [])
-
+*/
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Goods Transfer" />

@@ -91,6 +91,7 @@ const AssetDisposalApproval = () => {
           rowKey={(r, idx) => r.assetId || `row-${idx}`}
           columns={[
             { title: "Asset ID", dataIndex: "assetId", key: "assetId" },
+            { title: "Asset Code", dataIndex: "assetCode", key: "assetCode" },
             { title: "Asset Description", dataIndex: "assetDesc", key: "assetDesc" },
             { title: "Quantity", dataIndex: "quantity", key: "quantity" },
             { title: "Disposal Category", dataIndex: "disposalCategory", key: "disposalCategory" },

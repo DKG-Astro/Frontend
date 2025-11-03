@@ -498,6 +498,13 @@ const grvFields =(formData)=> [
                 span: 2,
                 // required: true
             },
+             {
+                name: "assetCode",
+                label: "Asset Code",
+                type: "text",
+                span: 2,
+                // required: true
+            },
             {
                 name: "assetDesc",
                 label: "Asset Description",

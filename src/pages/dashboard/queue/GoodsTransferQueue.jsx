@@ -165,6 +165,7 @@ const GoodsTransferQueue = () => {
           columns={[
             { title: 'Material Code', dataIndex: 'materialCode', key: 'materialCode' },
             { title: 'Material Description', dataIndex: 'materialDesc', key: 'materialDesc' },
+            { title: 'Asset Code', dataIndex: 'assetCode', key: 'assetCode' },
             { title: 'Asset ID', dataIndex: 'assetId', key: 'assetId' },
             { title: 'Asset Description', dataIndex: 'assetDesc', key: 'assetDesc' },
             { title: 'Quantity', dataIndex: 'quantity', key: 'quantity' },

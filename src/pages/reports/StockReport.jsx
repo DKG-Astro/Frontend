@@ -31,6 +31,7 @@ const StockReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
 
     },
     { title: 'Asset ID', dataIndex: 'assetId', key: 'assetId_S', searchable: true },
+     { title: 'Asset Code', dataIndex: 'assetCode', key: 'assetCode_S', searchable: true },
     { title: 'Asset Description', dataIndex: 'assetDesc', key: 'assetDesc_SR', searchable: true },
     { title: 'Material Code', dataIndex: 'materialCode', key: 'materialDesc_SR', searchable: true },
     { title: 'Material Description', dataIndex: 'materialDesc', key: 'materialDesc_SR', searchable: true },
@@ -50,7 +51,22 @@ const StockReport = ({ onChartData, selectedBarKey, selectedPieKey }) => {
           columns={[
             { title: 'Locator ID', dataIndex: 'locatorId', key: 'locatorId' },
             { title: 'Locator Description', dataIndex: 'locatorDesc', key: 'locatorDesc' },
-            { title: 'Quantity', dataIndex: 'quantity', key: 'quantity' }
+            { title: 'Quantity', dataIndex: 'quantity', key: 'quantity' },
+              {
+          title: 'Serial Numbers',
+          dataIndex: 'serialNos',
+          key: 'serialNos',
+          render: (serialNos) =>
+            serialNos && serialNos.length > 0 ? (
+              <ul style={{ paddingLeft: 15, margin: 0 }}>
+                {serialNos.map((sn, idx) => (
+                  <li key={idx}>{sn}</li>
+                ))}
+              </ul>
+            ) : (
+              <span>-</span>
+            ),
+        },
           ]}
         />
       )

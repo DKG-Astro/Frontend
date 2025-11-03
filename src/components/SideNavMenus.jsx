@@ -92,6 +92,12 @@ export const commonMenu = [
         label: "Payment Register",
         path: "/accounting/payment-register",
       },
+       {
+          key: "gd",
+          icon: <BiTransferAlt />,
+          label: "Goods Transfer",
+          path: "/inventory/goodsTransfer",
+        },
     ],
   },
 ];

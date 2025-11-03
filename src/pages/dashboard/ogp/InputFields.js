@@ -472,8 +472,15 @@ export const gtOgpFields = [
           // required: true,
         },
         {
-          name: "assetId",
+          name: "assetCode",
           label: "Asset Code",
+          type: "text",
+          span: 2,
+          // required: true,
+        },
+        {
+          name: "assetId",
+          label: "Asset Id",
           type: "text",
           span: 2,
           // required: true,
@@ -531,6 +538,12 @@ export const gtOgpFields = [
           {
           name: "bookValue",
           label: "Book Value",
+          type: "text",
+          span: 2,
+          required: true
+        } ,{
+          name: "serialNo",
+          label: "Serial No",
           type: "text",
           span: 2,
           required: true
@@ -597,6 +610,12 @@ export const gtOgpFields = [
         type: "text",
         span: 1,
         disabled: true,
+      }, {
+        name: "assetCode",
+        label: "Asset Code",
+        type: "text",
+        span: 2,
+        disabled: true,
       },
       {
         name: "assetDesc",
@@ -622,6 +641,13 @@ export const gtOgpFields = [
       {
         name: "disposalQuantity", 
         label: "Quantity",
+        type: "text",
+        span: 1,
+        disabled: true,
+      },
+      {
+        name: "serialNo", 
+        label: "Serial No",
         type: "text",
         span: 1,
         disabled: true,

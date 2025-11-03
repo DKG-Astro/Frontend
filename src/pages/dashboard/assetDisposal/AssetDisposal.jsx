@@ -11,6 +11,7 @@ import { assetDisposalFields } from "./InputFields";
 import AssetSearch from "../../../components/AssetSearch";
 import { renderFormFields } from "../../../utils/CommonFunctions";
 import dayjs from "dayjs";
+import AssetDisposalSearch from "../../../components/AssetDisposalSearch";
 
 const AssetDisposal = () => {
   const printRef = useRef();
@@ -49,6 +50,7 @@ const [isEditable, setIsEditable] = useState(false);
       if (data?.responseData) {
         const formattedAssets = data.responseData.map((item) => ({
           assetId: item.assetId,
+          assetCode: item.assetCode,
           aseetDescription: item.aseetDescription,
           locatorId: item.locatorId,
           quantity: item.quantity,
@@ -62,6 +64,7 @@ const [isEditable, setIsEditable] = useState(false);
           poDate: item?.gprnDate ? dayjs(item.gprnDate, "DD/MM/YYYY") : null,
           serialNo: item.serialNo, 
           modelNo: item.modelNo, 
+          serialNumbers: item.serialNumbers || [],
         }));
         setAssetList(formattedAssets);
       }
@@ -72,6 +75,7 @@ const [isEditable, setIsEditable] = useState(false);
       );
     }
   }, []);
+  console.log(assetList);
 
   useEffect(() => {
     populateAssetList();
@@ -266,18 +270,35 @@ console.log(formData);
         )}
       </CustomForm>
 
-      <AssetSearch
+    { /* <AssetSearch
         customCols={[
           { dataIndex: "assetId", title: "Asset ID" },
+           { dataIndex: "assetCode", title: "Asset Code" },
           { dataIndex: "aseetDescription", title: "Asset Description" },
           { dataIndex: "locatorId", title: "Locator Id" },
           { dataIndex: "quantity", title: "Quantity" },
           { dataIndex: "custodianId", title: "Custodian" },
+          { dataIndex: "serialNumber", title: "Serial Number" },
         ]}
         assetsArray={filteredAssetList || []}
         setFormData={setFormData}
         custodianId={formData.custodianId}
-      />
+      />*/}
+      <AssetDisposalSearch
+  customCols={[
+    { dataIndex: "assetCode", title: "Asset Code" },
+    { dataIndex: "aseetDescription", title: "Asset Description" },
+    { dataIndex: "locatorId", title: "Locator" },
+    { dataIndex: "quantity", title: "Quantity" },
+    { dataIndex: "unitPrice", title: "Unit Price" },
+    { dataIndex: "bookValue", title: "Book Value" },
+  ]}
+  assetsArray={filteredAssetList || []}
+  setFormData={setFormData}
+  custodianId={formData.custodianId}
+/>
+
+
 
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(assetDisposalFields(formattedLocations,isEditable), handleChange, formData)}

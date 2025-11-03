@@ -1,4 +1,4 @@
-import { Button, Popover, Table, Input } from 'antd';
+import { Button, Popover, Table, Input, Checkbox } from 'antd';
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { convertToCurrency, updateFormData } from '../utils/CommonFunctions';
@@ -14,6 +14,9 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
 
   const { locatorMaster } = useSelector(state => state.masters);
  const { locationMaster } = useSelector(state => state.masters);
+
+ const [selectedSerials, setSelectedSerials] = useState({});
+
   const locatorMasterObj = locatorMaster?.reduce((acc, obj) => {
     const { value, label } = obj;
     acc[value] = label;
@@ -29,11 +32,61 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
       const matchesSearch =
         !lowerSearch ||
         item.assetId.toString().toLowerCase().includes(lowerSearch) ||
+        item.assetCode?.toLowerCase().includes(lowerSearch)  ||
         item.aseetDescription.toLowerCase().includes(lowerSearch);
       return matchesCustodian && matchesSearch;
     });
     setFilteredData(filtered);
   }, [assetsArray, searchText, custodianId]);
+
+
+  function getSerialUniqueKey(record, sn) {
+  return `${record.assetId}_${record.locatorId}_${record.custodianId}_${sn}`;
+}
+console.log("filterdata",filteredData);
+// Flatten filteredData so each serial number becomes its own row
+const flattenedData = (filteredData || []).flatMap((item) =>
+  item.serialNumbers && item.serialNumbers.length > 0
+    ? item.serialNumbers.map((sn) => ({
+        ...item,
+        serialNumber: sn, // store the serial
+      }))
+    : [item]
+);
+
+
+const handleSerialSelect = (e, record, sn) => {
+  const assetKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
+  const lineKey = getSerialUniqueKey(record, sn);
+  const isChecked = e.target.checked;
+
+  setSelectedSerials(prev => {
+    const current = prev[assetKey] || [];
+    const updated = isChecked
+      ? [...current, sn]
+      : current.filter(s => s !== sn);
+    return { ...prev, [assetKey]: updated };
+  });
+
+  setFormData(prev => {
+    const updatedList = [...(prev.materialDtlList || [])];
+    if (isChecked) {
+      const newAsset = {
+        ...record,
+         assetCode: record.assetCode, 
+        selectedSerial: sn,
+        quantity: 1,
+        uniqueKey: lineKey,
+      };
+      updatedList.push(newAsset);
+    } else {
+      const index = updatedList.findIndex(it => it.uniqueKey === lineKey);
+      if (index > -1) updatedList.splice(index, 1);
+    }
+    return { ...prev, materialDtlList: updatedList };
+  });
+};
+
 
   const handleSelectAsset = (record) => {
     setTableOpen(false);
@@ -90,17 +143,34 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
       setSelectedAssets(updatedAssets);
     }
   };
+const tableColumns = [
+  { title: "Asset ID", dataIndex: "assetId", key: "assetId", fixed: "left" },
+  { title: "Asset Code", dataIndex: "assetCode", key: "assetCode" }, // ✅ Added
+  { title: "Description", dataIndex: "aseetDescription", key: "aseetDescription" },
+  { title: "Locator", dataIndex: "locatorId", key: "locatorId", render: val => locatorMasterObj[val] || val },
+  { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+  { title: "Custodian", dataIndex: "custodianId", key: "custodianId", render: val => val || "Unassigned" },
+ {
+  title: "Serial Number",
+  dataIndex: "serialNumber",
+  key: "serialNumber",
+  render: (sn, record) => {
+    const assetKey = `${record.assetId}_${record.locatorId}_${record.custodianId}`;
+    const checked = selectedSerials[assetKey]?.includes(sn);
+    return (
+      <Checkbox
+        checked={checked}
+        onChange={(e) => handleSerialSelect(e, record, sn)}
+      >
+        {sn}
+      </Checkbox>
+    );
+  },
+},
 
-  const tableColumns = [
-    { title: "Asset ID", dataIndex: "assetId", key: "assetId", fixed: "left" },
-    { title: "Description", dataIndex: "aseetDescription", key: "aseetDescription" },
-    { title: "Locator", dataIndex: "locatorId", key: "locatorId", render: val => locatorMasterObj[val] || val },
-    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
-    { title: "Unit Price", dataIndex: "unitPrice", key: "unitPrice", render: val => convertToCurrency(val) },
-    { title: "Book Value", dataIndex: "bookValue", key: "bookValue", render: val => convertToCurrency(val) },
-    { title: "Depreciation Rate", dataIndex: "depriciationRate", key: "depriciationRate", render: val => `${val}%` },
-    { title: "Custodian", dataIndex: "custodianId", key: "custodianId", render: val => val || "Unassigned" },
-  ];
+];
+
+
 
   const actionCol = {
     title: "Action",
@@ -119,7 +189,7 @@ const AssetSearch = ({ customCols, assetsArray, setFormData, custodianId }) => {
   const content = (
     <Table
       pagination={{ pageSize: 5 }}
-      dataSource={filteredData}
+      dataSource={flattenedData}
       columns={customCols ? [...customCols, actionCol] : [...tableColumns, actionCol]}
       scroll={{ x: "max-content" }}
       rowKey="assetId"

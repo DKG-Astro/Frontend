@@ -157,8 +157,8 @@ const indentCreatorRoutes = (
 
 const storePurchaseRoutes = (
   <>
-     <Route path="/procurement/tender/request" element={<Tender />} />
-     <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
+    <Route path="/procurement/tender/request" element={<Tender />} />
+    <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
     <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
     <Route path="/procurement/tender/Quotations" element={<Quotations />} />
     <Route path="/inventory/goodsReceipt" element={<Grn />} />
@@ -173,7 +173,6 @@ const storePurchaseRoutes = (
     
   </>
 );
-
 
 const storePersonRoutes = (
   <>
@@ -309,6 +308,7 @@ const RoutesComponent = () => {
 
            <Route path="/procurement/contingencyPurchase" element={<ContingencyPurchase />} />
            <Route path="/procurement/paymentVoucher/Invoice" element={<Invoice />} />
+           <Route path="/inventory/goodsTransfer" element={<Form17 />} />
           {/* Role-based routes only for roleId 1 */}
           {generateRoutes(roleName)}
         </Route>

@@ -112,8 +112,10 @@ const handleRemoveDisposal = async (disposalId) => {
           rowKey="assetId"
           columns={[
             { title: "Asset ID", dataIndex: "assetId", key: "assetId" },
+            { title: "Asset Code", dataIndex: "assetCode", key: "assetCode" },
             { title: "Asset Desc", dataIndex: "assetDesc", key: "assetDesc" },
             { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+             { title: "Serial No", dataIndex: "serialNo", key: "serialNo" },
           ]}
         />
       ),

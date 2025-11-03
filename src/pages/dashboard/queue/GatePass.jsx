@@ -330,7 +330,9 @@ const GatePass = () => {
               dataIndex: "materialDesc",
               key: "materialDesc",
             },
+             { title: "Asset Code", dataIndex: "assetCode", key: "assetCode" },
             { title: "Asset ID", dataIndex: "assetId", key: "assetId" },
+             { title: "Serial No", dataIndex: "serialNo", key: "serialNo" },
             {
               title: "Asset Description",
               dataIndex: "assetDesc",

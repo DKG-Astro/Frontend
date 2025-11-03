@@ -91,6 +91,14 @@ export const assetDisposalFields =(locations, isEditable)=> [
                 required: true
             },
             {
+                name: "assetCode",
+                label: "Asset Code",
+                type: "text",
+                span: 1,
+                disabled: true,
+                required: true
+            },
+            {
                 name: "assetDesc",
                 label: "Asset Description",
                 type: "text",

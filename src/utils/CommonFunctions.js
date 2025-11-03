@@ -137,6 +137,36 @@ export const apiCall = async (method, url, token, payload = null) => {
     });
     console.log("DONE UPDATE");
   };
+  export const updateFormDataWithSerial = (record, serialNumber, setFormData) => {
+  console.log(" updateFormDataWithSerial called for:", serialNumber);
+
+  console.log("record", record);
+  const newItem = {
+    ...record,
+    assetId: record.assetId,
+    assetCode: record.assetCode,
+    senderLocatorId: record.locatorId,
+    serialNo: serialNumber, 
+    quantity: 1,
+    uniqueKey: `${record.assetCode}_${serialNumber}`,
+  };
+
+  setFormData(prev => {
+    const existing = prev.materialDtlList || [];
+
+    // remove same asset+serial if exists to prevent duplicate
+    const filtered = existing.filter(it => it.uniqueKey !== newItem.uniqueKey);
+
+    return {
+      ...prev,
+      materialDtlList: [...filtered, newItem],
+    };
+  });
+
+  console.log("DONE updateFormDataWithSerial", serialNumber);
+};
+
+
 
   
   export const itemHandleChange = (fieldName, value, index, setFormData) => {
