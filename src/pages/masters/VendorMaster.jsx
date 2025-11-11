@@ -27,6 +27,9 @@ const VendorMasterForm = () => {
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedState, setSelectedState] = useState("");
 
+  const [vendorStatus, setVendorStatus] = useState("");
+
+
   // Load all countries
   useEffect(() => {
     setCountryList(Country.getAllCountries());
@@ -60,8 +63,10 @@ const VendorMasterForm = () => {
       form.setFieldsValue({
         ...vendor,
         city: vendor.place,
+        status: vendor.statusOfVendorActiveOrDebar ,
         registeredPlatform: vendor.registeredPlatform ? true : false,
       });
+      setVendorStatus(vendor.statusOfVendorActiveOrDebar);
 
       setVendorType(vendor.vendorType);
 
@@ -96,6 +101,13 @@ const VendorMasterForm = () => {
 
   // UPDATE API integration
   const handleUpdate = async (values) => {
+    console.log("roleName" + auth.role)
+    if (auth.role !== "Purchase personnel") { 
+
+    message.warning("You are not authorized to update vendor details.");
+    return;
+  }
+
     if (!values.vendorId) {
       return message.error("Please select a Vendor to update");
     }
@@ -128,6 +140,9 @@ const VendorMasterForm = () => {
         state: values.state,
         place: values.city,
         updatedBy: actionPerformer,
+        status : values.status,
+        reasonForDebar: values.reasonForDebar || null,
+
       };
 
       await axios.put(
@@ -148,7 +163,7 @@ const VendorMasterForm = () => {
       setLoading(false);
     }
   };
-
+console.log("vendorStaus"+ vendorStatus)
   return (
     <FormContainer>
       <Heading title="Vendor Master" />
@@ -158,21 +173,58 @@ const VendorMasterForm = () => {
         onFinish={handleUpdate}
         onFinishFailed={() => message.error("Please fill all required fields")}
       >
+        <div className="grid grid-cols-2 gap-4 mt-4">
         {/* Vendor ID Dropdown */}
-        <Form.Item label="Vendor ID" name="vendorId" rules={[{ required: true }]}>
-          <Select
-            showSearch
-            placeholder="Select Vendor"
-            onChange={handleVendorSelect}
-            options={vendorList.map((v) => ({
-              label: `${v.vendorId} - ${v.vendorName}`,
-              value: v.vendorId,
-            }))}
-            filterOption={(input, option) =>
-              option.label.toLowerCase().includes(input.toLowerCase())
-            }
-          />
-        </Form.Item>
+      <Form.Item
+  label="Vendor ID"
+  name="vendorId"
+  rules={[{ required: true }]}
+>
+  <Select
+    showSearch
+    placeholder="Select Vendor"
+    onChange={handleVendorSelect}
+    optionFilterProp="data-search"
+    filterOption={(input, option) =>
+      option?.props["data-search"]
+        ?.toLowerCase()
+        .includes(input.toLowerCase())
+    }
+  >
+    {vendorList.map((v) => (
+      <Option
+        key={v.vendorId}
+        value={v.vendorId}
+        data-search={`${v.vendorId} ${v.vendorName} ${v.primaryBusiness}`} //searchable text
+      >
+        {`${v.vendorId} - ${v.vendorName}`} 
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
+<CustomSelect
+  label="Status"
+  name="status"
+  options={[
+    { label: "Active", value: "Active" },
+    { label: "Debar", value: "Debar" },
+  ]}
+ onChange={(name, value) => setVendorStatus(value)}
+  rules={[{ required: true }]}
+/>
+
+
+
+
+
+</div>
+{vendorStatus === "Debar" && (
+  <FormInputItem
+    label="Reason for Debar"
+    name="reasonForDebar"
+    rules={[{ required: true, message: "Please provide a reason for debar" }]}
+  />
+)}
 
         {/* Vendor Basic Info */}
         <div className="grid grid-cols-2 gap-4 mt-4">

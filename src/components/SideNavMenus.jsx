@@ -271,6 +271,7 @@ export const sidebarMenus = {
         },
       ],
     },
+    
   ],
 
   "Store Person": [
@@ -340,7 +341,13 @@ export const sidebarMenus = {
           path: "/inventory/materialDisposal",
         },
          {
-            key: "4.1.2",
+          key: "4.1.2",
+          icon: <GoIssueReopened />,
+          label: "Demand and Issue",
+          path: "/inventory/demandIssue",
+        },
+         {
+            key: "4.1.3",
             icon: <TiFolderDelete />,
             label: "Asset Auction",
             path: "/inventory/ForDisposalAssets",
@@ -397,6 +404,12 @@ export const sidebarMenus = {
             path: "/procurement/serviceOrder",
           },
       ],
+    },
+     {
+      key: "8",
+      icon: <MdOutlineSettings />,
+      label: "Masters",
+      path: "/masters",
     },
   ],
    "PO Creator" : [

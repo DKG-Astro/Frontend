@@ -32,7 +32,7 @@ const [remainingToEnter, setRemainingToEnter] = useState(0);
 const fetchExistingSerials = async (assetCode, assetId, custodianId, locatorId, quantity) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8081/astro-service/api/asset/exstingSerialNoOnCustodainIdofAsset",
+      "/api/asset/exstingSerialNoOnCustodainIdofAsset",
       { params: { assetCode, assetId, custodianId, locatorId, quantity } }
     );
 
@@ -275,7 +275,7 @@ const assetFields = [
   const handleSearch = async (value) => {
    console.log("handleSearch received value:", value);
    try {
-    const { data } = await axios.get(`http://localhost:8081/astro-service/api/asset/getAssetDtl`, {
+    const { data } = await axios.get(`/api/asset/getAssetDtl`, {
       params: { assetId: value }
     });
     setFormData(data.responseData || {});
@@ -307,7 +307,7 @@ const assetFields = [
 const handleSearchAssets = async (keyword) => {
   try {
     const { data } = await axios.get(
-      "http://localhost:8081/astro-service/api/asset/search",
+      "/api/asset/search",
       { params: { keyword } }
     );
     setSearchResults(data.responseData || []);
@@ -453,8 +453,8 @@ const onFinish = async () => {
     setSubmitBtnLoading(true);
 
     const apiUrl = isExistingAsset
-      ? "http://localhost:8081/astro-service/api/asset/updateRemaining-serials"
-      : "http://localhost:8081/astro-service/api/asset/update-serials";
+      ? "/api/asset/updateRemaining-serials"
+      : "/api/asset/update-serials";
 
     const { data } = await axios.post(apiUrl, payload);
 
@@ -597,7 +597,7 @@ useEffect(() => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8081/astro-service/api/asset/asset-full-details",
+        "/api/asset/asset-full-details",
         {
           params: {
             assetId: record.assetId,

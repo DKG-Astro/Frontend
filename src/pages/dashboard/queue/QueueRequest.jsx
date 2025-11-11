@@ -1517,7 +1517,7 @@ const {userId} = useSelector(state => state.auth)
                   Reject
                 </Button>
               </Popover>
-              <Popover
+           { /*  <Popover
                 content={
                   <div style={{ padding: 12, width: 300 }}>
                     <Select
@@ -1588,8 +1588,82 @@ const {userId} = useSelector(state => state.auth)
                   }
                 }}
               >
-                <Button type="link">Request Change</Button>
-              </Popover>
+                <Button type="link"  disabled={record.requestId.startsWith("V")} >Request Change</Button>
+              </Popover>*/}
+              {!record.requestId.startsWith("V") && (
+  <Popover
+    content={
+      <div style={{ padding: 12, width: 300 }}>
+        <Select
+          placeholder={
+            loadingPreviousRoles ? "Loading roles..." : "Select a role"
+          }
+          value={selectedRole}
+          onChange={setSelectedRole}
+          style={{ width: "100%", marginBottom: 8 }}
+          loading={loadingPreviousRoles}
+          disabled={
+            loadingPreviousRoles || previousRoles.length === 0
+          }
+        >
+          {previousRoles.map((role) => (
+            <Select.Option key={role} value={role}>
+              {role}
+            </Select.Option>
+          ))}
+        </Select>
+
+        {previousRoles.length === 0 && !loadingPreviousRoles && (
+          <Text type="secondary">No previous roles available.</Text>
+        )}
+
+        <Input.TextArea
+          placeholder="Request Change Comments"
+          rows={3}
+          value={requestChangeComment}
+          onChange={(e) =>
+            setRequestChangeComment(e.target.value)
+          }
+          style={{ marginTop: 8 }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleRequestChangeSubmit(record)}
+          style={{ marginTop: 8 }}
+          disabled={
+            !selectedRole ||
+            !requestChangeComment.trim() ||
+            loadingPreviousRoles
+          }
+        >
+          Submit
+        </Button>
+      </div>
+    }
+    title="Request Change"
+    trigger="click"
+    onVisibleChange={(visible) => {
+      if (visible) {
+        if (record.requestId.startsWith("M")) {
+          setPreviousRoles(["Indent Creator"]);
+          setSelectedRole("Indent Creator");
+          setLoadingPreviousRoles(false);
+        } else {
+          fetchPreviousRoles(record.workflowId, record.requestId);
+        }
+      } else {
+        setPreviousRoles([]);
+        setSelectedRole(null);
+        setRequestChangeComment("");
+        setLoadingPreviousRoles(false);
+      }
+    }}
+  >
+    <Button type="link">Request Change</Button>
+  </Popover>
+)}
+
             </Space>
           );
         }
@@ -1695,7 +1769,7 @@ const {userId} = useSelector(state => state.auth)
                 }
               }}
             >
-              <Button type="link">Request Change</Button>
+              <Button type="link"  >Request Change</Button>
             </Popover>
           </Space>
         );

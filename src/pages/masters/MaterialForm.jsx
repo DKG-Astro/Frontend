@@ -48,6 +48,10 @@ const MaterialForm = ({materialCode}) => {
   const [showMaterialCodePopup, setShowMaterialCodePopup] = useState(false);
   const [generatedMaterialCode, setGeneratedMaterialCode] = useState("");
  const [uploadedFiles, setUploadedFiles] = useState([]); 
+ const [selectedMaterialCode, setSelectedMaterialCode] = useState(null);
+
+ 
+   const [materialStatus, setMaterialStatus] = useState("");
 
   useEffect(() => {
     if (materialCode) {
@@ -68,7 +72,10 @@ const MaterialForm = ({materialCode}) => {
               materialCode: materialData.materialCode, // Show existing code
               indigenousOrImported: originValue,//seting the origin if true then inigenous,flase Imported
               status: materialData.status,
+              materialStatus: materialData.materialStatus,
+              reasonForDeactive: materialData.reasonForDeactive,
             });
+            setMaterialStatus(materialData.materialStatus);
              if (materialData.materialFile && Array.isArray(materialData.materialFile)) {
   const fileListData = materialData.materialFile.map((base64Data, index) => {
     const isPdf = base64Data.startsWith("data:application/pdf");
@@ -232,8 +239,11 @@ const searchMaterials = async (searchText) => {
   // Modify handleSubmit to include validations
   const handleSubmit = async (values) => {
     setLoading(true);
+    
     try {
-      const finalMaterialCode = isEditMode ? materialCode : values.materialCode;
+      //const finalMaterialCode = isEditMode ? materialCode : values.materialCode;
+      const finalMaterialCode = selectedMaterialCode || materialCode;
+
       if (values.modeOfProcurement === "Proprietary/Single Tender") {
         if (!values?.vendorNames) {
           message.error("Please select vendor name");
@@ -312,26 +322,36 @@ const searchMaterials = async (searchText) => {
      //const uploadedFileNameString = uploadedFileNames.join(",");
 
      const uploadedFileNameString = finalFileNames.join(",");
+     const originBoolean =
+        values.indigenousOrImported === "indigenous" ? true : false;
       const payload = {
+  
         category: values.category,
         createdBy: isEditMode ? existingData.createdBy : actionPerformer,
         currency: values.currency,
         description: values.description,
         // estimatedPriceWithCcy: values.estimatedPriceWithCcy,
-        indigenousOrImported: values.indigenousOrImported,
+       // indigenousOrImported: values.indigenousOrImported,originBoolean
+        indigenousOrImported: originBoolean,
         subCategory: values.subCategory,
         unitPrice: values.unitPrice,
         uom: values.uom,
         updatedBy: String(actionPerformer), // Convert to string
        // uploadImageFileName: uploadedFileNameString,
         uploadImageFileName: uploadedFiles,
-        briefDescription: values.briefDescription
+        briefDescription: values.briefDescription,
+        materialStatus: values.materialStatus || null,
+        reasonForDeactive: values.reasonForDeactive || null,
       };
 
       // Updated URL for PUT request
-      const url = isEditMode
-        ? `/api/material-master-util/update/${materialCode}`
-        : "/api/material-master-util/register";
+     // const url = isEditMode
+      //  ? `/api/material-master-util/update/${materialCode}`
+       // : "/api/material-master-util/register";
+       const url = isEditMode
+          ? `/api/material-master/${finalMaterialCode}`
+          : "/api/material-master-util/register";
+
 
     /*  const response = await fetch(url, {
         method: isEditMode ? "PUT" : "POST",
@@ -396,6 +416,7 @@ const searchMaterials = async (searchText) => {
       )}
     </Modal>
   );
+   console.log("materialStatus"+ materialStatus);
   return (
     <FormContainer>
       <MaterialCodePopup />
@@ -421,7 +442,11 @@ const searchMaterials = async (searchText) => {
   setMaterialList(Array.isArray(results) ? results : []);
 }}
 options={Array.isArray(materialList) ? materialList : []}
-    onChange={async (selectedCode) => {
+    onChange={async (selectedCode) => 
+      {
+       setSelectedMaterialCode(selectedCode);
+      
+
   try {
     const response = await axios.get(`/api/material-master/base64/${selectedCode}`);
     const data = response.data;
@@ -429,6 +454,7 @@ options={Array.isArray(materialList) ? materialList : []}
     if (data?.responseData) {
       const materialData = data.responseData;
       setExistingData(materialData);
+      setMaterialStatus(materialData.materialStatus);
 
       // Convert boolean to radio value for Indigenous/Imported
       const originValue = materialData.indigenousOrImported ? "indigenous" : "imported";
@@ -445,6 +471,9 @@ options={Array.isArray(materialList) ? materialList : []}
         indigenousOrImported: originValue,
         briefDescription: materialData.briefDescription,
         status: materialData.status,
+        materialStatus: materialData.materialStatus,
+        reasonForDeactive: materialData.reasonForDeactive,
+
       });
 
      if (materialData.materialFile && Array.isArray(materialData.materialFile)) {
@@ -477,6 +506,7 @@ options={Array.isArray(materialList) ? materialList : []}
     console.error("Error fetching material details:", error);
     message.error("Failed to load material details");
   }
+    setIsEditMode(true);
 }}
    
     style={{ width: "100%" }}
@@ -494,8 +524,30 @@ options={Array.isArray(materialList) ? materialList : []}
             placeholder={isEditMode ? materialCode : "Auto-generated"}
             disabled
           />
-
+{form.getFieldValue("status") === "APPROVED" && (
+  <CustomSelect
+    label="Material Status"
+    name="materialStatus"
+    options={[
+      { label: "Active", value: "Active" },
+      { label: "Deactive", value: "Deactive" },
+    ]}
+    onChange={(name, value) => setMaterialStatus(value)}
+    rules={[{ required: true }]}
+  />
+)}
         </div>
+  
+       
+{form.getFieldValue("status") === "APPROVED" &&
+ materialStatus === "Deactive" && (
+    <FormInputItem
+      label="Reason for Deactive"
+      name="reasonForDeactive"
+      rules={[{ required: true, message: "Please provide a reason for Deactive" }]}
+    />
+)}
+        
         <div className="form-section">
           <Form.Item
             name="category"
@@ -653,7 +705,6 @@ options={Array.isArray(materialList) ? materialList : []}
             name="indigenousOrImported"
             label="Origin"
             rules={[{ required: true }]}
-            valuePropName="checked"
           >
             <Radio.Group>
               <Radio value="indigenous">Indigenous</Radio>
@@ -715,11 +766,26 @@ options={Array.isArray(materialList) ? materialList : []}
   Reset
 </Button>
 
-          <Button type="primary" htmlType="submit" loading={loading}>
+         {/* <Button type="primary" htmlType="submit" loading={loading}>
             <SendOutlined /> {
               materialCode ? "Update" : "Create"
             }
-          </Button>
+          </Button>*/}
+        <Button
+  type="primary"
+  htmlType="submit"
+  loading={loading}
+  disabled={
+    isEditMode && (
+      (auth.role === "Indent Creator" && form.getFieldValue("status") !== "CHANGE_REQUEST") ||
+      (auth.role === "Purchase personnel" && form.getFieldValue("status") !== "APPROVED")
+    )
+  }
+>
+  <SendOutlined /> {materialCode ? "Update" : "Create"}
+</Button>
+
+
           <Button type="dashed" htmlType="button">
             <SaveOutlined />
             Save Draft

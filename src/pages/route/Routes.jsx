@@ -157,6 +157,7 @@ const indentCreatorRoutes = (
 
 const storePurchaseRoutes = (
   <>
+   
     <Route path="/procurement/tender/request" element={<Tender />} />
     <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
     <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
@@ -185,7 +186,8 @@ const storePersonRoutes = (
     <Route path="/inventory/assetMaster" element={<Asset />} />
     <Route path="/inventory/goodsTransfer" element={<Form17 />} />
     <Route path="/inventory/materialDisposal" element={<AssetDisposal />} />
-     <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
+    <Route path="/inventory/demandIssue" element={<Form20 />} />
+    <Route path="/inventory/ForDisposalAssets" element={<ForDisposalAssets />} />
     <Route path="/inventory/outward" element={<Ogp />} />
     <Route path="/inventory/inward" element={<Igp />} />
    
@@ -197,6 +199,7 @@ const storePersonRoutes = (
 const purchasePersonnelRoutes = (
   <>
 
+    <Route path="/masters" element={<Master />} />
     <Route path="/procurement/tender/request" element={<Tender />} />
     <Route path="/procurement/tender/evaluation" element={<TenderEvaluator />} />
     <Route path="/procurement/tender/gem" element={<TenderEvaluatorGem />} />
