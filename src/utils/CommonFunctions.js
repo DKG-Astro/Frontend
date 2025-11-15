@@ -325,6 +325,28 @@ export const apiCall = async (method, url, token, payload = null) => {
   }
   throw new Error("Custom type requires a render function.");
 
+  case "pvselect":
+  return (
+    <Form.Item
+      name={field?.name}
+      label={field?.label}
+      rules={field?.required ? [{ required: true, message: `${field?.label} is required` }] : []}
+    >
+      <Select
+        showSearch
+        options={field?.options}
+        filterOption={(input, option) =>
+          option.searchText
+            ? option.searchText.includes(input.toLowerCase())
+            : option.label.toLowerCase().includes(input.toLowerCase())
+        }
+        disabled={field?.disabled}
+        onChange={(value) => handleChange(field?.name, value)}
+      />
+    </Form.Item>
+  );
+
+
         case "multiselect":
           return (
             <Form.Item 

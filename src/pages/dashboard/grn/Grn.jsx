@@ -92,7 +92,7 @@ const Grn = () => {
       try{
 
         const {data} = await axios.get(`/api/process-controller/getIgpMaterialDtls?igpId=${formData.giNo}`)
-        setFormData({...formData, ...data.responseData, indentorName: data.responseData.indentId, materialDtlList: data.responseData.materialDtlList.map(item => ({...item, materialDesc: item.description, uomId: item.uom, unitPrice: item.estimatedPriceWithCcy}))})
+        setFormData({...formData, ...data.responseData, indentorName: data.responseData.indentId, custodianName: data.responseData.custodianName,materialDtlList: data.responseData.materialDtlList.map(item => ({...item, materialDesc: item.description, uomId: item.uom, unitPrice: item.estimatedPriceWithCcy}))})
         console.log("DATA: ", data.responseData);
       }
       catch(error){
@@ -178,6 +178,7 @@ const Grn = () => {
           materialDtlList: materialWithPrice,
           locationId: data?.responseData?.gprnDtls?.locationId,
           custodianId: data?.responseData?.gprnDtls?.receivedBy,
+          custodianName: data?.responseData?.gprnDtls?.receivedName,
           //deliveryDate,
           gprnDtls: {
              ...data?.responseData?.gprnDtls,
@@ -209,6 +210,8 @@ const Grn = () => {
           installationDate: data?.responseData?.grnDtls?.installationDate,
           commissioningDate: data?.responseData?.grnDtls?.commissioningDate,
           indentorName: data?.responseData.grnDtls?.custodianId,
+          gprnAmount: data?.responseData.gprnDtls.gprnAmount,
+          poAmount: data?.responseData.gprnDtls.poAmount,
           materialDtlList: data?.responseData?.grnDtls?.materialDtlList?.map(
             (grnMaterial) => {
               const giMaterial =
@@ -311,6 +314,7 @@ const Grn = () => {
       setFormData((prev) => ({
         ...prev,
         grnNo: data?.responseData?.processNo,
+        acceptedQuantity: data?.responseData?.acceptedQuantity,
       }));
 
       localStorage.removeItem("grnDraft");
@@ -463,13 +467,25 @@ const grvFields =(formData)=> [
                 name: "installationDate",
                 label: "Installation Date",
                 type: "date",
-                required: true
+              //  required: true
             },
             {
                 name: "commissioningDate",
                 label: "Commission Date",
                 type: "date",
-                required: true
+              //  required: true
+            },
+             {
+              name: "gprnAmount",
+              label: "grn Amount",
+              type: "text",
+              span: 2,
+            },
+             {
+              name: "poAmount",
+              label: "Po Amount",
+              type: "text",
+              span: 2,
             },
          ...(formData?.grnType === "GI" &&
     formData?.gprnDtls?.materialDtlList?.some(m => m.category === "Consumable")
@@ -581,8 +597,14 @@ const grvFields =(formData)=> [
             {
                 label: "Custodian Id",
                 name: "indentorName",
-              //  disabled: true,
+                disabled: true,
                 type: "text"
+            }
+            ,  {
+                label: "Custodian Name",
+                name: "custodianName",
+                type: "text",
+                disabled: true
             }
         ]
     }
@@ -721,7 +743,7 @@ const igpGrnFields = [
         heading: "Custodian Details",
         fieldList: [
             {
-                label: "Custodian Name",
+                label: "Custodian Id",
                 name: "indentorName",
                 type: "text",
                 disabled: true
@@ -885,8 +907,14 @@ const materialInFields = [
         heading: "Custodian Details",
         fieldList: [
             {
-                label: "Custodian Name",
+                label: "Custodian Id",
                 name: "indentorName",
+                type: "text",
+                disabled: true
+            },
+              {
+                label: "Custodian Name",
+                name: "custodianName",
                 type: "text",
                 disabled: true
             }

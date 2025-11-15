@@ -449,7 +449,7 @@ const handleGISearch = async () => {
               type: "text",
               span: 2,
             },*/
-              ...(formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0)
+          /*    ...(formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0)
       ? [
           {
             name: "rejectionType",
@@ -468,7 +468,30 @@ const handleGISearch = async () => {
             span: 2,
           },
         ]
-      : []),
+      : []),*/
+      ...(formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0)
+  ? [
+      {
+        name: "rejectionType",
+        label: "Rejection Type",
+        type: "select",
+        span: 2,
+        required: formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0),
+        options: [
+          { label: "Permanent", value: "permanent" },
+          { label: "Replacement", value: "replacement" },
+        ],
+      },
+      {
+        name: "rejectReason",
+        label: "Reason for Rejection",
+        type: "text",
+        span: 2,
+        required: formData.materialDtlList?.some(item => parseFloat(item.rejectedQuantity) > 0),
+      },
+    ]
+  : []),
+
             {
                 name: "installationReportBase64",
                 label: "Installation Report",

@@ -110,7 +110,7 @@ const handleSearchRejectedGI = async (issueNoteId) => {
       type: "Rejected Items GI",
       ogpType: prev.ogpType,
       locationId: gprnDtls?.locationId,
-      senderName: prev.senderName,
+      senderName: gprnDtls?.receivedName,
       ogpDate: prev.ogpDate,
       receiverName: gprnDtls?.vendorName,
       receiverLocation: gprnDtls?.consigneeDetail,
@@ -213,6 +213,11 @@ const handleSearchRejectedGI = async (issueNoteId) => {
 
 
   const onFinish = async () => {
+
+    if (!formData.ogpDate) {
+      message.error("Please enter the OGP Date before submitting.");
+      return;
+    }
     if (formData.ogpType === "Returnable") {
     if (!formData.dateOfReturn) {
       message.error("Please enter the Return Date before submitting.");

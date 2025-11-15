@@ -12,6 +12,7 @@ import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 import PrintFormate from '../../../utils/PrintFormate'
 import GprnPrintFormat from '../../../utils/GprnPrintFormat';
+import GprnPoSearch from '../../../components/GprnPoSearch';
 const warrantyDropdown = [
   { label: "1 Year", value: "1 Year" },
   { label: "2 Years", value: "2 Years" },
@@ -96,8 +97,18 @@ const GPRN = () => {
   const { userId } = useSelector(state => state.auth)
 
   const onFinish = async () => {
-    const locationId = formData.fieldStation;
-    const payload = { ...formData, locationId, createdBy: userId }
+  //  const locationId = formData.fieldStation;
+    const selectedLocation = fsDd.find(
+      loc => loc.label === formData.fieldStation || loc.value === formData.fieldStation
+    );
+
+    const locationId = selectedLocation ? selectedLocation.value : null;
+
+    if (!locationId) {
+      message.error("Invalid Field Station selected. Please recheck.");
+      return;
+    }
+    const payload = { ...formData, fieldStation: locationId, locationId, createdBy: userId }
 
     if(processNo) {
       payload.processNo = processNo
@@ -143,7 +154,7 @@ const GPRN = () => {
         indentorName: indentData?.responseData?.indentorName,
         indentId: indentData?.responseData?.createdBy,
         consigneeDetail: data?.responseData?.consignesAddress,
-       // fieldStation: data?.responseData?.consignesAddress,
+        fieldStation: data?.responseData?.consignesAddress,
         materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom,warrantyTerms: data?.responseData?.warranty, orderedQuantity: mat.totalQuantity - mat.receivedQuantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: data?.responseData?.deliveryDate || "", 
@@ -171,15 +182,28 @@ const GPRN = () => {
   const populatePendingGprn = async () => {
     try {
       const [gprnResponse, locationResponse, userResponse] = await Promise.all([
-        axios.get("/api/process-controller/getPendingGprn"),
+        axios.get("/api/process-controller/getPendingAllPoDataForGprn"),
         axios.get("/api/location-master"),
         axios.get("/api/userMaster")
       ]);
 
-      const formattedList = (gprnResponse.data?.responseData?.pendingGprnList || []).map(item => ({
-        label: item,
-        value: item
-      }));
+      // const formattedList = (gprnResponse.data?.responseData?.pendingGprnList || []).map(item => ({
+      //   label: item,
+      //   value: item
+      // }));
+      const rawList = gprnResponse.data?.responseData?.pendingGprnList || [];
+
+const formattedPoList = rawList.map(item => ({
+  poId: item.poId,
+  vendorName: item.vendorName,
+  projectName: item.projectName,
+  createdDate: item.createdDate,
+  indentIds: item.indentIds,     // array
+  materials: item.materials  // each material {materialDesc, orderQty, receivedQty, pendingQty}
+}));
+
+setPendingGprnList(formattedPoList);
+
 
       const formattedLocations = (locationResponse.data?.responseData || []).map(location => ({
         label: location.locationName,
@@ -191,7 +215,7 @@ const GPRN = () => {
         value: user.userId
       }));
 
-      setPendingGprnList(formattedList);
+      //setPendingGprnList(formattedList);
       setFsDd(formattedLocations);
       setUserDd(formattedUsers);
     }
@@ -237,12 +261,13 @@ const GPRN = () => {
       heading: "Purchase & Order Details", // optional
       colCnt: 5, // optional
       fieldList: [
-        {
-          name: "poId",
+         {
+           name: "poId",
           label: "PO No.",
-          type: "select",
-          options: pendingGprnList,
-        },
+           type: "text",
+         //  options: pendingGprnList,
+         },
+       
         {
           name: "gprnNo", // required
           label: "GPRN No", // optional
@@ -529,6 +554,13 @@ if(roleId === 16){
   return (
     <Card className='a4-container'>
       <Heading title="Goods Provisional Receipt Note" />
+       {pendingGprnList?.length > 0 && (
+      <GprnPoSearch
+        poArray={pendingGprnList}
+        setFormData={setFormData}
+        handleSearch={handleSearch}
+      />
+    )}
       <CustomForm formData={formData} onFinish={onFinish}>
         {renderFormFields(generalDtls, handleChange, formData, "", null, setFormData, handleSearch)}
         <ButtonContainer

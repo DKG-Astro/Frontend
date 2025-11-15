@@ -34,7 +34,7 @@ const printRef = useRef();
   const [soOptions, setSoOptions] = useState([]);
   const userId = useSelector(state => state.auth.userId);
   useEffect(() => {
-  const fetchPoIds = async () => {
+ /* const fetchPoIds = async () => {
     try {
       const { data } = await axios.get("/api/process-controller/approvedGrnPoIds");
       const ids = data?.responseData || [];
@@ -46,7 +46,35 @@ const printRef = useRef();
     } catch (error) {
       message.error("Failed to fetch Purchase Order IDs");
     }
-  };
+  };*/
+  const fetchPoIds = async () => {
+  try {
+    const { data } = await axios.get("/api/process-controller/approvedGrnPoIds");
+    const poList = data?.responseData || [];
+
+   const options = poList.map(item => ({
+  value: item.poId,
+  label: item.poId,
+  searchText: (
+    item.poId +
+    " " +
+    item.vendorName +
+    " " +
+    (item.projectName || "") +
+    " " +
+    item.createdDate +
+    " " +
+    item.materialDescriptions.join(" ")
+  ).toLowerCase()
+}));
+
+
+    setPoOptions(options);
+
+  } catch (error) {
+    message.error("Failed to fetch Purchase Order IDs");
+  }
+};
 
   fetchPoIds();
 }, []);
@@ -180,7 +208,27 @@ useEffect(() => {
 
   const handleChange = (fieldName, value) => {
     if (typeof fieldName === "string") {
-      setFormData(prev => ({ ...prev, [fieldName]: value }));
+     // setFormData(prev => ({ ...prev, [fieldName]: value }));
+     setFormData(prev => {
+      let updated = { ...prev, [fieldName]: value };
+
+     
+      const tds = parseFloat(updated.tdsAmount || 0);
+      let baseAmount = 0;
+
+      if (updated.paymentVoucherType === "Partial") {
+        baseAmount = parseFloat(updated.partialAmount || 0);
+      } else if (updated.paymentVoucherType === "Advance") {
+        baseAmount = parseFloat(updated.advanceAmount || 0);
+      } else {
+        baseAmount = parseFloat(updated.totalAmount || 0);
+      }
+
+      updated.paymentVoucherNetAmount = baseAmount - tds;
+      
+
+      return updated;
+    });
        if (fieldName === "purchaseOrderids") {
       setSelectedPoId(value);
     }
@@ -278,6 +326,19 @@ useEffect(() => {
   const { locationId } = useSelector(state => state.auth);
 const onFinish = async () => {
   try {
+    const total = parseFloat(formData.totalAmount || 0);
+    const partial = parseFloat(formData.partialAmount || 0);
+    const advance = parseFloat(formData.advanceAmount || 0);
+
+    
+    if (partial > total) {
+      message.error("Partial amount cannot exceed Total amount.");
+      return;
+    }
+    if (advance > total) {
+      message.error("Advance amount cannot exceed Total amount.");
+      return;
+    }
     setSubmitBtnLoading(true);
 
     // Prepare DTO in the same structure as backend expects
@@ -301,6 +362,8 @@ const onFinish = async () => {
       advanceAmount: formData.advanceAmount,
       serviceOrderDetails: formData.ServiceOrderDetails,
       createdBy: userId,
+      tdsAmount: formData.tdsAmount,
+      paymentVoucherNetAmount: formData.paymentVoucherNetAmount,
       materials: formData.materialDtlList?.map(mat => ({
         materialCode: mat.materialCode,
         materialDescription: mat.materialDescription,

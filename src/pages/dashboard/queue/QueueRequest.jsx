@@ -920,6 +920,11 @@ if (isPurchaseHead && requestType === "C") {
           remarks: item.transitionHistory?.[0]?.remarks || "No remarks",
           status: item.status,
           action: item.action,
+          amount: item.amount,
+         paymentType: item.paymentType,
+          poNo: item.poNO,
+          vendorName: item.vendorName,
+
           // Correct field mappings based on workflowId
           ...(item.workflowId === 1 && {
             // Indent
@@ -973,6 +978,9 @@ if (isPurchaseHead && requestType === "C") {
           ...(item.workflowId === 10 && {
             indentorName: item.indentorName,
             amount: item.amount,
+            poNo: item.poNo,
+            vendorName: item.vendorName,
+            paymentType: item.paymentType,
           }),
           status: item.nextAction,
           workflowTransitionId: item.workflowTransitionId,
@@ -1117,11 +1125,183 @@ const {userId} = useSelector(state => state.auth)
           //  procurementMode: apiData.procurementType,
            // consignee: apiData.consignee,
           }[field];
+         case 10:
+          return {
+            paymentType: apiData.paymentType,
+            //   amount: apiData.totalValueOfPo,
+           // project: apiData.projectName,
+            poNo: apiData.poNo,
+            vendorName: apiData.vendorName,
+            amount: apiData.amount,
+          //  procurementMode: apiData.procurementType,
+           // consignee: apiData.consignee,
+          }[field];
 
       default:
         return "-";
     }
   };
+const pvColumns = [
+  {
+    title: "Request ID",
+    dataIndex: "requestId",
+    key: "requestId",
+    render: (text, record) => (
+      <Button type="link" onClick={() => fetchWorkflowDetails(record)}>
+        {text}
+      </Button>
+    ),
+    fixed: "left",
+  },
+  {
+    title: "Amount",
+    dataIndex: "amount",
+    key: "amount",
+    render: (_, record) =>
+      getCommonField(record.workflowId, record, "amount")
+        ? `₹${getCommonField(record.workflowId, record, "amount")}`
+        : "-",
+  },
+  {
+    title: "PO No",
+    dataIndex: "poNo",
+    key: "poNo",
+    render: (_, record) =>
+      getCommonField(record.workflowId, record, "poNo") || "-",
+  },
+  {
+    title: "Vendor Name",
+    dataIndex: "vendorName",
+    key: "vendorName",
+    render: (_, record) =>
+      getCommonField(record.workflowId, record, "vendorName") || "-",
+  },
+  {
+    title: "Invoice Type",
+    dataIndex: "paymentType",
+    key: "paymentType",
+    render: (_, record) =>
+      getCommonField(record.workflowId, record, "paymentType") || "-",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+    render: (status) => (
+      <Tag color={status === "Approved" ? "green" : "volcano"}>{status}</Tag>
+    ),
+  },
+ {
+  title: "Actions",
+  key: "actions",
+  fixed: "right",
+  render: (_, record) => {
+    if (record.status === "Approved") return null;
+
+    return (
+      <Space>
+        {/* Approve Button */}
+        <Button type="link" onClick={() => handleApprove(record)}>
+          Approve
+        </Button>
+
+        {/*  Reject Button */}
+        <Popover
+          content={
+            <div style={{ padding: 12 }}>
+              <Input.TextArea
+                placeholder="Reject Comments"
+                rows={3}
+                value={rejectComment}
+                onChange={(e) => setRejectComment(e.target.value)}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleReject(record)}
+                style={{ marginTop: 8 }}
+              >
+                Submit
+              </Button>
+            </div>
+          }
+          title="Reject"
+          trigger="click"
+        >
+          <Button danger type="link">
+            Reject
+          </Button>
+        </Popover>
+
+        {/*  Request Change */}
+        <Popover
+          content={
+            <div style={{ padding: 12, width: 300 }}>
+              <Select
+                placeholder={
+                  loadingPreviousRoles
+                    ? "Loading roles..."
+                    : "Select a role"
+                }
+                value={selectedRole}
+                onChange={setSelectedRole}
+                style={{ width: "100%", marginBottom: 8 }}
+                loading={loadingPreviousRoles}
+                disabled={loadingPreviousRoles || previousRoles.length === 0}
+              >
+                {previousRoles.map((role) => (
+                  <Select.Option key={role} value={role}>
+                    {role}
+                  </Select.Option>
+                ))}
+              </Select>
+              {previousRoles.length === 0 && !loadingPreviousRoles && (
+                <Text type="secondary">No previous roles available.</Text>
+              )}
+
+              <Input.TextArea
+                placeholder="Request Change Comments"
+                rows={3}
+                value={requestChangeComment}
+                onChange={(e) =>
+                  setRequestChangeComment(e.target.value)
+                }
+                style={{ marginTop: 8 }}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleRequestChangeSubmit(record)}
+                style={{ marginTop: 8 }}
+                disabled={
+                  !selectedRole ||
+                  !requestChangeComment.trim() ||
+                  loadingPreviousRoles
+                }
+              >
+                Submit
+              </Button>
+            </div>
+          }
+          title="Request Change"
+          trigger="click"
+          onVisibleChange={(visible) => {
+            if (visible) {
+              fetchPreviousRoles(record.workflowId, record.requestId);
+            } else {
+              setPreviousRoles([]);
+              setSelectedRole(null);
+              setRequestChangeComment("");
+              setLoadingPreviousRoles(false);
+            }
+          }}
+        >
+          <Button type="link">Request Change</Button>
+        </Popover>
+      </Space>
+    );
+  },
+}
+
+];
 
   const columns = [
     {
@@ -1778,6 +1958,11 @@ const {userId} = useSelector(state => state.auth)
     ]),
   ];
 
+  const columnsToRender =
+  requestType === "PV"
+    ? pvColumns
+    : columns;
+
 
   // --- Filter Component remains unchanged ---
 
@@ -1852,7 +2037,7 @@ const {userId} = useSelector(state => state.auth)
        <Table
         rowSelection={rowSelection}
         rowKey="key" 
-        columns={columns}
+        columns={columnsToRender}
         dataSource={filteredData}
         />
       

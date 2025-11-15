@@ -51,9 +51,12 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         {
           name: "purchaseOrderids",
           label: "Purchase Order Ids",
-          type: "select",
+          type: "pvselect",
           required: true,
           options: poOptions,
+           showSearch: true,
+  filterOption: (input, option) =>
+    option.searchText.includes(input.toLowerCase()),
         },
          {
           name: "grnNumber",
@@ -130,6 +133,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         type: "text",
         span: 2,
       },
+      
       ...(formData.paymentVoucherType === "Advance"
         ? [
             {
@@ -137,7 +141,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
               label: "Advance Amount",
               type: "text",
               required: true,
-              disabled: true,
+             // disabled: true,
             },
            /* {
               name: "advanceRemarks",
@@ -204,6 +208,25 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
 
     ],
   },
+   {
+    heading: "Voucher Amount Deatails",
+    colCnt: 2,
+    fieldList: [
+  {
+  label: "TDS Amount",
+  name: "tdsAmount",
+  type: "text",
+  value: formData.tdsAmount,
+  
+},
+{
+  label: "Payment Voucher Amount",
+  name: "paymentVoucherNetAmount",
+  type: "text",
+  disabled: true, // auto-calculated
+  value: formData.netAmount
+},
+   ]},
    /*  {
     heading: "Purchase Order Details",
     name: "poDtlList",

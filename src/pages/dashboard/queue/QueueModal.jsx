@@ -1334,7 +1334,7 @@ const QueueModal = ({
       <Row gutter={24}>
         <Col span={8}>
           <div className="detail-item">
-            <strong>Total Amount:</strong> ₹{detailsData.totalAmount?.toFixed(2) || "0.00"}
+            <strong>Total Po Amount:</strong> ₹{detailsData.totalAmount?.toFixed(2) || "0.00"}
           </div>
         </Col>
         <Col span={8}>
@@ -1345,6 +1345,16 @@ const QueueModal = ({
         <Col span={8}>
           <div className="detail-item">
             <strong>Advance Amount:</strong> ₹{detailsData.advanceAmount?.toFixed(2) || "0.00"}
+          </div>
+        </Col>
+         <Col span={8}>
+          <div className="detail-item">
+            <strong>TDS Amount:</strong> ₹{detailsData.tdsAmount?.toFixed(2) || "0.00"}
+          </div>
+        </Col>
+         <Col span={8}>
+          <div className="detail-item">
+            <strong>Payement Voucher Amount:</strong> ₹{detailsData.paymentVoucherNetAmount?.toFixed(2) || "0.00"}
           </div>
         </Col>
       </Row>
