@@ -19,7 +19,7 @@ export const locatorMaster = [
     },
 ]
 
-export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOptions)=> [
+export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOptions,advancePoOptions)=> [
      {
     heading: "Invoice Details",
     colCnt: 2,
@@ -46,7 +46,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
             { value: "Service Order", label: "Service Order" },
         ],
       },
-     ...(formData.paymentVoucherIsFor === "Purchase Order"
+    /* ...(formData.paymentVoucherIsFor === "Purchase Order"
     ? [
         {
           name: "purchaseOrderids",
@@ -66,7 +66,48 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
           options: grnIds,
         },
       ]
-    : []),
+    : []),*/
+    ...(formData.paymentVoucherIsFor === "Purchase Order" &&
+    formData.paymentVoucherType === "Advance"
+  ? [
+      {
+        name: "purchaseOrderids",
+        label: "Purchase Order Id",
+        type: "pvselect",
+        required: true,
+        options: advancePoOptions, 
+        showSearch: true,
+        filterOption: (input, option) =>
+          option.searchText.includes(input.toLowerCase()),
+      },
+    ]
+  : []),
+
+//  If Payment Voucher Is For = PURCHASE ORDER AND TYPE = PARTIAL or FULL PAYMENT
+//    → show Purchase Order + GRN
+...(formData.paymentVoucherIsFor === "Purchase Order" &&
+    (formData.paymentVoucherType === "Partial" ||
+     formData.paymentVoucherType === "Full Payment")
+  ? [
+      {
+        name: "purchaseOrderids",
+        label: "Purchase Order Id",
+        type: "pvselect",
+        required: true,
+        options: poOptions,
+        showSearch: true,
+        filterOption: (input, option) =>
+          option.searchText.includes(input.toLowerCase()),
+      },
+      {
+        name: "grnNumber",
+        label: "GRN Number",
+        type: "select",
+        required: true,
+        options: grnIds,
+      },
+    ]
+  : []),
      ...(formData.paymentVoucherIsFor === "Service Order"
     ? [
         {
@@ -95,6 +136,8 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         label: "Vendor Name",
         type: "text",
       },
+       ...(formData.paymentVoucherType !== "Advance"
+  ? [
       {
         name: "vendorInvoiceNumber",
         label: "Vendor Invoice Number",
@@ -106,17 +149,25 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         label: "Vendor Invoice Date",
         type: "date",
       },
+         ]
+  : []),
       {
         name: "currency",
         label: "Currency",
         type: "text",
         required: true,
+        disabled: true,
       },
+     ...(formData.currency !== "INR"
+  ? [
       {
         name: "exchangeRate",
         label: "Exchange Rate",
         type: "text",
-      },
+      }
+    ]
+  : []),
+
      /* {
         name: "status",
         label: "Status",
@@ -132,6 +183,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         label: "Total Amount Payable",
         type: "text",
         span: 2,
+        disabled: true,
       },
       
       ...(formData.paymentVoucherType === "Advance"
@@ -150,68 +202,102 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
             },*/
           ]
         : []),
-
-      
-      ...(formData.paymentVoucherType === "Partial"
-        ? [
-            {
-              name: "partialAmount",
-              label: "Partial Amount",
-              type: "text",
-              required: true,
-            },
-           /* {
-              name: "pendingAmount",
-              label: "Pending Amount",
-              type: "text",
-            },*/
-          ]
-        : []),
-      ...(formData.paymentVoucherType === "Partial" && (formData.partialAmount || formData.partialBalanceAmount)
+    ...(formData.partialAmountAlreadyPaid > 0  && formData.paymentVoucherType === "Full Payment"
   ? [
-      formData.partialAmount
-        ? {
-            name: "partialAmount",
-            label: "Already Paid (Partial Amount)",
-            type: "text",
-            disabled: true,
-          }
-        : null,
-      formData.partialBalanceAmount
-        ? {
-            name: "partialBalanceAmount",
-            label: "Balance Amount (Partial)",
-            type: "text",
-            disabled: true,
-          }
-        : null,
-    ].filter(Boolean) 
-  : []),
-
-
-...(formData.paymentVoucherType === "Advance"
-    ? [
-        {
-          name: "advanceAmount",
-          label: "Already Paid (Advance Amount)",
-          type: "text",
-          disabled: true,
-        },
-        {
+       {
+  name: "advanceAdjustedAmount",
+  label: "Advance Deducted From GRN",
+  type: "text",
+  required: false,
+  //disabled: formData.advanceAmountAlreadyPaid > 0, 
+},  {
           name: "advanceBalanceAmount",
           label: "Balance Amount (Advance)",
           type: "text",
           disabled: true,
         },
+         ] : []),
+         
+  ...(formData.paymentVoucherType === "Partial"
+  ? [
+      {
+        name: "partialAmount",
+        label: "Partial Amount (Current Payment)",
+        type: "text",
+        required: true,
+      },
+       ...(formData.partialAmountAlreadyPaid >= 0 && formData.advanceAmountAlreadyPaid > 0
+  ? [
+       {
+  name: "advanceAdjustedAmount",
+  label: "Advance Deducted From GRN",
+  type: "text",
+  required: false,
+  //disabled: formData.advanceAmountAlreadyPaid > 0, 
+},  {
+          name: "advanceBalanceAmount",
+          label: "Balance Amount (Advance)",
+          type: "text",
+          disabled: true,
+        },
+         ] : []),
+     ...(formData.partialAmountAlreadyPaid > 0
+  ? [
+      {
+        name: "partialAmountAlreadyPaid",
+        label: "Already Paid (Previous Partials)",
+        type: "text",
+        disabled: true,
+      },
+     
+
+        ...(formData.paymentVoucherType === "Partial" ?[
+           {
+        name: "partialBalanceAmount",
+        label: "Balance Amount (Remaining)",
+        type: "text",
+        disabled: true,
+      }
+        ] : []),
+     
+    ]
+  : []),
+
+
+    ]
+  : []),
+
+
+
+//...(formData.paymentVoucherType === "Advance"
+...(formData.advanceAmountAlreadyPaid > 0
+    ? [
+        {
+          name: "advanceAmountAlreadyPaid",
+          label: "Advance Amount",
+          type: "text",
+          disabled: true,
+        },
+        ...(formData.paymentVoucherType === "Advance"  ?[
+           {
+          name: "advanceBalanceAmount",
+          label: "Balance Amount (Advance)",
+          type: "text",
+          disabled: true,
+        },
+        ] : []),
+       
       ]
     : []),
 
     ],
+    
   },
    {
     heading: "Voucher Amount Deatails",
     colCnt: 2,
     fieldList: [
+      
   {
   label: "TDS Amount",
   name: "tdsAmount",
@@ -271,7 +357,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
           type: "text",
           required: true
         },
-        {
+       /* {
           name: "currency",
           label: "Currency",
           type: "text",
@@ -283,7 +369,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
             label: "Exchange Rate",
             type: "text",
             span: 2
-        },
+        },*/
         {
             name: "gst",
             label: "GST (%)",

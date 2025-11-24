@@ -27,12 +27,15 @@ const printRef = useRef();
     grnNo: "",
     materialDtlList: [],
     grnType: "GRN",
-    processId: "" 
+    processId: "" ,
+    advanceAdjustedAmount: 0,
     
   });
   const [poOptions, setPoOptions] = useState([]);
   const [soOptions, setSoOptions] = useState([]);
   const userId = useSelector(state => state.auth.userId);
+  const [advancePoOptions, setAdvancePoOptions] = useState([]);
+
   useEffect(() => {
  /* const fetchPoIds = async () => {
     try {
@@ -138,7 +141,7 @@ const fetchServiceOrderData = async (soId) => {
         currency: res.materialsList?.[0]?.currency || "INR",
         exchangeRate: res.materialsList?.[0]?.exchangeRate || 0,
         totalAmount: res.totalAmount,
-        paymentVoucherType: res.paymentVoucherType,
+        paymentVoucherType: res.paymentVoucherType  || formData.paymentVoucherType || "" ,
         partialAmount: res.partialAmountAlreadypaid || null,
         partialBalanceAmount: res.partialBalanceAmount || null,
         advanceAmount: res.advanceAmountAlreadyPaid || null,
@@ -161,9 +164,43 @@ const fetchServiceOrderData = async (soId) => {
   }
 };
 
-const fetchPaymentVoucherData = async (grnNumber) => {
+useEffect(() => {
+  const fetchAdvancePoIds = async () => {
+    try {
+      const { data } = await axios.get("/api/process-controller/approvedPoIdswithoutGrn");
+      const list = data?.responseData || [];
+
+      const options = list.map(item => ({
+        value: item.poId,
+        label: item.poId,
+        searchText: (
+          item.poId +
+          " " +
+          item.vendorName +
+          " " +
+          (item.projectName || "") +
+          " " +
+          item.createdDate +
+          " " +
+          item.materialDescriptions.join(" ")
+        ).toLowerCase()
+      }));
+
+      setAdvancePoOptions(options);
+    } catch (e) {
+      message.error("Failed to fetch PO IDs for Advance");
+    }
+  };
+
+  fetchAdvancePoIds();
+}, []);
+
+const fetchAdvancePaymentVoucherData = async (poId) => {
   try {
-    const { data } = await axios.get(`/api/process-controller/paymentVoucherData?processNo=${grnNumber}`);
+    const { data } = await axios.get(
+      `/api/process-controller/paymentVoucherPoDataForAdvance?processNo=${poId}`
+    );
+
     const res = data?.responseData;
 
     if (res) {
@@ -172,13 +209,63 @@ const fetchPaymentVoucherData = async (grnNumber) => {
         vendorName: res.vendorName,
         vendorInvoiceNumber: res.vendorInvoiceName,
         vendorInvoiceDate: res.vendorInvoiceDate,
+        totalAmount: res.totalAmount,
+        paymentVoucherType: "Advance",
+        advanceAmountAlreadyPaid: res.advanceAmountAlreadyPaid || 0,
+        advanceBalanceAmount: res.advanceBalanceAmount || res.totalAmount,
+        currency: res.materialsList?.[0]?.currency || "INR",
+        exchangeRate: res.materialsList?.[0]?.exchangeRate || 0,
+
+        materialDtlList: res.materialsList.map(mat => ({
+          materialCode: mat.materialCode,
+          materialDescription: mat.materialDescription,
+          quantity: mat.quantity,
+          rate: mat.unitPrice,
+          currency: mat.currency,
+          exchangeRate: mat.exchangeRate,
+          gst: mat.gst,
+          amount: mat.amount
+        }))
+      }));
+    }
+  } catch (err) {
+    message.error("Failed to load Advance payment voucher data");
+  }
+};
+
+const fetchPaymentVoucherData = async (grnNumber) => {
+  try {
+    const { data } = await axios.get(`/api/process-controller/paymentVoucherData?processNo=${grnNumber}`);
+    const res = data?.responseData;
+
+    if (res) {
+       let partialPaid = res.partialAmountAlreadypaid || 0;
+      let advancePaid = res.advanceAmountAlreadyPaid || 0;
+
+      // First-time partial or advance
+      if (res.paymentVoucherType === "Partial" && partialPaid === 0) {
+        partialPaid = 0;
+      }
+      if (res.paymentVoucherType === "Advance" && advancePaid === 0) {
+        advancePaid = 0;
+      }
+      setFormData(prev => ({
+        ...prev,
+        vendorName: res.vendorName,
+        vendorInvoiceNumber: res.vendorInvoiceName,
+        vendorInvoiceDate: res.vendorInvoiceDate,
         currency: res.materialsList?.[0]?.currency || "INR",
         exchangeRate: res.materialsList?.[0]?.exchangeRate || 0,
         totalAmount: res.totalAmount,
-        paymentVoucherType: res.paymentVoucherType,
-        partialAmount: res.partialAmountAlreadypaid || null,
+        paymentVoucherType: res.paymentVoucherType ,
+       // partialAmount: res.partialAmountAlreadypaid || null, 
+        partialAmountAlreadyPaid: res.partialAmountAlreadypaid || null,
         partialBalanceAmount: res.partialBalanceAmount || null,
-        advanceAmount: res.advanceAmountAlreadyPaid || null,
+       // advanceAmount: res.advanceAmountAlreadyPaid || null,
+       advanceAmountAlreadyPaid: res.advanceAmountAlreadyPaid || 0,
+       advanceAdjustedAmount: res.advanceAdjustedAmount || null,   
+
+        //advanceBalanceAmount: res.advanceBalanceAmount || 0,
         advanceBalanceAmount: res.advanceBalanceAmount || null,
         materialDtlList: res.materialsList?.map(mat => ({
           materialCode: mat.materialCode,
@@ -206,6 +293,7 @@ useEffect(() => {
 }, [selectedGrnId]);
 
 
+
   const handleChange = (fieldName, value) => {
     if (typeof fieldName === "string") {
      // setFormData(prev => ({ ...prev, [fieldName]: value }));
@@ -216,22 +304,67 @@ useEffect(() => {
       const tds = parseFloat(updated.tdsAmount || 0);
       let baseAmount = 0;
 
+      if (fieldName === "advanceAdjustedAmount") {
+    // Recalculate effective amount
+    const total = parseFloat(formData.totalAmount || 0);
+    const adv = parseFloat(value || 0);
+    const partial = parseFloat(formData.partialAmount || 0);
+    const tds = parseFloat(formData.tdsAmount || 0);
+
+    // effective payable for partial
+    updated.paymentVoucherNetAmount = partial - tds;
+}
+
+      if (fieldName === "paymentVoucherType") {
+    if (value === "Advance") {
+        setFormData(prev => ({
+            ...prev,
+            grnNumber: "",   
+            partialAmount: null,
+            partialBalanceAmount: null
+        }));
+    }
+}
       if (updated.paymentVoucherType === "Partial") {
         baseAmount = parseFloat(updated.partialAmount || 0);
-      } else if (updated.paymentVoucherType === "Advance") {
+      }
+      else if (updated.paymentVoucherType === "Advance") {
         baseAmount = parseFloat(updated.advanceAmount || 0);
-      } else {
+      }/*
+      else if (updated.paymentVoucherType === "Full Payment") {
+        const total = parseFloat(updated.totalAmount || 0);
+        const alreadyPaid = parseFloat(updated.partialBalanceAmount || 0);
+        baseAmount = total - alreadyPaid;  // FIX
+        //baseAmount = updated.partialBalanceAmount;
+      }*/
+     else if (updated.paymentVoucherType === "Full Payment") {
+    const total = parseFloat(updated.totalAmount || 0);
+    const alreadyPartialPaid = parseFloat(updated.partialAmountAlreadyPaid || 0);
+    baseAmount = total - alreadyPartialPaid;   
+}
+
+      else {
         baseAmount = parseFloat(updated.totalAmount || 0);
       }
+
 
       updated.paymentVoucherNetAmount = baseAmount - tds;
       
 
       return updated;
     });
+    
        if (fieldName === "purchaseOrderids") {
       setSelectedPoId(value);
     }
+    if (fieldName === "purchaseOrderids") {
+  if (formData.paymentVoucherType === "Advance") {
+    fetchAdvancePaymentVoucherData(value); 
+  } else {
+    setSelectedPoId(value); 
+  }
+}
+
     if (fieldName === "grnNumber") {
     setSelectedGrnId(value); // triggers useEffect to call API
   }
@@ -347,6 +480,7 @@ const onFinish = async () => {
       paymentVoucherDate: formData.paymentVoucherDate,
       paymentVoucherIsFor: formData.paymentVoucherIsFor,
       purchaseOrderId: formData.purchaseOrderids || "",
+      advanceAdjustedAmount: formData.advanceAdjustedAmount,    
       grnNumber: formData.grnNumber || "",
       serviceOrderDetails: formData.ServiceOrderDetails || "",
       paymentVoucherType: formData.paymentVoucherType,
@@ -412,7 +546,7 @@ const onFinish = async () => {
       <CustomForm formData={formData} onFinish={onFinish}>
         
         
-        {renderFormFields(invoiceFields(formData, poOptions, grnIds, setSelectedPoId, soOptions), handleChange, formData, "", null, setFormData, handleSearch)}
+        {renderFormFields(invoiceFields(formData, poOptions, grnIds, setSelectedPoId, soOptions, advancePoOptions), handleChange, formData, "", null, setFormData, handleSearch)}
 
         
         {/* {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)} */}
