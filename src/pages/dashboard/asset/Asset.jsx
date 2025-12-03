@@ -201,7 +201,7 @@ const assetFields = [
                 label: "Stock Levels",
                 type: "text",
                 span: 2,
-                required: true
+               // required: true
             },
             {
                 name: "depriciationRate",
@@ -229,21 +229,21 @@ const assetFields = [
                 label: "End of Life",
                 type: "date",
                 span: 2,
-                required: true
+               // required: true
             },
             {
                 name: "shelfLife",
                 label: "Shelf Life",
                 type: "text",
                 span: 2,
-                required: true
+               // required: true
             },
             {
                 name: "conditionOfGoods",
                 label: "Condition of Goods",
                 type: "text",
                 span: 2,
-                required: true
+               // required: true
             }
         ]
     }
@@ -564,6 +564,7 @@ useEffect(() => {
   columns={[
     { title: "Asset Code", dataIndex: "assetCode" },
     { title: "Asset ID", dataIndex: "assetId" },
+    { title: "Asset Desc", dataIndex: "assetDesc" },
     { title: "PO ID", dataIndex: "poId" },
     { title: "Custodian ID", dataIndex: "custodianId" },
     { title: "Locator ID", dataIndex: "locatorId" },

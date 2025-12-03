@@ -325,6 +325,40 @@ useEffect(() => {
         }));
     }
 }
+// --- TDS CALCULATION ---
+if (fieldName === "tdsPercentage") {
+    const tdsPerc = parseFloat(value || 0);
+
+    let baseAmount = 0;
+
+    if (formData.paymentVoucherType === "Partial") {
+        baseAmount = parseFloat(formData.partialAmount || 0);
+    } else if (formData.paymentVoucherType === "Advance") {
+        baseAmount = parseFloat(formData.advanceAmount || 0);
+    } else if (formData.paymentVoucherType === "Full Payment") {
+        const total = parseFloat(formData.totalAmount || 0);
+        const alreadyPartial = parseFloat(formData.partialAmountAlreadyPaid || 0);
+        baseAmount = total - alreadyPartial;
+    } else {
+        baseAmount = parseFloat(formData.totalAmount || 0);
+    }
+
+    const tdsAmount = (baseAmount * tdsPerc) / 100;
+
+    updated.tdsAmount = tdsAmount.toFixed(2);
+    updated.paymentVoucherNetAmount = (baseAmount - tdsAmount).toFixed(2);
+}
+// Recalculate TDS if user edits partial/advance amount after selecting TDS %
+if (["partialAmount", "advanceAmount"].includes(fieldName)) {
+    const tdsPerc = parseFloat(updated.tdsPercentage || 0);
+    if (tdsPerc > 0) {
+        let base = parseFloat(value || 0);
+        const tdsAmount = (base * tdsPerc) / 100;
+        updated.tdsAmount = tdsAmount.toFixed(2);
+        updated.paymentVoucherNetAmount = (base - tdsAmount).toFixed(2);
+    }
+}
+
       if (updated.paymentVoucherType === "Partial") {
         baseAmount = parseFloat(updated.partialAmount || 0);
       }
@@ -348,7 +382,7 @@ useEffect(() => {
       }
 
 
-      updated.paymentVoucherNetAmount = baseAmount - tds;
+    //  updated.paymentVoucherNetAmount = baseAmount - tds;
       
 
       return updated;
@@ -372,14 +406,32 @@ useEffect(() => {
       setSelectedSoId(value);
       fetchServiceOrderData(value); 
     }
-   if (fieldName === "paymentVoucherType") {
-      if (value !== "Partial") {
-        setFormData(prev => ({ ...prev, partialAmount: null, partialBalanceAmount: null }));
-      }
-      if (value !== "Advance") {
-        setFormData(prev => ({ ...prev, advanceAmount: null, advanceBalanceAmount: null }));
-      }
-    }
+  //  if (fieldName === "paymentVoucherType") {
+  //     if (value !== "Partial") {
+  //       setFormData(prev => ({ ...prev, partialAmount: null, partialBalanceAmount: null }));
+  //     }
+  //     if (value !== "Advance") {
+  //       setFormData(prev => ({ ...prev, advanceAmount: null, advanceBalanceAmount: null }));
+  //     }
+  //   }
+  if (fieldName === "paymentVoucherType") {
+ 
+  if (value !== "Partial") {
+    setFormData(prev => ({ 
+      ...prev,
+      partialAmount: null   
+    }));
+  }
+
+  if (value !== "Advance") {
+    setFormData(prev => ({ 
+      ...prev, 
+      advanceAmount: null,
+      advanceBalanceAmount: null 
+    }));
+  }
+}
+
     } else {
       setFormData(prev => {
         const prevMaterialDtlList = [...prev.materialDtlList];

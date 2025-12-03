@@ -136,6 +136,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         label: "Vendor Name",
         type: "text",
       },
+     
        ...(formData.paymentVoucherType !== "Advance"
   ? [
       {
@@ -217,6 +218,24 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
           disabled: true,
         },
          ] : []),
+
+          ...(formData.paymentVoucherType === "Full Payment"
+  ? [
+      {
+        name: "partialAmountAlreadyPaid",
+        label: "Already Paid (Previous Partials)",
+        type: "text",
+        disabled: true,
+      },
+      {
+        name: "partialBalanceAmount",
+        label: "Remaining Amount (Before Full Payment)",
+        type: "text",
+        disabled: true,
+      }
+    ]
+  : [])
+,
          
   ...(formData.paymentVoucherType === "Partial"
   ? [
@@ -297,6 +316,18 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
     heading: "Voucher Amount Deatails",
     colCnt: 2,
     fieldList: [
+      {
+  label: "TDS (%)",
+  name: "tdsPercentage",
+  type: "select",
+  required: true,
+  options: [
+    { value: 1, label: "1%" },
+    { value: 2, label: "2%" },
+    { value: 5, label: "5%" },
+    { value: 10, label: "10%" },
+  ],
+},
       
   {
   label: "TDS Amount",

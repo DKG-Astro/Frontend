@@ -52,6 +52,7 @@ const GPRN = () => {
 
   const processNo = location?.state?.processNo || null;
 
+  
   const [fsDd, setFsDd] = useState([])
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -159,6 +160,7 @@ const GPRN = () => {
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: data?.responseData?.deliveryDate || "", 
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
+        receivedBy: indentData?.responseData?.createdBy, 
       })
     }
     catch (error) {
@@ -182,7 +184,8 @@ const GPRN = () => {
   const populatePendingGprn = async () => {
     try {
       const [gprnResponse, locationResponse, userResponse] = await Promise.all([
-        axios.get("/api/process-controller/getPendingAllPoDataForGprn"),
+       // axios.get("/api/process-controller/getPendingAllPoDataForGprn"),
+        axios.get("/api/process-controller/getPendingAllPoDataForGprn/search?keyword="),
         axios.get("/api/location-master"),
         axios.get("/api/userMaster")
       ]);

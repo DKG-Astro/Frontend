@@ -583,6 +583,12 @@ export const gtOgpFields = [
         type: "date",
         required: true,
       },
+       {
+                name: "ogpDate",
+                label: "OGP Date",
+                type: "date",
+                required: true
+      },
       {
         name: "vendorName",
         label: "Vendor Name",

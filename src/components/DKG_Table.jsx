@@ -4,6 +4,33 @@ import { DownOutlined, ExportOutlined, SearchOutlined } from "@ant-design/icons"
 import * as XLSX from "xlsx";
 import Btn from "./DKG_Btn";
 
+// Flatten nested objects and arrays for CSV export
+function flattenObject(obj, parentKey = "", result = {}) {
+  for (const key in obj) {
+    if (!obj.hasOwnProperty(key)) continue;
+
+    const newKey = parentKey ? `${parentKey}.${key}` : key;
+
+    // If value is an object (not null, not array)
+    if (typeof obj[key] === "object" && !Array.isArray(obj[key]) && obj[key] !== null) {
+      flattenObject(obj[key], newKey, result);
+    }
+
+    // If value is an array → flatten each element
+    else if (Array.isArray(obj[key])) {
+      obj[key].forEach((item, index) => {
+        flattenObject(item, `${newKey}[${index}]`, result);
+      });
+    }
+
+    // Otherwise assign value
+    else {
+      result[newKey] = obj[key];
+    }
+  }
+  return result;
+}
+
 const TableComponent = ({
   columns,
   dataSource,
@@ -49,24 +76,120 @@ useEffect(() => {
       return updated;
     });
   };
-
+/*
   // Export filtered data and non-hidden columns to CSV
   const exportToCSV = () => {
+    // const filteredRows = filteredData.map((row) => {
+    //   const filteredRow = {};
+    //   columns
+    //     .filter((col) => !hiddenColumns.includes(col.key))
+    //     .forEach((col) => {
+    //       filteredRow[col.dataIndex] = row[col.dataIndex];
+    //     });
+    //   return filteredRow;
+    // });
+
     const filteredRows = filteredData.map((row) => {
-      const filteredRow = {};
-      columns
-        .filter((col) => !hiddenColumns.includes(col.key))
-        .forEach((col) => {
-          filteredRow[col.dataIndex] = row[col.dataIndex];
-        });
-      return filteredRow;
+  const flat = flattenObject(row);
+
+  // Keep only columns that are visible (not hidden)
+  const filteredRow = {};
+  columns
+    .filter((col) => !hiddenColumns.includes(col.key))
+    .forEach((col) => {
+      Object.keys(flat).forEach((flatKey) => {
+        if (flatKey.startsWith(col.dataIndex)) {
+          filteredRow[flatKey] = flat[flatKey];
+        }
+      });
     });
+
+  return filteredRow;
+});
 
     const worksheet = XLSX.utils.json_to_sheet(filteredRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
     XLSX.writeFile(workbook, "export.csv");
+  };*/
+  const exportToCSV = () => {
+  const exportRows = [];
+
+  const getPrimitiveFields = (obj) => {
+    const result = {};
+    Object.keys(obj).forEach((key) => {
+      if (
+        typeof obj[key] !== "object" ||
+        obj[key] === null ||
+        Array.isArray(obj[key])
+      ) {
+        // skip arrays here
+        if (!Array.isArray(obj[key])) result[key] = obj[key];
+      }
+    });
+    return result;
   };
+
+  const extractDeepestArray = (obj) => {
+    let foundArray = null;
+
+    const search = (value) => {
+      if (foundArray) return;
+      if (Array.isArray(value)) {
+        foundArray = value;
+        return;
+      }
+      if (typeof value === "object" && value !== null) {
+        Object.values(value).forEach(search);
+      }
+    };
+
+    search(obj);
+    return foundArray;
+  };
+
+  filteredData.forEach((record) => {
+    // parent fields (auction, gprn, po, disposal etc.)
+    const parentFields = getPrimitiveFields(record);
+
+    // detect dynamic nested table
+    const childArray = extractDeepestArray(record);
+
+    if (!childArray || childArray.length === 0) {
+      exportRows.push(parentFields);
+      return;
+    }
+
+    childArray.forEach((child) => {
+      const childFlat = flattenChild(child);
+      exportRows.push({
+        ...parentFields,
+        ...childFlat,
+      });
+    });
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(exportRows);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+  XLSX.writeFile(workbook, "Report.csv");
+};
+
+// flatten only object fields (no arrays)
+const flattenChild = (obj, parent = "", result = {}) => {
+  Object.keys(obj).forEach((key) => {
+    const value = obj[key];
+    const newKey = parent ? `${parent}_${key}` : key;
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      flattenChild(value, newKey, result);
+    } else if (!Array.isArray(value)) {
+      result[newKey] = value;
+    }
+  });
+  return result;
+};
+
 
   // Add search and filter capability to columns
   const enhancedColumns = columns

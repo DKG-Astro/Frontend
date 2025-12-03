@@ -56,6 +56,12 @@ const InventoryQueueModal = ({
     }
   }, [historyVisible]);
 
+  // Build Warranty Map OUTSIDE JSX
+const warrantyMap = {};
+(gprnDtls.materialDtlList || []).forEach(item => {
+  warrantyMap[item.materialCode] = item.warrantyTerms;
+});
+
   return (
     <>
       <Modal
@@ -166,17 +172,19 @@ const InventoryQueueModal = ({
                 <Typography.Title level={5} className="section-title">Consignee & Warranty</Typography.Title>
                 <Row gutter={24}>
                   <Col span={12}><div className="detail-item"><strong>Consignee Details:</strong> {gprnDtls.consigneeDetail || "N/A"}</div></Col>
-                  <Col span={12}><div className="detail-item"><strong>Warranty Years:</strong> {gprnDtls.warrantyYears || "N/A"}</div></Col>
-                  <Col span={12}><div className="detail-item"><strong>Project:</strong> {gprnDtls.project || "N/A"}</div></Col>
+                   <Col span={12}><div className="detail-item"><strong>Project:</strong> {gprnDtls.project || "N/A"}</div></Col>
                 </Row>
               </div>
             </div>
           )}
+        
+
 
           <div className="detail-section">
             <Typography.Title level={5} className="section-title">
               <BarsOutlined /> Material Details
             </Typography.Title>
+  
             <Table
               dataSource={materialDtlList || []}
               pagination={false}
@@ -194,7 +202,17 @@ const InventoryQueueModal = ({
                       { title: "Rejected Qty", dataIndex: "rejectedQuantity" },
                       { title: "Rejection Type", dataIndex: "rejectionType"},
                       {title: "Reject Reason", dataIndex: "rejectReason"},
-                       {
+                    {
+  title: "Warranty Terms",
+  key: "warrantyTerms",
+  render: (_, record) => {
+    const value = warrantyMap[record.materialCode];
+    if (!value) return "--";
+
+    // Convert "1.00" → "1"
+    return parseFloat(value).toString();
+  }
+},  {
                           title: "View Installation Report",
                           dataIndex: "installationReportFileName",
                           key: "viewReport",

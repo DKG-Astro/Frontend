@@ -25,6 +25,28 @@ const Grn = () => {
   const location = useLocation();
   const processNoFromState = location.state?.processNo;
 
+  const [userDd, setUserDd] = useState([]);
+useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      const { data } = await axios.get("/api/userMaster");
+
+      const formattedUsers = data?.responseData?.map(user => ({
+        label: String(user.userId),   // MUST be string
+        value: String(user.userId),   // MUST be string
+        userName: user.userName
+      }));
+
+      setUserDd(formattedUsers);
+    } catch (err) {
+      console.error(err);
+      message.error("Unable to load users");
+    }
+  };
+
+  fetchUsers();
+}, []);
+
   const [formData, setFormData] = useState({
     giNo: "",
     materialDtlList: [],
@@ -32,6 +54,32 @@ const Grn = () => {
   });
   const handleChange = (fieldName, value) => {
     if (typeof fieldName === "string") {
+  if (fieldName === "indentorName") {
+  const selectedUser = userDd.find(u => u.value === value);
+
+  setFormData(prev => ({
+    ...prev,
+    indentorName: value, // userId
+     custodianId: value,   
+    custodianName: selectedUser?.userName || "" // userName
+  }));
+  return;
+}
+
+if (fieldName === "custodianName") {
+  const selectedUser = userDd.find(u => u.userName === value);
+
+  setFormData(prev => ({
+    ...prev,
+    indentorName: selectedUser?.value || "", // userId
+    custodianName: value, // userName
+    custodianId: selectedUser?.value || "" 
+  }));
+  return;
+}
+
+
+
       setFormData((prev) => ({ ...prev, [fieldName]: value }));
     } else {
       setFormData((prev) => {
@@ -597,14 +645,22 @@ const grvFields =(formData)=> [
             {
                 label: "Custodian Id",
                 name: "indentorName",
-                disabled: true,
-                type: "text"
+                type: "select",
+                 options: userDd.map(u => ({
+    label: u.value,      // userId shown
+    value: u.value,      // userId stored
+  }))
+               // disabled: true,
+               // type: "text"
             }
             ,  {
                 label: "Custodian Name",
                 name: "custodianName",
-                type: "text",
-                disabled: true
+                type: "select", 
+                options: userDd.map(u => ({
+                  label: u.userName,   
+                  value: u.userName,  
+                }))
             }
         ]
     }

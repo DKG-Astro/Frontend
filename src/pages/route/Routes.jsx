@@ -59,6 +59,7 @@ import VendorLedger from "../accounting/VendorLedger";
 import TrialBalance from "../accounting/TrialBalance";
 import PaymentRegister from "../accounting/PaymentRegister";
 import TallyIntegrationReport from "../reports/TallyIntegrationReport"
+import ImportInvoice from "../dashboard/PaymentVoucher/ImportInvoice";
 /*
 const RoutesComponent = () => {
   return (
@@ -311,6 +312,7 @@ const RoutesComponent = () => {
 
            <Route path="/procurement/contingencyPurchase" element={<ContingencyPurchase />} />
            <Route path="/procurement/paymentVoucher/Invoice" element={<Invoice />} />
+           <Route path="/procurement/paymentVoucher/importInvoice" element={<ImportInvoice />} />
            <Route path="/inventory/goodsTransfer" element={<Form17 />} />
           {/* Role-based routes only for roleId 1 */}
           {generateRoutes(roleName)}

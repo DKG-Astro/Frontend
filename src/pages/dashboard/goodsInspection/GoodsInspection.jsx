@@ -552,7 +552,8 @@ const handleGISearch = async () => {
                 label: "Consignee Details",
                 type: "text",
                 required: true,
-                span: 2
+                span: 2,
+                disabled: true,
             },
             // {
             //     name: "warrantyYears",
