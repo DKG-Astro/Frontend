@@ -551,6 +551,8 @@ const grvFields =(formData)=> [
           name: "storesStock",
           label: "Stores Stock",
           type: "checkbox",
+          required: true,  
+          requiredMessage: "Please check Stores Stock for consumable items"
         }
       ]
     : []
