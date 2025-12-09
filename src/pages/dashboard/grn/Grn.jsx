@@ -334,6 +334,15 @@ if (fieldName === "custodianName") {
   const { userId } = useSelector((state) => state.auth);
 
   const onFinish = async () => {
+     if (
+    formData.grnType === "GI" &&
+    formData?.gprnDtls?.materialDtlList?.some(m => m.category === "Consumable")
+  ) {
+    if (!formData.storesStock) {
+      message.error("Stores Stock is required for Consumable items.");
+      return;
+    }
+  }
     const payload = { ...formData, createdBy: userId };
 
     if(formData.grnType === "materialIn"){
