@@ -22,7 +22,10 @@ const printRef = useRef();
   const [grnIds, setGrnIds] = useState([]);
   const [selectedPoId, setSelectedPoId] = useState(""); // Purchase Order ID
   const [selectedSoId, setSelectedSoId] = useState("");
-  const [selectedGrnId, setSelectedGrnId] = useState("");
+  //const [selectedGrnId, setSelectedGrnId] = useState("");
+
+const [selectedGrnIds, setSelectedGrnIds] = useState([]);
+
   const [formData, setFormData] = useState({
     grnNo: "",
     materialDtlList: [],
@@ -235,7 +238,7 @@ const fetchAdvancePaymentVoucherData = async (poId) => {
 
 const fetchPaymentVoucherData = async (grnNumber) => {
   try {
-    const { data } = await axios.get(`/api/process-controller/paymentVoucherData?processNo=${grnNumber}`);
+    const { data } = await axios.get(`/api/process-controller/multipleGrnsPaymentVoucherData?processNo=${grnNumber}`);
     const res = data?.responseData;
 
     if (res) {
@@ -268,6 +271,7 @@ const fetchPaymentVoucherData = async (grnNumber) => {
         //advanceBalanceAmount: res.advanceBalanceAmount || 0,
         advanceBalanceAmount: res.advanceBalanceAmount || null,
         materialDtlList: res.materialsList?.map(mat => ({
+          grnNum: mat.grnNumber,
           materialCode: mat.materialCode,
           materialDescription: mat.materialDescription,
           quantity: mat.quantity,
@@ -281,211 +285,112 @@ const fetchPaymentVoucherData = async (grnNumber) => {
     
     }
   } catch (error) {
-    message.error("Failed to fetch Payment Voucher Data");
+   //  message.error();
+   // message.error("Failed to fetch Payment Voucher Data");
     console.error(error);
   }
 };
 
-useEffect(() => {
-  if (selectedGrnId) {
-    fetchPaymentVoucherData(selectedGrnId);
-  }
-}, [selectedGrnId]);
+  useEffect(() => {
+    if (selectedGrnIds) {
+      fetchPaymentVoucherData(selectedGrnIds);
+    }
+  }, [selectedGrnIds]);
 
 
 
   const handleChange = (fieldName, value) => {
-    if (typeof fieldName === "string") {
-     // setFormData(prev => ({ ...prev, [fieldName]: value }));
-     setFormData(prev => {
+ 
+  if (typeof fieldName === "string") {
+    setFormData(prev => {
       let updated = { ...prev, [fieldName]: value };
 
-     
-      const tds = parseFloat(updated.tdsAmount || 0);
       let baseAmount = 0;
 
-      if (fieldName === "advanceAdjustedAmount") {
-    // Recalculate effective amount
-    const total = parseFloat(formData.totalAmount || 0);
-    const adv = parseFloat(value || 0);
-    const partial = parseFloat(formData.partialAmount || 0);
-    const tds = parseFloat(formData.tdsAmount || 0);
-
-    // effective payable for partial
-    updated.paymentVoucherNetAmount = partial - tds;
-}
-
+      //  Reset dependent fields on voucher type change
       if (fieldName === "paymentVoucherType") {
-    if (value === "Advance") {
-        setFormData(prev => ({
-            ...prev,
-            grnNumber: "",   
-            partialAmount: null,
-            partialBalanceAmount: null
-        }));
-    }
-}
-// --- TDS CALCULATION ---
-if (fieldName === "tdsPercentage") {
-    const tdsPerc = parseFloat(value || 0);
+        if (value === "Advance") {
+          updated.grnNumber = "";
+          updated.partialAmount = null;
+          updated.partialBalanceAmount = null;
+        }
 
-    let baseAmount = 0;
+        if (value !== "Partial") {
+          updated.partialAmount = null;
+        }
 
-    if (formData.paymentVoucherType === "Partial") {
-        baseAmount = parseFloat(formData.partialAmount || 0);
-    } else if (formData.paymentVoucherType === "Advance") {
-        baseAmount = parseFloat(formData.advanceAmount || 0);
-    } else if (formData.paymentVoucherType === "Full Payment") {
-        const total = parseFloat(formData.totalAmount || 0);
-        const alreadyPartial = parseFloat(formData.partialAmountAlreadyPaid || 0);
-        baseAmount = total - alreadyPartial;
-    } else {
-        baseAmount = parseFloat(formData.totalAmount || 0);
-    }
+        if (value !== "Advance") {
+          updated.advanceAmount = null;
+          updated.advanceBalanceAmount = null;
+        }
+      }
 
-    const tdsAmount = (baseAmount * tdsPerc) / 100;
-
-    updated.tdsAmount = tdsAmount.toFixed(2);
-    updated.paymentVoucherNetAmount = (baseAmount - tdsAmount).toFixed(2);
-}
-// Recalculate TDS if user edits partial/advance amount after selecting TDS %
-if (["partialAmount", "advanceAmount"].includes(fieldName)) {
-    const tdsPerc = parseFloat(updated.tdsPercentage || 0);
-    if (tdsPerc > 0) {
-        let base = parseFloat(value || 0);
-        const tdsAmount = (base * tdsPerc) / 100;
-        updated.tdsAmount = tdsAmount.toFixed(2);
-        updated.paymentVoucherNetAmount = (base - tdsAmount).toFixed(2);
-    }
-}
-
+      //  Decide base amount
       if (updated.paymentVoucherType === "Partial") {
         baseAmount = parseFloat(updated.partialAmount || 0);
       }
       else if (updated.paymentVoucherType === "Advance") {
         baseAmount = parseFloat(updated.advanceAmount || 0);
-      }/*
+      }
       else if (updated.paymentVoucherType === "Full Payment") {
-        const total = parseFloat(updated.totalAmount || 0);
-        const alreadyPaid = parseFloat(updated.partialBalanceAmount || 0);
-        baseAmount = total - alreadyPaid;  // FIX
-        //baseAmount = updated.partialBalanceAmount;
-      }*/
-     else if (updated.paymentVoucherType === "Full Payment") {
-    const total = parseFloat(updated.totalAmount || 0);
-    const alreadyPartialPaid = parseFloat(updated.partialAmountAlreadyPaid || 0);
-    baseAmount = total - alreadyPartialPaid;   
-}
+        const total = parseFloat(updated.partialBalanceAmount || 0);
+       // const alreadyPaid = parseFloat(updated.partialAmountAlreadyPaid || 0);
+        const advanceAdjusted = parseFloat(updated.advanceAdjustedAmount || 0);
 
+        baseAmount = total  - advanceAdjusted;
+        //baseAmount = total - alreadyPaid;
+         if (baseAmount <= 0) {
+          baseAmount = 0;           
+          updated.advanceAdjustedAmount = 0;
+        }
+      }
       else {
         baseAmount = parseFloat(updated.totalAmount || 0);
       }
 
+      //  TDS calculation 
+      const tdsPerc = parseFloat(updated.tdsPercentage || 0);
+      const tdsAmount = (baseAmount * tdsPerc) / 100;
 
-    //  updated.paymentVoucherNetAmount = baseAmount - tds;
-      
+      updated.tdsAmount = tdsAmount.toFixed(2);
+      updated.paymentVoucherNetAmount = (baseAmount - tdsAmount).toFixed(2);
 
       return updated;
     });
+
     
-       if (fieldName === "purchaseOrderids") {
-      setSelectedPoId(value);
-    }
     if (fieldName === "purchaseOrderids") {
-  if (formData.paymentVoucherType === "Advance") {
-    fetchAdvancePaymentVoucherData(value); 
-  } else {
-    setSelectedPoId(value); 
-  }
-}
+      if (formData.paymentVoucherType === "Advance") {
+        fetchAdvancePaymentVoucherData(value);
+      } else {
+        setSelectedPoId(value);
+      }
+    }
 
     if (fieldName === "grnNumber") {
-    setSelectedGrnId(value); // triggers useEffect to call API
-  }
-   if (fieldName === "ServiceOrderDetails") {
+     setSelectedGrnIds(value);
+    }
+
+    if (fieldName === "ServiceOrderDetails") {
       setSelectedSoId(value);
-      fetchServiceOrderData(value); 
+      fetchServiceOrderData(value);
     }
-  //  if (fieldName === "paymentVoucherType") {
-  //     if (value !== "Partial") {
-  //       setFormData(prev => ({ ...prev, partialAmount: null, partialBalanceAmount: null }));
-  //     }
-  //     if (value !== "Advance") {
-  //       setFormData(prev => ({ ...prev, advanceAmount: null, advanceBalanceAmount: null }));
-  //     }
-  //   }
-  if (fieldName === "paymentVoucherType") {
- 
-  if (value !== "Partial") {
-    setFormData(prev => ({ 
-      ...prev,
-      partialAmount: null   
-    }));
+
   }
-
-  if (value !== "Advance") {
-    setFormData(prev => ({ 
-      ...prev, 
-      advanceAmount: null,
-      advanceBalanceAmount: null 
-    }));
+  
+  else {
+    setFormData(prev => {
+      const materialDtlList = [...prev.materialDtlList];
+      materialDtlList[fieldName[1]] = {
+        ...materialDtlList[fieldName[1]],
+        [fieldName[2]]: value
+      };
+      return { ...prev, materialDtlList };
+    });
   }
-}
+};
 
-    } else {
-      setFormData(prev => {
-        const prevMaterialDtlList = [...prev.materialDtlList];
-        prevMaterialDtlList[fieldName[1]] = { ...prevMaterialDtlList[fieldName[1]] };
-        prevMaterialDtlList[fieldName[1]][fieldName[2]] = value;
-        return { ...prev, materialDtlList: prevMaterialDtlList };
-      });
-    }
-  };
-/*
-  const handleSearch = async () => {
-    try {
-      const processStage = "GRN";
-      const processNo = formData.grnNo;
 
-      if (!processNo) {
-        message.warning("Please enter a valid GRN number.");
-        return;
-      }
-
-      const { data } = await axios.get(
-        `/api/process-controller/getSubProcessDtls?processStage=${processStage}&processNo=${processNo}`
-      );
-
-      const grnData = data?.responseData?.grnDtls;
-
-      if (!grnData) {
-        message.error("No GRN data found.");
-        return;
-      }
-
-      setFormData({
-        ...data?.responseData,
-        giNo: grnData?.giNo || "",
-        grnType: "GRN",
-        grnNo: grnData?.grnNo,
-        grnDate: grnData?.grnDate,
-        installationDate: grnData?.installationDate,
-        commissioningDate: grnData?.commissioningDate,
-        indentorName: grnData?.createdBy,
-        materialDtlList: grnData?.materialDtlList?.map(material => ({
-          ...material,
-          acceptedQuantity: material.quantity || 0,
-          locatorId: material.locatorId || 0,
-          depriciationRate: material.depriciationRate || 0,
-          bookValue: material.bookValue || 0,
-        })) || []
-      });
-    } catch (error) {
-      message.error(
-        error?.response?.data?.responseStatus?.message || "Error fetching GRN data."
-      );
-    }
-  };*/
    const handleSearch = async (value) => {
     try {
       const { data } = await axios.get(
@@ -533,7 +438,8 @@ const onFinish = async () => {
       paymentVoucherIsFor: formData.paymentVoucherIsFor,
       purchaseOrderId: formData.purchaseOrderids || "",
       advanceAdjustedAmount: formData.advanceAdjustedAmount,    
-      grnNumber: formData.grnNumber || "",
+     // grnNumber: formData.grnNumber || "",
+      grnNumbers: selectedGrnIds,
       serviceOrderDetails: formData.ServiceOrderDetails || "",
       paymentVoucherType: formData.paymentVoucherType,
       vendorName: formData.vendorName,
@@ -551,6 +457,7 @@ const onFinish = async () => {
       tdsAmount: formData.tdsAmount,
       paymentVoucherNetAmount: formData.paymentVoucherNetAmount,
       materials: formData.materialDtlList?.map(mat => ({
+        grnNumber: mat.grnNum,
         materialCode: mat.materialCode,
         materialDescription: mat.materialDescription,
         quantity: mat.quantity,
@@ -575,13 +482,30 @@ const onFinish = async () => {
     }));
 
     setModalOpen(true);
+    } catch (error) {
 
-  } catch (error) {
-    message.error(error?.response?.data?.responseStatus?.message || "Failed to save Payment Voucher.");
-    console.error("Save Error:", error);
-  } finally {
-    setSubmitBtnLoading(false);
+  let errorMessage = "Failed to save Payment Voucher.";
+
+  if (error?.response?.data?.responseStatus?.message) {
+    errorMessage = error.response.data.responseStatus.message;
+  } else if (error?.message) {
+    errorMessage = error.message;
   }
+
+  message.error(errorMessage);
+  console.error("Save Error:", error);
+
+} finally {
+  setSubmitBtnLoading(false);
+}
+
+
+  // } catch (error) {
+  //   message.error(error?.response?.data?.responseStatus?.message || "Failed to save Payment Voucher.");
+  //   console.error("Save Error:", error);
+  // } finally {
+  //   setSubmitBtnLoading(false);
+  // }
 };
 
   useEffect(() => {

@@ -102,7 +102,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
       {
         name: "grnNumber",
         label: "GRN Number",
-        type: "select",
+        type: "multiselect",
         required: true,
         options: grnIds,
       },
@@ -341,7 +341,7 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
   name: "paymentVoucherNetAmount",
   type: "text",
   disabled: true, // auto-calculated
-  value: formData.netAmount
+  value: formData.paymentVoucherNetAmount 
 },
    ]},
    /*  {
@@ -360,6 +360,18 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
       name: "materialDtlList",
       colCnt: 6,
       children: [
+          ...(!formData.paymentVoucherType === "Full Payment"
+  ? [
+      {
+        name: "grnNum",
+        label: "Grn Number",
+        type: "text",
+        disabled: true,
+        required: true,
+        span: 2
+      }
+    ]
+  : []),
         {
           name: "materialCode",
           label: "Material Code",
