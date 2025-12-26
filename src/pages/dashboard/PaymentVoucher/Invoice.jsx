@@ -11,6 +11,12 @@ import { useSelector } from "react-redux";
 import CustomModal from "../../../components/CustomModal";
 
 
+const extractPoFromGrn = (grn) => {
+  if (!grn) return null;
+  const match = grn.match(/^INV(\d+)\//);
+  return match ? `PO${match[1]}` : null;
+};
+
 const Invoice = () => {
 const printRef = useRef();
   const handlePrint = useReactToPrint({
@@ -364,12 +370,36 @@ const fetchPaymentVoucherData = async (grnNumber) => {
         fetchAdvancePaymentVoucherData(value);
       } else {
         setSelectedPoId(value);
+        setSelectedGrnIds([]);   
+        setGrnIds([]);  
       }
     }
 
+    // if (fieldName === "grnNumber") {
+    //  setSelectedGrnIds(value);
+    // }
     if (fieldName === "grnNumber") {
-     setSelectedGrnIds(value);
-    }
+  const selected = Array.isArray(value) ? value : [value];
+
+  const poSet = new Set(
+    selected.map(grn => extractPoFromGrn(grn))
+  );
+
+  if (poSet.size > 1) {
+    message.error("You cannot select GRNs from different Purchase Orders");
+    return; // ❌ BLOCK
+  }
+
+  // Optional: ensure matches selected PO dropdown
+  const selectedPo = poSet.values().next().value;
+  if (selectedPoId && selectedPo !== selectedPoId) {
+    message.error(`Selected GRNs belong to ${selectedPo}, not ${selectedPoId}`);
+    return;
+  }
+
+  setSelectedGrnIds(selected);
+}
+
 
     if (fieldName === "ServiceOrderDetails") {
       setSelectedSoId(value);

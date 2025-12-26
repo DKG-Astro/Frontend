@@ -392,13 +392,15 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
           name: "quantity",
           label: "Quantity",
           type: "text",
-          required: true
+          required: true,
+             disabled: true,
         },
         {
           name: "rate",
           label: "Unit Rate",
           type: "text",
-          required: true
+          required: true,
+             disabled: true,
         },
        /* {
           name: "currency",
@@ -417,12 +419,14 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
             name: "gst",
             label: "GST (%)",
             type: "text",
-            required: true
+            required: true,
+               disabled: true,
         },  {
             name: "amount",
             label: "Amount",
             type: "text",
-            required: true
+            required: true,
+               disabled: true,
         },
       ]
     },
