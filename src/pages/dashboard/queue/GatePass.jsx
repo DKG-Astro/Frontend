@@ -212,6 +212,25 @@ const GatePass = () => {
     //   fixed: 'left',
     //   render: (text) => text ? "INV/"+text : ""
     // },
+     {
+    title: "Gate Pass Type",
+    dataIndex: "formType",
+    key: "formType",
+    render: (text) => {
+      switch (text) {
+        case "GI":
+          return "Rejected GI";
+        case "GT":
+          return "Goods Transfer";
+        case "IGP":
+          return "IGP";
+        case "ASSET_DISPOSAL":
+          return "Asset Disposal";
+        default:
+          return text;
+      }
+    },
+  },
     {
       title: "Goods Transfer ID",
       dataIndex: "gtId",
