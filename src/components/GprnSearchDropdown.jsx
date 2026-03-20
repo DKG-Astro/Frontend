@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Select, Spin } from "antd";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const { Option } = Select;
 
@@ -8,7 +9,8 @@ const GprnSearchDropdown = ({ label, value, onChange }) => {
   const [options, setOptions] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);
   const [loading, setLoading] = useState(false);
-
+const { userId } = useSelector(state => state.auth);
+/*
   useEffect(() => {
     const fetchGprns = async () => {
       setLoading(true);
@@ -26,7 +28,29 @@ const GprnSearchDropdown = ({ label, value, onChange }) => {
       }
     };
     fetchGprns();
-  }, []);
+  }, []);*/
+  useEffect(() => {
+  const fetchGprns = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `/api/process-controller/pendingGprnsForGi?userId=${userId}`
+      );
+
+      setOptions(response.data.responseData || []);
+      setFilteredOptions(response.data.responseData || []);
+    } catch (error) {
+      setOptions([]);
+      setFilteredOptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (userId) {
+    fetchGprns();
+  }
+}, [userId]);
 
   const handleSearch = (input) => {
     if (!input) {

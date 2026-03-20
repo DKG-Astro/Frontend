@@ -48,7 +48,8 @@ useEffect(() => {
 }, []);
 
   const [formData, setFormData] = useState({
-    giNo: "",
+  // giNo: "",
+   giNos: [],
     materialDtlList: [],
     grnType: "GI",
   });
@@ -221,7 +222,8 @@ if (fieldName === "custodianName") {
         setFormData({
           ...data?.responseData?.giDtls,
           indentorName: data?.responseData?.gprnDtls?.receivedBy,
-          giNo: data?.responseData?.giDtls?.inspectionNo,
+         // giNo: data?.responseData?.giDtls?.inspectionNo,
+          giNos: [data?.responseData?.giDtls?.inspectionNo], 
           grnType: "GI",
           materialDtlList: materialWithPrice,
           locationId: data?.responseData?.gprnDtls?.locationId,
@@ -343,7 +345,7 @@ if (fieldName === "custodianName") {
       return;
     }
   }
-    const payload = { ...formData, createdBy: userId };
+    const payload = { ...formData, giNos: formData.giNos || [], createdBy: userId };
 
     if(formData.grnType === "materialIn"){
       try{
@@ -425,6 +427,80 @@ if (fieldName === "custodianName") {
     handleLocatorDropdown()
   }, [formData.locationId])
 
+  useEffect(() => {
+  if (!formData.materialDtlList?.length) return;
+
+  const total = formData.materialDtlList.reduce((sum, m) => {
+    const unitPrice = parseFloat(m.unitPrice || 0);
+    const qty = parseFloat(m.acceptedQuantity || 0);
+    return sum + (unitPrice * qty);
+  }, 0);
+
+  setFormData(prev => ({
+    ...prev,
+    grnAmount: total.toFixed(2)
+  }));
+
+}, [formData.materialDtlList]);
+
+  const handleMultipleGi = async (selectedItems) => {
+  try {
+    let allMaterials = [];
+    let commonData = {};
+
+    for (let item of selectedItems) {
+      const { data } = await axios.get(
+        `/api/process-controller/getSubProcessDtls?processStage=GI&processNo=${item.giNo}`
+      );
+
+      const giData = data?.responseData?.giDtls;
+      const gprnData = data?.responseData?.gprnDtls;
+
+      //  take common header only once
+      if (allMaterials.length === 0) {
+        commonData = {
+          locationId: gprnData.locationId,
+          custodianId: gprnData.receivedBy,
+          custodianName: gprnData.receivedName,
+          gprnAmount: gprnData.gprnAmount,
+          poAmount: gprnData.poAmount,
+        };
+      }
+
+      //  attach GI number to each material
+      // const materials = giData.materialDtlList.map(m => ({
+      //   ...m,
+      //   giNo: item.giNo   
+      // }));
+      const materials = giData.materialDtlList.map(m => {
+  const gprnMaterial = gprnData.materialDtlList.find(
+    gm => gm.materialCode === m.materialCode
+  );
+
+  const unitPrice = parseFloat(gprnMaterial?.unitPrice || 0);
+  const acceptedQuantity = parseFloat(m.acceptedQuantity || 0);
+
+  return {
+    ...m,
+    giNo: item.giNo,
+    unitPrice,
+    bookValue: (unitPrice * acceptedQuantity).toFixed(2) // optional initial
+  };
+});
+
+      allMaterials.push(...materials);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      ...commonData,
+      materialDtlList: allMaterials
+    }));
+
+  } catch (error) {
+    message.error("Error fetching multiple GI data");
+  }
+};
 
 
 
@@ -485,7 +561,7 @@ const grvFields =(formData)=> [
   label: "Enter GI No",
   type: "custom",
   render: () => (
-   <GrnSearchDropdown
+  /* <GrnSearchDropdown
   label="GI No"
   value={formData.giNo}
   onChange={(val) => setFormData(prev => ({ ...prev, giNo: val }))}
@@ -499,6 +575,16 @@ const grvFields =(formData)=> [
       // Call search immediately with selected value
       handleSearch(selectedGiNo);
     }
+  }}
+/> */
+<GrnSearchDropdown
+  label="GI No"
+  value={formData.giNos}   //array now
+  onChange={(vals) =>
+    setFormData(prev => ({ ...prev, giNos: vals }))
+  }
+  onSelect={(selectedItems) => {
+    handleMultipleGi(selectedItems); // new function
   }}
 />
 
@@ -534,7 +620,13 @@ const grvFields =(formData)=> [
             },
              {
               name: "gprnAmount",
-              label: "grn Amount",
+              label: "GPRN Amount",
+              type: "text",
+              span: 2,
+            },
+              {
+              name: "grnAmount",
+              label: "GRN Amount",
               type: "text",
               span: 2,
             },

@@ -156,7 +156,7 @@ const GPRN = () => {
         indentId: indentData?.responseData?.createdBy,
         consigneeDetail: data?.responseData?.consignesAddress,
         fieldStation: data?.responseData?.consignesAddress,
-        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom,warrantyTerms: data?.responseData?.warranty, orderedQuantity: mat.totalQuantity - mat.receivedQuantity,totalQuantity: mat.totalQuantity, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
+        materialDtlList: data?.responseData?.purchaseOrderAttributes?.map((mat, idx) => ({ ...mat, materialDesc: mat.materialDescription, uomId: mat.uom,warrantyTerms: data?.responseData?.warranty, orderedQuantity: mat.totalQuantity - mat.receivedQuantity,totalQuantity: mat.totalQuantity,indentId: mat.indentId, quantityDelivered: mat.receivedQuantity || 0 , receivedQuantity:"" })),
         date: dayjs().format('DD/MM/YYYY'),
         deliveryDate: data?.responseData?.deliveryDate || "", 
         supplyExpectedDate: dayjs().format('DD/MM/YYYY'),
@@ -382,6 +382,12 @@ setPendingGprnList(formattedPoList);
           span: 2,
           required: true,
           // disabled: true
+        },  {
+          name: "indentId",
+          label: "Indent ID",
+          type: "text",
+          span: 2,
+          // required: true,
         },
         {
           name: "materialDesc",
@@ -485,6 +491,7 @@ setPendingGprnList(formattedPoList);
           span: 5,
           // required: true,
         },
+       
         {
           name: "imageBase64",
           label: "Material Photograph",

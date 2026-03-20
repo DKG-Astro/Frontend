@@ -134,12 +134,21 @@ const handleGISearch = async () => {
       const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${value}`);
       data = response.data?.responseData;
   
+       const filteredMaterials = data.materialDtlList?.filter(
+    item => item.indentorUserId === userId
+  );
+
+  setFormData({
+    ...data,
+    gprnNo: data?.processId,
+    materialDtlList: filteredMaterials 
+  });}
 
     // Update form data based on the API response
-    setFormData({
-      ...data,
-      gprnNo: data?.processId, // Update gprnNo with the processId from the response
-    });}
+    // setFormData({
+    //   ...data,
+    //   gprnNo: data?.processId, // Update gprnNo with the processId from the response
+    // });}
   } catch (error) {
     message.error(error?.response?.data?.responseStatus?.message || "Error fetching data.");
   }
@@ -149,7 +158,15 @@ const handleGISearch = async () => {
   const {userId} = useSelector(state => state.auth);
 
   const onFinish = async () => {
-    const payload = {...formData, createdBy: userId};
+      const selectedIndentId = formData.materialDtlList?.[0]?.indentId;
+
+  //  STEP 2: filter materials of same indent
+  const filteredMaterials = formData.materialDtlList.filter(
+    item => item.indentId === selectedIndentId
+  );
+
+    const payload = {...formData, indentId: selectedIndentId,  
+    materialDtlList: filteredMaterials, createdBy: userId};
     // const {data} = await axios.post("/api/process-controller/saveGi", payload);
     try {
       setSubmitBtnLoading(true);
@@ -369,6 +386,12 @@ const handleGISearch = async () => {
             {
                 name: "materialCode",
                 label: "Material Code",
+                type: "text",
+                span: 2,
+                required: true
+            }, {
+                name: "indentId",
+                label: "Indent Code",
                 type: "text",
                 span: 2,
                 required: true
