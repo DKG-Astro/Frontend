@@ -132,7 +132,7 @@ const ButtonContainer = ({
               </Button>
             </div>
           }
-          title="Cancel Indent"
+          title="Cancel"
           trigger="click"
         >
           <Button danger type="default" icon={<CloseOutlined />}>

@@ -1,4 +1,4 @@
-import { Card, message } from "antd";
+import { Card, message,Button } from "antd";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
@@ -23,6 +23,7 @@ const GoodsInspection = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
+  const [giStatus, setGiStatus] = useState("");
   const [formData, setFormData] = useState({
     gprnNo: processNo || "",
     materialDtlList: []
@@ -129,6 +130,8 @@ const handleGISearch = async () => {
       const formData = mergeData(response.data?.responseData?.giDtls, response.data?.responseData?.gprnDtls);
       formData.giNo = data?.inspectionNo || "";
       setFormData(formData);
+      setGiStatus(data?.status || "");
+      console.log("GI STATUS:", data?.status);
     } else{
       // GPRN API call
       const response = await axios.get(`/api/process-controller/getSubProcessDtls?processStage=GPRN&processNo=${value}`);
@@ -697,7 +700,22 @@ const handleGISearch = async () => {
     }
   }, [processNo, handleSearch])
 
+const handleCancelGI = async (remarks) => {
+  try {
+    await axios.post("/api/process-controller/approveGi", {
+      processNo: formData.giNo,   
+      remarks: remarks,           
+      status: "CANCEL REQUEST",  
+      createdBy: userId
+    });
 
+    message.success("Cancel request sent for approval");
+
+    setGiStatus("CANCEL REQUEST"); 
+  } catch (error) {
+    message.error("Failed to send cancel request");
+  }
+};
 
   
 
@@ -716,10 +734,15 @@ const handleGISearch = async () => {
           printBtnEnabled
           draftBtnEnabled
           handlePrint={handlePrint}
-        />
+          showCancel={giStatus?.toUpperCase().trim() === "APPROVED"}
+          onCancel={handleCancelGI}
+       />    
       </CustomForm>
       <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Goods Inspection" processNo={formData?.giNo} />
+    
+  
     </Card>
+    
   );
 };
 

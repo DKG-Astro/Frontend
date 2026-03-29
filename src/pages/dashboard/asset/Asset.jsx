@@ -251,6 +251,7 @@ const assetFields = [
 
   const [modalOpen, setModalOpen] = useState(false);
   const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
+  const [modalSearchText, setModalSearchText] = useState("");
 
   const [formData, setFormData] = useState({
     assetId: null,
@@ -498,7 +499,23 @@ const onFinish = async () => {
     populateData();
   }, [])
 
+const getFilteredAssets = () => {
+  const q = modalSearchText.toLowerCase();
 
+  return (searchResults || []).filter((item) => {
+    const text = `
+      ${item.assetCode ?? ""}
+      ${item.assetId ?? ""}
+      ${item.assetDesc ?? ""}
+      ${item.poId ?? ""}
+      ${item.custodianId ?? ""}
+      ${item.locatorId ?? ""}
+      ${item.quantity ?? ""}
+    `.toLowerCase();
+
+    return text.includes(q);
+  });
+};
 useEffect(() => {
   if (formData.serialNo !== undefined && formData.serialNo !== null) {
     const serialArray = formData.serialNo
@@ -549,132 +566,128 @@ useEffect(() => {
         />
       </CustomForm>
       <CustomModal isOpen={modalOpen} setIsOpen={setModalOpen} title="Asset Master" processNo={formData?.assetId} />
-      {/* 🔍 Search Results Modal */}
+      {/*  Search Results Modal */}
+
 <Modal
   open={isSearchModalOpen}
   title="Asset Search Results"
   onCancel={() => setIsSearchModalOpen(false)}
   footer={null}
-  width={800}
->
-  <Table
-  rowKey={(record) => `${record.assetId}-${record.locatorId}-${record.custodianId}`}
-  dataSource={searchResults}
-  pagination={false}
-  columns={[
-    { title: "Asset Code", dataIndex: "assetCode" },
-    { title: "Asset ID", dataIndex: "assetId" },
-    { title: "Asset Desc", dataIndex: "assetDesc" },
-    { title: "PO ID", dataIndex: "poId" },
-    { title: "Custodian ID", dataIndex: "custodianId" },
-    { title: "Locator ID", dataIndex: "locatorId" },
-    { title: "Quantity", dataIndex: "quantity" },
-    {
-      title: "Action",
-      render: (_, record) => {
-        const isSelected =
-          selectedRow &&
-          selectedRow.assetId === record.assetId &&
-          selectedRow.locatorId === record.locatorId &&
-          selectedRow.custodianId === record.custodianId;
-
-        return isSelected ? (
-          <Button
-            danger
-            size="small"
-            onClick={() => {
-              setSelectedRow(null);
-              message.info(`Deselected Asset ${record.assetId}`);
-            }}
-          >
-            Deselect
-          </Button>
-        ) : (
-         <Button
-  type="primary"
-  size="small"
-  onClick={async () => {
-    setSelectedRow(record);
-
-    try {
-      const response = await axios.get(
-        "/api/asset/asset-full-details",
-        {
-          params: {
-            assetId: record.assetId,
-            assetCode: record.assetCode,
-            custodianId: record.custodianId,
-            locatorId: record.locatorId,
-          },
-        }
-      );
-
-      const assetData = response?.data?.responseData?.[0];
-      if (assetData) {
-        setFormData((prev) => ({
-          ...prev,
-          ...assetData,
-          quantity: record.quantity,
-        }));
-        await fetchExistingSerials(
-  record.assetCode,
-  record.assetId,
-  record.custodianId,
-  record.locatorId,
-  record.quantity
-);
-
-        message.success(`Asset ${record.assetId} details loaded`);
-      } else {
-        message.warning("No details found for selected asset");
-      }
-    } catch (error) {
-      message.error("Failed to fetch full asset details");
-      console.error(error);
-    }
-
-    setIsSearchModalOpen(false);
+  width={900}
+  bodyStyle={{
+    height: "500px",              // ✅ fixed height
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column"
   }}
 >
-  Select
-</Button>
+  {/* 🔍 Narrow Search Input */}
+  <Input
+    placeholder="Type to narrow results..."
+    value={modalSearchText}
+    onChange={(e) => setModalSearchText(e.target.value)}
+    style={{ marginBottom: 12, width: 300 }}
+    allowClear
+  />
 
-        );
-      },
-    },
-  ]}
-/>
-
-
-  <div style={{ marginTop: 16, textAlign: "right" }}>
-    <Button
-      type="primary"
-      onClick={() => {
-        if (!selectedRow) return message.warning("Please select an asset");
-        setFormData(prev => ({
-          ...prev,
-          assetId: selectedRow.assetId,
-          locatorId: selectedRow.locatorId
-        }));
-        setIsSearchModalOpen(false);
-        message.success(`Asset ${selectedRow.assetId} selected`);
+  {/* 📊 Table Container */}
+  <div style={{ flex: 1, overflowY: "auto" }}>
+    <Table
+      rowKey={(record) =>
+        `${record.assetId}-${record.locatorId}-${record.custodianId}`
+      }
+      dataSource={getFilteredAssets()}   // ✅ local filter
+      pagination={{
+        pageSize: 5,                    // ✅ only 5 records
+        showSizeChanger: false
       }}
-      style={{ marginRight: 8 }}
-    >
-      Select
-    </Button>
+      scroll={{ y: 300 }}               // ✅ internal scroll
+      columns={[
+        { title: "Asset Code", dataIndex: "assetCode" },
+        { title: "Asset ID", dataIndex: "assetId" },
+        { title: "Asset Desc", dataIndex: "assetDesc" },
+        { title: "PO ID", dataIndex: "poId" },
+        { title: "Custodian ID", dataIndex: "custodianId" },
+        { title: "Locator ID", dataIndex: "locatorId" },
+        { title: "Quantity", dataIndex: "quantity" },
+        {
+          title: "Action",
+          render: (_, record) => {
+            const isSelected =
+              selectedRow &&
+              selectedRow.assetId === record.assetId &&
+              selectedRow.locatorId === record.locatorId &&
+              selectedRow.custodianId === record.custodianId;
 
-    <Button
-      onClick={() => {
-        setSelectedRow(null);
-        message.info("Selection cleared");
-      }}
-    >
-      Deselect
-    </Button>
+            return isSelected ? (
+              <Button
+                danger
+                size="small"
+                onClick={() => {
+                  setSelectedRow(null);
+                  message.info(`Deselected Asset ${record.assetId}`);
+                }}
+              >
+                Deselect
+              </Button>
+            ) : (
+              <Button
+                type="primary"
+                size="small"
+                onClick={async () => {
+                  setSelectedRow(record);
+
+                  try {
+                    const response = await axios.get(
+                      "/api/asset/asset-full-details",
+                      {
+                        params: {
+                          assetId: record.assetId,
+                          assetCode: record.assetCode,
+                          custodianId: record.custodianId,
+                          locatorId: record.locatorId,
+                        },
+                      }
+                    );
+
+                    const assetData = response?.data?.responseData?.[0];
+                    if (assetData) {
+                      setFormData((prev) => ({
+                        ...prev,
+                        ...assetData,
+                        quantity: record.quantity,
+                      }));
+
+                      await fetchExistingSerials(
+                        record.assetCode,
+                        record.assetId,
+                        record.custodianId,
+                        record.locatorId,
+                        record.quantity
+                      );
+
+                      message.success(
+                        `Asset ${record.assetId} details loaded`
+                      );
+                    } else {
+                      message.warning("No details found");
+                    }
+                  } catch (error) {
+                    message.error("Failed to fetch full asset details");
+                  }
+
+                  setIsSearchModalOpen(false);
+                }}
+              >
+                Select
+              </Button>
+            );
+          },
+        },
+      ]}
+    />
   </div>
 </Modal>
-
     </Card>
   );
 };

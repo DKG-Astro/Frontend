@@ -484,7 +484,7 @@ if (fieldName === "custodianName") {
     ...m,
     giNo: item.giNo,
     unitPrice,
-    bookValue: (unitPrice * acceptedQuantity).toFixed(2) // optional initial
+    bookValue: unitPrice // optional initial
   };
 });
 

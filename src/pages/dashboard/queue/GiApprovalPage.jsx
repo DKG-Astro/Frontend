@@ -471,6 +471,21 @@ const GiApprovalPage = () => {
       message.error(error?.response?.data?.responseStatus?.message || 'Failed to approve GI');
     }
   };
+  const handleCancelApprove = async (record) => {
+  try {
+    await axios.post('/api/process-controller/approveGi', {
+      processNo: `INV${record.gprnProcessId}/${record.inspectionSubProcessId}`,
+      remarks: "Cancel Approved",
+      createdBy: auth.userId,
+      status: "CANCELLED",  
+    });
+
+    message.success('GI Cancelled successfully');
+    fetchData();
+  } catch (error) {
+    message.error('Failed to approve cancel');
+  }
+};
 
   const handleReject = async (record, key) => {
     try {
@@ -546,6 +561,7 @@ const GiApprovalPage = () => {
       title: 'Actions',
       render: (_, record) => {
         const key = rowKey(record);
+        const status = record.status?.toUpperCase();
 
         if (roleName === 'Indent Creator') {
           return (
@@ -554,6 +570,22 @@ const GiApprovalPage = () => {
             </Button>
           );
         }
+      if (status === "CANCEL REQUEST") {
+  return (
+    <Space>
+      {/* ✅ Cancel Approve */}
+      <Button type="primary" onClick={() => handleCancelApprove(record)}>
+        Cancel Approve
+      </Button>
+
+      {/* ❌ Cancel Reject */}
+      <Button danger onClick={() => openReject(record)}>
+        Cancel Reject
+      </Button>
+    </Space>
+  );
+}
+
 
         return (
           <Space>

@@ -1,4 +1,4 @@
-import { Card, message } from "antd";
+import { Card, message, Table } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import Heading from "../../../components/DKG_Heading";
 import CustomForm from "../../../components/DKG_CustomForm";
@@ -32,6 +32,10 @@ const printRef = useRef();
 
 const [selectedGrnIds, setSelectedGrnIds] = useState([]);
 
+const [pvPoOptions, setPvPoOptions] = useState([]);
+const [pvIds, setPvIds] = useState([]);
+
+
   const [formData, setFormData] = useState({
     grnNo: "",
     materialDtlList: [],
@@ -44,6 +48,127 @@ const [selectedGrnIds, setSelectedGrnIds] = useState([]);
   const [soOptions, setSoOptions] = useState([]);
   const userId = useSelector(state => state.auth.userId);
   const [advancePoOptions, setAdvancePoOptions] = useState([]);
+
+
+useEffect(() => {
+  const fetchPvPoIds = async () => {
+    try {
+      const { data } = await axios.get("/api/process-controller/paymentVoucherPoIds");
+
+      const list = data?.responseData || [];
+
+      setPvPoOptions(list.map(po => ({
+        value: po,
+        label: po
+      })));
+    } catch (e) {
+      message.error("Failed to load PV PO IDs");
+    }
+  };
+
+  fetchPvPoIds();
+}, []);
+
+
+const fetchPvIds = async (poId) => {
+  try {
+    const { data } = await axios.get(
+      `/api/process-controller/paymentVoucherIdsByPo?poId=${poId}`
+    );
+
+    const list = data?.responseData || [];
+
+    setPvIds(list.map(id => ({
+      value: id,
+      label: id
+    })));
+
+  } catch (e) {
+    message.error("Failed to fetch PV IDs");
+  }
+};
+// ================== FIXED FETCH PV DATA ==================
+const fetchPvData = async (pvId) => {
+  try {
+    const { data } = await axios.get(
+      `/api/process-controller/VoucherData?processNo=${encodeURIComponent(pvId)}`
+    );
+
+    const res = data?.responseData;
+
+    if (res) {
+      setFormData(prev => ({
+        ...prev,
+
+        // ================== BASIC ==================
+        paymentVoucherIsFor: res.paymentVoucherIsFor,
+        purchaseOrderids: res.purchaseOrderId, 
+        paymentVoucherType: res.paymentVoucherType,
+
+        // ================== VENDOR ==================
+        vendorName: res.vendorName,
+        vendorInvoiceNumber: res.vendorInvoiceNumber,
+        vendorInvoiceDate: res.vendorInvoiceDate,
+
+        // ================== MONEY ==================
+        totalAmount: res.totalAmount,
+        partialAmount: res.partialAmount,
+        advanceAmount: res.advanceAmount,
+        advanceAdjustedAmount: res.advanceAdjustedAmount || 0,
+
+        paymentVoucherNetAmount: res.paymentVoucherNetAmount,
+        tdsAmount: res.tdsAmount,
+
+        // ================== TDS ==================
+        incomeTdsAmount: res.incomeTdsAmount,
+        gstTdsAmount: res.gstTdsAmount,
+        incomeTdsRemarks: res.incomeTdsRemarks,
+        gstTdsRemarks: res.gstTdsRemarks,
+
+        // ================== CURRENCY ==================
+        currency: res.currency,
+        exchangeRate: res.exchangeRate,
+
+        // ================== OTHER ==================
+        remarks: res.remarks,
+        // ================== PAYMENT SUMMARY FIX ==================
+totalPoAmount: res.totalAmount || 0,
+
+advanceAmountAlreadyPaid: res.advanceAmount || 0,
+
+// DO NOT USE paidAmount directly
+partialAmountAlreadyPaid: 0,
+
+currentPaymentAmount: res.partialAmount || 0,
+
+balanceAmount: (
+  (res.totalAmount || 0)
+  - (res.partialAmount || 0)
+).toFixed(2),
+// ================== END ==================
+
+        // ================== MATERIAL ==================
+        materialDtlList: res.materials?.map(mat => ({
+          grnNum: mat.grnNumber,
+          materialCode: mat.materialCode,
+          materialDescription: mat.materialDescription,
+          quantity: mat.quantity,
+          rate: mat.unitPrice,  
+          currency: mat.currency,
+          exchangeRate: mat.exchangeRate,
+          gst: mat.gst,
+          amount: mat.amount
+        })) || [],
+
+       
+        attachments: res.attachments || []
+      }));
+    }
+
+  } catch (e) {
+    message.error("Failed to load voucher data");
+  }
+};
 
   useEffect(() => {
  /* const fetchPoIds = async () => {
@@ -306,6 +431,16 @@ const fetchPaymentVoucherData = async (grnNumber) => {
 
 
   const handleChange = (fieldName, value) => {
+    
+if (fieldName === "pvPoId") {
+  fetchPvIds(value);
+}
+
+
+if (fieldName === "pvId") {
+  fetchPvData(value);
+}
+
  
   if (typeof fieldName === "string") {
     setFormData(prev => {
@@ -358,9 +493,68 @@ const fetchPaymentVoucherData = async (grnNumber) => {
       const tdsPerc = parseFloat(updated.tdsPercentage || 0);
       const tdsAmount = (baseAmount * tdsPerc) / 100;
 
-      updated.tdsAmount = tdsAmount.toFixed(2);
-      updated.paymentVoucherNetAmount = (baseAmount - tdsAmount).toFixed(2);
+    //  updated.tdsAmount = tdsAmount.toFixed(2);
+     // updated.paymentVoucherNetAmount = (baseAmount - tdsAmount).toFixed(2);
+     // ==================  MULTIPLE TDS CALCULATION ==================
 
+// Income Tax TDS
+const incomeTdsPerc = parseFloat(updated.incomeTdsPercentage || 0);
+const incomeTdsAmount = (baseAmount * incomeTdsPerc) / 100;
+
+// GST TDS
+const gstTdsPerc = parseFloat(updated.gstTdsPercentage || 0);
+const gstTdsAmount = (baseAmount * gstTdsPerc) / 100;
+
+// Total TDS
+const totalTds = incomeTdsAmount + gstTdsAmount;
+
+// Set values
+updated.incomeTdsAmount = incomeTdsAmount.toFixed(2);
+updated.gstTdsAmount = gstTdsAmount.toFixed(2);
+updated.tdsAmount = totalTds.toFixed(2);
+
+// Final Payable
+updated.paymentVoucherNetAmount = (baseAmount - totalTds).toFixed(2);
+
+
+// ================== PAYMENT SUMMARY FIX ==================
+// ================== FINAL PAYMENT SUMMARY FIX ==================
+
+const totalPo = parseFloat(updated.totalAmount || 0);
+const advancePaid = parseFloat(updated.advanceAmountAlreadyPaid || 0);
+const partialPaid = parseFloat(updated.partialAmountAlreadyPaid || 0);
+const currentAdvance = parseFloat(updated.advanceAmount || 0);
+const currentPartial = parseFloat(updated.partialAmount || 0);
+
+let balance = 0;
+let currentPayment = 0;
+
+if (updated.paymentVoucherType === "Advance") {
+
+ 
+  balance = totalPo - (advancePaid + currentAdvance);
+  currentPayment = currentAdvance;
+
+}
+else if (updated.paymentVoucherType === "Partial") {
+
+  balance = parseFloat(updated.partialBalanceAmount || totalPo);
+  currentPayment = currentPartial;
+
+}
+else if (updated.paymentVoucherType === "Full Payment") {
+
+  balance = totalPo - advancePaid - partialPaid;
+  currentPayment = balance;
+
+}
+
+//  SET ONLY ONCE (IMPORTANT)
+updated.totalPoAmount = totalPo;
+updated.balanceAmount = balance.toFixed(2);
+updated.currentPaymentAmount = currentPayment.toFixed(2);
+
+// ================== END ==================
       return updated;
     });
 
@@ -444,6 +638,45 @@ const fetchPaymentVoucherData = async (grnNumber) => {
 
 
   const { locationId } = useSelector(state => state.auth);
+ 
+const paymentSummaryData = [
+  {
+    key: "1",
+    totalPoAmount: formData.totalPoAmount || 0,
+    advanceAmount: formData.advanceAmountAlreadyPaid || 0,
+    alreadyPaid: formData.partialAmountAlreadyPaid || 0,
+    balanceAmount: formData.balanceAmount || 0,
+    currentPayment: formData.currentPaymentAmount || 0,
+    totalPayable: formData.paymentVoucherNetAmount || 0
+  }
+];
+
+const paymentSummaryColumns = [
+  {
+    title: "Total PO Amount",
+    dataIndex: "totalPoAmount"
+  },
+  {
+    title: "Advance Amount",
+    dataIndex: "advanceAmount"
+  },
+  {
+    title: "Already Paid",
+    dataIndex: "alreadyPaid"
+  },
+  {
+    title: "Balance Amount",
+    dataIndex: "balanceAmount"
+  },
+  {
+    title: "Current Payment",
+    dataIndex: "currentPayment"
+  },
+  {
+    title: "Total Payable",
+    dataIndex: "totalPayable"
+  }
+];
 const onFinish = async () => {
   try {
     const total = parseFloat(formData.totalAmount || 0);
@@ -467,7 +700,15 @@ const onFinish = async () => {
       paymentVoucherDate: formData.paymentVoucherDate,
       paymentVoucherIsFor: formData.paymentVoucherIsFor,
       purchaseOrderId: formData.purchaseOrderids || "",
-      advanceAdjustedAmount: formData.advanceAdjustedAmount,    
+    //  advanceAdjustedAmount: formData.advanceAdjustedAmount,    
+    attachments: formData.attachments || [],
+advanceAdjustedAmount:
+  formData.advanceAdjustedAmount === "" ||
+  formData.advanceAdjustedAmount === null ||
+  formData.advanceAdjustedAmount === undefined
+    ? 0
+    : Number(formData.advanceAdjustedAmount),
+
      // grnNumber: formData.grnNumber || "",
       grnNumbers: selectedGrnIds,
       serviceOrderDetails: formData.ServiceOrderDetails || "",
@@ -486,6 +727,15 @@ const onFinish = async () => {
       createdBy: userId,
       tdsAmount: formData.tdsAmount,
       paymentVoucherNetAmount: formData.paymentVoucherNetAmount,
+
+incomeTdsAmount: formData.incomeTdsAmount || 0,
+gstTdsAmount: formData.gstTdsAmount || 0,
+
+incomeTdsPercentage: formData.incomeTdsPercentage || 0,
+gstTdsPercentage: formData.gstTdsPercentage || 0,
+
+incomeTdsRemarks: formData.incomeTdsRemarks || "",
+gstTdsRemarks: formData.gstTdsRemarks || "",
       materials: formData.materialDtlList?.map(mat => ({
         grnNumber: mat.grnNum,
         materialCode: mat.materialCode,
@@ -546,15 +796,49 @@ const onFinish = async () => {
     }
   }, []);
   console.log(grnIds);
+  
+const fields = invoiceFields(formData,pvPoOptions,pvIds, poOptions, grnIds, setSelectedPoId, soOptions, advancePoOptions);
+
   return (
     <Card className="a4-container" ref={printRef}>
       <Heading title="Invoice" />
       <CustomForm formData={formData} onFinish={onFinish}>
         
         
-        {renderFormFields(invoiceFields(formData, poOptions, grnIds, setSelectedPoId, soOptions, advancePoOptions), handleChange, formData, "", null, setFormData, handleSearch)}
+        {/* {renderFormFields(invoiceFields(formData, poOptions, grnIds, setSelectedPoId, soOptions, advancePoOptions), handleChange, formData, "", null, setFormData, handleSearch)} */}
+  {/**
+{renderFormFields([fields[0]], handleChange, formData, "", null, setFormData, handleSearch)}
 
-        
+
+{renderFormFields(fields.slice(1), handleChange, formData, "", null, setFormData, handleSearch)}
+
+<h3 style={{ marginTop: 20 }}>Payment Summary</h3>
+
+<Table
+  columns={paymentSummaryColumns}
+  dataSource={paymentSummaryData}
+  pagination={false}
+  bordered
+/>*/ }
+
+{renderFormFields([fields[0]], handleChange, formData, "", null, setFormData, handleSearch)}
+
+{renderFormFields(fields.slice(1, fields.length - 1), handleChange, formData, "", null, setFormData, handleSearch)}
+
+<div style={{ marginTop: 24, marginBottom: 24 }}>
+ {/* <h3 style={{ marginBottom: 10 }}>Payment Summary</h3>*/}
+
+  <Table
+    columns={paymentSummaryColumns}
+    dataSource={paymentSummaryData}
+    pagination={false}
+    bordered
+  />
+</div>
+
+
+{renderFormFields([fields[fields.length - 1]], handleChange, formData, "", null, setFormData, handleSearch)}
+
         {/* {renderFormFields(grvFields, handleChange, formData, "", null, setFormData, handleSearch)} */}
         <ButtonContainer
           onFinish={onFinish}

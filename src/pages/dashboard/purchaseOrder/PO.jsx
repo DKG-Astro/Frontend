@@ -137,6 +137,7 @@ const PO = () => {
             currency: material.currency || "INR",
             gst: material.gst || "",
             duties: material.duties || "",
+            indentId: indent.indentId,
             // Add other fields as needed
           }))
       );
@@ -387,6 +388,7 @@ vendorNameOptions = completedVendorsData.map((vendor) => ({
         materialDescription: m.materialDescription || "",
         quantity: Number(m.quantity) || 0,
         rate: Number(m.rate) || 0,
+        indentId: m.indentId || "",
       })),
     };
 

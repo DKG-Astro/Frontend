@@ -1,4 +1,5 @@
 import { handleSearch } from "../../../utils/CommonFunctions";
+import { Table } from "antd";
 
 export const locatorMaster = [
     {
@@ -19,17 +20,35 @@ export const locatorMaster = [
     },
 ]
 
-export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOptions,advancePoOptions)=> [
-     {
+
+export const invoiceFields =(formData,pvPoOptions,pvIds, poOptions, grnIds,setSelectedPoId, soOptions,advancePoOptions)=> [
+ {
+    heading: "Search",
+    colCnt: 2,
+    fieldList: [
+{
+  name: "pvPoId",
+  label: "Previous Voucher PO",
+  type: "select",
+  options: pvPoOptions
+},
+{
+  name: "pvId",
+  label: "Previous Voucher ID",
+  type: "select",
+  options: pvIds
+},]},
+
+  {
     heading: "Invoice Details",
     colCnt: 2,
     fieldList: [
-      {
-        name: "paymentVoucherNumber",
-        label: "Payment Voucher Number",
-        type: "text",
+      // {
+      //   name: "paymentVoucherNumber",
+      //   label: "Payment Voucher Number",
+      //   type: "text",
        
-      },
+      // },
       {
         name: "paymentVoucherDate",
         label: "Payment Voucher Date",
@@ -179,12 +198,6 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
         label: "Remarks",
         type: "text",
         span: 2,
-      },  {
-        name: "totalAmount",
-        label: "Total Amount Payable",
-        type: "text",
-        span: 2,
-        disabled: true,
       },
       
       ...(formData.paymentVoucherType === "Advance"
@@ -211,12 +224,12 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
   type: "text",
   required: false,
   //disabled: formData.advanceAmountAlreadyPaid > 0, 
-},  {
+}, /* {
           name: "advanceBalanceAmount",
           label: "Balance Amount (Advance)",
           type: "text",
           disabled: true,
-        },
+        },*/
          ] : []),
 
           ...(formData.paymentVoucherType === "Full Payment"
@@ -312,38 +325,69 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
     ],
     
   },
+
    {
-    heading: "Voucher Amount Deatails",
-    colCnt: 2,
-    fieldList: [
-      {
-  label: "TDS (%)",
-  name: "tdsPercentage",
-  type: "select",
-  required: true,
-  options: [
-    { value: 1, label: "1%" },
-    { value: 2, label: "2%" },
-    { value: 5, label: "5%" },
-    { value: 10, label: "10%" },
-  ],
+  heading: "Voucher Amount Details",
+  colCnt: 2,
+  fieldList: [
+
+    // ✅ Income Tax TDS
+    {
+      label: "Income Tax TDS (%)",
+      name: "incomeTdsPercentage",
+      type: "select",
+      options: [
+        { value: 1, label: "1%" },
+        { value: 2, label: "2%" },
+        { value: 5, label: "5%" },
+        { value: 10, label: "10%" }
+      ]
+    },
+    {
+      label: "Income Tax TDS Amount",
+      name: "incomeTdsAmount",
+      type: "text",
+      disabled: true
+    },
+    {
+      label: "Income TDS Remarks",
+      name: "incomeTdsRemarks",
+      type: "text"
+    },
+
+    // ✅ GST TDS
+    {
+      label: "GST TDS (%)",
+      name: "gstTdsPercentage",
+      type: "select",
+      options: [
+        { value: 1, label: "1%" },
+        { value: 2, label: "2%" },
+        { value: 5, label: "5%" },
+        { value: 10, label: "10%" }
+      ]
+    },
+    {
+      label: "GST TDS Amount",
+      name: "gstTdsAmount",
+      type: "text",
+      disabled: true
+    },
+    {
+      label: "GST TDS Remarks",
+      name: "gstTdsRemarks",
+      type: "text"
+    },
+
+    // ✅ Total TDS
+    {
+      label: "Total TDS",
+      name: "tdsAmount",
+      type: "text",
+      disabled: true
+    }
+  ]
 },
-      
-  {
-  label: "TDS Amount",
-  name: "tdsAmount",
-  type: "text",
-  value: formData.tdsAmount,
-  
-},
-{
-  label: "Payment Voucher Amount",
-  name: "paymentVoucherNetAmount",
-  type: "text",
-  disabled: true, // auto-calculated
-  value: formData.paymentVoucherNetAmount 
-},
-   ]},
    /*  {
     heading: "Purchase Order Details",
     name: "poDtlList",
@@ -428,8 +472,34 @@ export const invoiceFields =(formData, poOptions, grnIds,setSelectedPoId, soOpti
             required: true,
                disabled: true,
         },
+       
       ]
     },
+    {
+  heading: "Payment Voucher Attachments",
+  colCnt: 2,
+  fieldList: [
+    
+     {
+  label: "Attachments",
+  name: "attachments",
+  type: "multiImage",   
+  required: false
+}
+  ]},
+{
+  heading: "Final Payable Amount",
+  colCnt: 2,
+  fieldList: [
+    {
+      name: "paymentVoucherNetAmount",
+      label: "Total Amount Payable (Final)",
+      type: "text",
+      disabled: true,
+      span: 2
+    }
+  ]
+}
    /* {
         heading: "Material Details",
         name: "materialDtlList",

@@ -1,173 +1,3 @@
-/*import React, { useEffect, useState } from "react";
-import { Modal, Table, Button, Input, Tag } from "antd";
-
-const { Search } = Input;
-
-const GprnPoSearch = ({ poArray = [], setFormData, handleSearch }) => {
-  const [open, setOpen] = useState(false);
-  const [filteredData, setFilteredData] = useState(poArray || []);
-  const [searchText, setSearchText] = useState("");
-  const [selectedPoId, setSelectedPoId] = useState(null);
-
-  // Keep filteredData in sync with poArray changes:
-  useEffect(() => {
-    setFilteredData(poArray || []);
-  }, [poArray]);
-
-  
-  const handleSearchInput = (value) => {
-    const q = (value || "").toLowerCase();
-    setSearchText(value);
-
-    // Filter logic
-    const filtered = (poArray || []).filter((po) => {
-      const poText = `${po.poId} ${po.vendorName ?? ""} ${po.projectName ?? ""}`.toLowerCase();
-      const indentText = (po.indentIds || []).join(" ").toLowerCase();
-      const materialText = (po.materials || [])
-        .map(
-          (m) =>
-            `${m.materialCode ?? ""} ${m.materialDesc ?? ""} ${m.orderQty ?? ""} ${m.receivedQty ?? ""} ${m.pendingQty ?? ""}`
-        )
-        .join(" ")
-        .toLowerCase();
-      // This includes all requested fields!
-      return (
-        poText.includes(q) ||
-        indentText.includes(q) ||
-        materialText.includes(q)
-      );
-    });
-
-    setFilteredData(filtered);
-    // Modal open on search
-    setOpen(true);
-  };
-
-  // Table columns, same as before
-  const columns = [
-    {
-      title: "PO ID",
-      dataIndex: "poId",
-      key: "poId",
-      width: 120,
-      fixed: "left",
-    },
-    {
-      title: "Indent IDs",
-      dataIndex: "indentIds",
-      width: 200,
-      render: (ids) =>
-        ids?.length ? ids.map((id) => <Tag key={id}>{id}</Tag>) : "—",
-    },
-    {
-      title: "Materials",
-      dataIndex: "materials",
-      width: 600,
-      render: (materials = []) => (
-        <Table
-          dataSource={materials}
-          rowKey={(row, i) => row.materialCode + i}
-          pagination={false}
-          size="small"
-          columns={[
-            { title: "Code", dataIndex: "materialCode", width: 120 },
-            { title: "Description", dataIndex: "materialDesc", width: 250 },
-            { title: "Qty", dataIndex: "orderQty", width: 80 },
-            { title: "Received", dataIndex: "receivedQty", width: 80 },
-            { title: "Pending", dataIndex: "pendingQty", width: 80 },
-          ]}
-        />
-      ),
-    },
-   
-{
-      title: "Action",
-      width: 150,
-      render: (_, record) => {
-        const disabled = selectedPoId && selectedPoId !== record.poId;
-
-        return selectedPoId === record.poId ? (
-          <Button danger onClick={handleDeselect}>Deselect</Button>
-        ) : (
-          <Button type="primary" disabled={disabled} onClick={() => handleSelect(record)}>
-            Select
-          </Button>
-        );
-      },
-    },
-  ];
-
- 
-  const handleSelect = (record) => {
-    setSelectedPoId(record.poId);
-    setFormData((prev) => ({ ...prev, poId: record.poId }));
-    handleSearch(record.poId);
-    setOpen(false);
-  };
-
-const handleDeselect = () => {
-  setSelectedPoId(null);
-
-  setFormData((prev) => ({
-    ...prev,
-
-    // Reset PO Fields
-    poId: "",
-    vendorId: "",
-    vendorName: "",
-    vendorEmail: "",
-    vendorContactNo: "",
-    project: "",
-    indentorName: "",
-    indentId: "",
-    consigneeDetail: "",
-    fieldStation: "",
-
-    
-
-    // Reset materials list
-    materialDtlList: [],
-
-    // Reset totals
-    totalQuantity: "",
-    gprnNo: ""
-  }));
-};
-
-
-  return (
-    <>
-      <Search
-        placeholder="Search PO, Material, Indent…"
-        value={searchText}
-        onChange={(e) => handleSearchInput(e.target.value)}
-        onClick={() => setOpen(true)}
-        style={{ width: 280 }}
-       
-        onSearch={handleSearchInput} // This opens modal on pressing enter!
-        allowClear
-      />
-
-      <Modal
-        open={open}
-        title="Search Purchase Orders"
-        footer={null}
-        onCancel={() => setOpen(false)}
-        width={1300}
-      >
-        <Table
-          dataSource={filteredData}
-          columns={columns}
-          rowKey="poId"
-          pagination={{ pageSize: 5 }}
-          scroll={{ x: 1200 }}
-        />
-      </Modal>
-    </>
-  );
-};
-
-export default GprnPoSearch;*/
 import React, { useEffect, useState } from "react";
 import { Modal, Table, Button, Input, Tag } from "antd";
 import axios from "axios";
@@ -187,35 +17,60 @@ const GprnPoSearch = ({ poArray = [], setFormData, handleSearch }) => {
   const [open, setOpen] = useState(false);
   const [filteredData, setFilteredData] = useState(poArray || []);
   const [searchText, setSearchText] = useState("");
+  const [modalSearchText, setModalSearchText] = useState(""); 
   const [selectedPoId, setSelectedPoId] = useState(null);
 
   useEffect(() => {
     setFilteredData(poArray || []);
   }, [poArray]);
-const searchBackend = async (keyword) => {
-  try {
-    const { data } = await axios.get(
-      `/api/process-controller/getPendingAllPoDataForGprn/search?keyword=${keyword}`
-    );
 
-    let backendList = data?.responseData?.pendingGprnList || [];
+  const searchBackend = async (keyword) => {
+    try {
+      const { data } = await axios.get(
+        `/api/process-controller/getPendingAllPoDataForGprn/search?keyword=${keyword}`
+      );
 
-    // Sort Chronologically (Oldest → Newest)
-    backendList.sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
+      let backendList = data?.responseData?.pendingGprnList || [];
 
-    setFilteredData(backendList);
-  } catch (err) {
-    console.error("Search error:", err);
-  }
-};
+      // Sort Chronologically (Oldest → Newest)
+      backendList.sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
 
-  // Debounce only backend API call (NOT UI)
+      setFilteredData(backendList);
+    } catch (err) {
+      console.error("Search error:", err);
+    }
+  };
+
   const debouncedSearch = debounce(searchBackend, 400);
 
-  // Main handler
   const handleSearchInput = (value) => {
-    setSearchText(value);      // ✅ immediate UI update
-    debouncedSearch(value);    // ✅ delayed backend call
+    setSearchText(value);
+    debouncedSearch(value);
+  };
+
+
+  const getModalFilteredData = () => {
+    const q = modalSearchText.toLowerCase();
+
+    return (filteredData || []).filter((po) => {
+      const poText = `${po.poId} ${po.vendorName ?? ""}`.toLowerCase();
+
+      const indentText = (po.indentIds || []).join(" ").toLowerCase();
+
+      const materialText = (po.materials || [])
+        .map(
+          (m) =>
+            `${m.materialCode ?? ""} ${m.materialDesc ?? ""} ${m.orderQty ?? ""} ${m.receivedQty ?? ""} ${m.pendingQty ?? ""}`
+        )
+        .join(" ")
+        .toLowerCase();
+
+      return (
+        poText.includes(q) ||
+        indentText.includes(q) ||
+        materialText.includes(q)
+      );
+    });
   };
 
   const columns = [
@@ -235,10 +90,9 @@ const searchBackend = async (keyword) => {
     },
     {
       title: "Vendor Name",
-      dataIndex:"vendorName",
-      key:"vendorName",
+      dataIndex: "vendorName",
+      key: "vendorName",
       width: 200,
-
     },
     {
       title: "Materials",
@@ -312,7 +166,7 @@ const searchBackend = async (keyword) => {
       <Search
         placeholder="Search PO, Material, Indent…"
         value={searchText}
-        onChange={(e) => handleSearchInput(e.target.value)}  
+        onChange={(e) => handleSearchInput(e.target.value)}
         onClick={() => setOpen(true)}
         onSearch={() => setOpen(true)}
         allowClear
@@ -326,8 +180,17 @@ const searchBackend = async (keyword) => {
         onCancel={() => setOpen(false)}
         width={1300}
       >
+       
+        <Input
+          placeholder="Type here to narrow results..."
+          value={modalSearchText}
+          onChange={(e) => setModalSearchText(e.target.value)}
+          style={{ marginBottom: 10, width: 300 }}
+          allowClear
+        />
+
         <Table
-          dataSource={filteredData}
+          dataSource={getModalFilteredData()}  
           columns={columns}
           rowKey="poId"
           pagination={{ pageSize: 5 }}
